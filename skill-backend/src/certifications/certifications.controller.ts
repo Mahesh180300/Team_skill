@@ -11,13 +11,13 @@ export class CertificationsController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  addCertification(@CurrentUser() user: any, @Req() req: any, @UploadedFile() file: Express.Multer.File) {
+  addCertification(@CurrentUser() user: any, @Req() req: any, @UploadedFile() file: any) {
     return this.certsService.addCertification(user.id, req.body, file);
   }
 
   @Patch(':certId')
   @UseInterceptors(FileInterceptor('file'))
-  editCertification(@CurrentUser() user: any, @Param('certId') certId: string, @Req() req: any, @UploadedFile() file: Express.Multer.File) {
+  editCertification(@CurrentUser() user: any, @Param('certId') certId: string, @Req() req: any, @UploadedFile() file: any) {
     return this.certsService.editCertification(user.id, certId, req.body, file);
   }
 
