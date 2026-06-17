@@ -19,6 +19,14 @@ const api = {
     fetch(`${BASE}/profile`, { headers: headers(token) }).then((r) => r.json()),
   updateProfile: (token, data) =>
     fetch(`${BASE}/profile`, { method: "PUT", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
+  uploadProfileImage: (token, formData) =>
+    fetch(`${BASE}/profile/image`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }).then((r) => r.json()),
+  deleteProfileImage: (token) =>
+    fetch(`${BASE}/profile/image`, { method: "DELETE", headers: headers(token) }).then((r) => r.json()),
 
   // Skills
   addSkill: (token, data) =>

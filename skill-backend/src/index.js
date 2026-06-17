@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const multer = require("multer");
 
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -40,6 +43,7 @@ const userSchema = new mongoose.Schema(
     department: { type: String, trim: true, default: "" },
     jobTitle: { type: String, trim: true, default: "" },
     yearsOfExperience: { type: Number, default: 0 },
+    profileImage: { type: String, default: "" },
     skills: [
       {
         name: { type: String, required: true, trim: true },
@@ -113,6 +117,34 @@ app.get("/api/auth/me", auth, async (req, res) => {
 });
 
 // ── Employee Profile ──────────────────────────────────────────────────────────
+const storage = multer.diskStorage({
+  destination: uploadsDir,
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${req.user.id}-${Date.now()}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files are allowed"), false);
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 4 * 1024 * 1024 },
+});
+
+const removeProfileImageFile = (imageUrl) => {
+  if (!imageUrl) return;
+  const filename = path.basename(imageUrl);
+  const filePath = path.join(uploadsDir, filename);
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+};
+
 app.get("/api/profile", auth, async (req, res) => {
   const user = await User.findById(req.user.id).select("-password");
   res.json(user);
@@ -126,6 +158,32 @@ app.put("/api/profile", auth, async (req, res) => {
     { new: true }
   ).select("-password");
   res.json(user);
+});
+
+app.post("/api/profile/image", auth, upload.single("profileImage"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Profile image required" });
+
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  removeProfileImageFile(user.profileImage);
+  user.profileImage = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+  await user.save();
+  const responseUser = user.toObject();
+  delete responseUser.password;
+  res.json(responseUser);
+});
+
+app.delete("/api/profile/image", auth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  removeProfileImageFile(user.profileImage);
+  user.profileImage = "";
+  await user.save();
+  const responseUser = user.toObject();
+  delete responseUser.password;
+  res.json(responseUser);
 });
 
 // ── Skills ────────────────────────────────────────────────────────────────────
@@ -278,3 +336,13 @@ app.post("/api/admin/seed-admin", async (req, res) => {
 
 const PORT = process.env.PORT || 5009;
 app.listen(PORT, () => console.log(`Skill Tracker server running on http://localhost:${PORT}`));
+
+// Global error handler (return JSON for multer and other errors)
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err && err.message ? err.message : err);
+  if (err && err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'File too large (max 4MB)' });
+    return res.status(400).json({ error: err.message });
+  }
+  res.status(500).json({ error: err?.message || 'Server error' });
+});

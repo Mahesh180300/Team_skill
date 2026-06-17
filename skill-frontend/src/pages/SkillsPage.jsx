@@ -56,6 +56,7 @@ export default function SkillsPage() {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     api.getProfile(token).then((d) => setSkills(d.skills || []));
@@ -68,6 +69,8 @@ export default function SkillsPage() {
     if (data.error) return setError(data.error);
     setSkills(data.skills);
     setForm({ name: "", proficiency: "Beginner", yearsUsed: "" });
+    setSuccess("Skill added successfully!");
+    setTimeout(() => setSuccess(""), 3000);
   };
 
   const save = async (skillId) => {
@@ -90,6 +93,17 @@ export default function SkillsPage() {
 
   return (
     <div className="page">
+      {success && (
+        <div className="modal-overlay" onClick={() => setSuccess("")}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2>✓ Success</h2>
+            <p>{success}</p>
+            <div className="modal-actions">
+              <button className="btn-primary" onClick={() => setSuccess("")}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="page-header"><h2>My Skills</h2></div>
 
       <div className="card form-card">
