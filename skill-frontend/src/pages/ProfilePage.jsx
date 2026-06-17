@@ -115,22 +115,28 @@ export default function ProfilePage() {
         <div className="card profile-card">
           {/* Avatar area */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <div className="avatar-upload-wrapper" onClick={() => document.getElementById("avatar-input").click()} title="Click to change photo">
-              <div className="profile-avatar">
+            <div className="avatar-upload-wrapper">
+              <div
+                className="profile-avatar"
+                onClick={() => profile.avatar && setViewAvatar(true)}
+                style={{ cursor: profile.avatar ? "pointer" : "default" }}
+                title={profile.avatar ? "View profile picture" : undefined}
+              >
                 {profile.avatar
                   ? <img src={profile.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
                   : profile.name?.charAt(0).toUpperCase()
                 }
               </div>
-              <div className="avatar-overlay">📷</div>
+              <button
+                className="avatar-edit-btn"
+                onClick={() => document.getElementById("avatar-input").click()}
+                title="Change profile picture"
+              >
+                ✏️
+              </button>
               <input id="avatar-input" type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarChange} />
             </div>
-            {profile.avatar && (
-              <div style={{ display: "flex", gap: 6 }}>
-                <button className="btn-sm btn-secondary" onClick={() => setViewAvatar(true)}>View</button>
-                <button className="btn-sm btn-secondary" style={{ color: "var(--danger)", borderColor: "var(--danger)" }} onClick={handleDeleteAvatar}>Delete</button>
-              </div>
-            )}
+           
           </div>
 
           <div className="profile-details">
