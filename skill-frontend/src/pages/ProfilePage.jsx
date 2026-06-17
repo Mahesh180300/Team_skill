@@ -28,6 +28,7 @@ export default function ProfilePage() {
     setEditing(false);
     showToast("Profile updated!");
   };
+  
 
   const uploadResume = async () => {
     if (!resumeFile) return;
