@@ -29,6 +29,26 @@ export default function ProfilePage() {
     showToast("Profile updated!");
   };
 
+  const uploadResume = async () => {
+    if (!resumeFile) return;
+    setResumeUploading(true);
+    const data = await api.uploadResume(token, resumeFile);
+    if (data.resumeUrl) {
+      setProfile((p) => ({ ...p, resumeUrl: data.resumeUrl, resumeOriginalName: data.resumeOriginalName }));
+      setMsg("Resume uploaded!");
+      setTimeout(() => setMsg(""), 2000);
+    }
+    setResumeFile(null);
+    setResumeUploading(false);
+  };
+
+  const deleteResume = async () => {
+    await api.deleteResume(token);
+    setProfile((p) => ({ ...p, resumeUrl: "", resumeOriginalName: "" }));
+    setMsg("Resume deleted!");
+    setTimeout(() => setMsg(""), 2000);
+  };
+
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -151,6 +171,50 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      <div className="card resume-card">
+        <div className="resume-card-header">
+          <span className="resume-card-icon">📄</span>
+          <div>
+            <h3>Resume</h3>
+            <small>Upload your latest resume for visibility</small>
+          </div>
+          {profile.resumeUrl && <span className="resume-status-badge">✅ Uploaded</span>}
+        </div>
+
+        {profile.resumeUrl ? (
+          <div className="resume-uploaded-box">
+            <div className="resume-file-info">
+              <span className="resume-file-icon">📎</span>
+              <div>
+                <p className="resume-file-name">{profile.resumeOriginalName || profile.resumeUrl.split("/").pop()}</p>
+                <small className="resume-file-sub">Uploaded successfully</small>
+              </div>
+            </div>
+            <div className="resume-actions">
+              <a href={`http://localhost:5009${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="btn-view-resume"> View </a>
+              <button className="btn-delete-resume" onClick={deleteResume} title="Delete resume">🗑 Delete</button>
+            </div>
+          </div>
+        ) : (
+          <div className="resume-empty-box">
+            <span className="resume-empty-icon">📭</span>
+            <p>No resume uploaded yet</p>
+          </div>
+        )}
+
+        <div className="resume-upload-zone">
+          <label className="resume-upload-label">
+            <span>🗂 {resumeFile ? resumeFile.name : "Choose a file (PDF, DOC, DOCX)"}</span>
+            <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => setResumeFile(e.target.files[0])} hidden />
+          </label>
+          {resumeFile && (
+            <button className="btn-primary btn-sm" onClick={uploadResume} disabled={resumeUploading}>
+              {resumeUploading ? "⏳ Uploading..." : "⬆ Upload Resume"}
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Avatar view modal */}
       {viewAvatar && (
