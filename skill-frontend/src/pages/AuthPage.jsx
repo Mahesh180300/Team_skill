@@ -65,7 +65,7 @@ export default function AuthPage({ mode, onNavigate }) {
           )}
         </div>
         <div className="auth-hint">
-          <small>Admin: admin@kyyba.com / admin1234</small>
+          <small>Admin: admin@kyyba.com / admin123</small>
         </div>
       </div>
     </div>
