@@ -56,6 +56,9 @@ export default function SkillsPage() {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
   useEffect(() => {
     api.getProfile(token).then((d) => setSkills(d.skills || []));
@@ -68,17 +71,20 @@ export default function SkillsPage() {
     if (data.error) return setError(data.error);
     setSkills(data.skills);
     setForm({ name: "", proficiency: "Beginner", yearsUsed: "" });
+    showToast("Skill added successfully!");
   };
 
   const save = async (skillId) => {
     const data = await api.updateSkill(token, skillId, { ...editForm, yearsUsed: Number(editForm.yearsUsed) || 0 });
     setSkills(data.skills);
     setEditId(null);
+    showToast("Skill updated successfully!");
   };
 
   const remove = async (skillId) => {
     const data = await api.deleteSkill(token, skillId);
     setSkills(data.skills);
+    showToast("Skill deleted!");
   };
 
   const counts = {
@@ -91,6 +97,7 @@ export default function SkillsPage() {
   return (
     <div className="page">
       <div className="page-header"><h2>My Skills</h2></div>
+      {toast && <div className="toast success">{toast}</div>}
 
       <div className="card form-card">
         <h3>Add Skill</h3>

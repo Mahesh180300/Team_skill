@@ -10,6 +10,9 @@ export default function CertificationsPage() {
   const [form, setForm] = useState({ name: "", issuer: "", year: "" });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
   // ── Edit state ──────────────────────────────────────────────────────────────
   const [editingCert, setEditingCert] = useState(null); // holds the cert being edited
@@ -29,11 +32,13 @@ export default function CertificationsPage() {
     setCerts(data.certifications);
     setForm({ name: "", issuer: "", year: "" });
     setSelectedFile(null);
+    showToast("Certification added successfully!");
   };
 
   const remove = async (certId) => {
     const data = await api.deleteCert(token, certId);
     setCerts(data.certifications);
+    showToast("Certification deleted!");
   };
   const openEdit = (cert) => {
     setEditingCert(cert);
@@ -55,6 +60,7 @@ export default function CertificationsPage() {
     if (data.error) return setEditError(data.error);
     setCerts(data.certifications);
     closeEdit();
+    showToast("Certification updated successfully!");
   };
 
   const techIcons = [
@@ -77,6 +83,7 @@ export default function CertificationsPage() {
   return (
     <div className="page">
       <div className="page-header"><h2>My Certifications</h2></div>
+      {toast && <div className="toast success">{toast}</div>}
 
       {/* ── Add Form ─────────────────────────────────────────────────────────── */}
       <div className="card form-card">
