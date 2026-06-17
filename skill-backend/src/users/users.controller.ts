@@ -46,6 +46,18 @@ export class UsersController {
     return this.usersService.deleteResume(user.id);
   }
 
+  @Post('profile/avatar')
+  @UseInterceptors(FileInterceptor('avatar', { limits: { fileSize: 2 * 1024 * 1024 } }))
+  uploadAvatar(@CurrentUser() user: any, @UploadedFile() file: Express.Multer.File) {
+    return this.usersService.updateAvatar(user.id, file);
+  }
+
+  @Delete('profile/avatar')
+  deleteAvatar(@CurrentUser() user: any) {
+    return this.usersService.deleteAvatar(user.id);
+  }
+
+
   @Get('employees')
   searchEmployees(@Query() query: any) {
     return this.usersService.searchEmployees(query);

@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const isUuid = (id: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
   async getProfile(userId: string) {
+    if (!isUuid(userId)) throw new UnauthorizedException('Invalid session, please log in again');
     const user = await this.repo.findOne({ where: { id: userId } });
     const { password, ...rest } = user;
     return rest;
@@ -36,6 +40,18 @@ export class UsersService {
     }
     await this.repo.update(userId, { resumeUrl: '', resumeOriginalName: '' });
     return { success: true };
+  }
+
+  async updateAvatar(userId: string, file: Express.Multer.File) {
+    if (!file) throw new Error('No file provided');
+    const avatar = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+    await this.repo.update(userId, { avatar });
+    return this.getProfile(userId);
+  }
+
+  async deleteAvatar(userId: string) {
+    await this.repo.update(userId, { avatar: null });
+    return this.getProfile(userId);
   }
 
   async searchEmployees(query: any) {

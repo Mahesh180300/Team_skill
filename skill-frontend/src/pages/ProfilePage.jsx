@@ -10,6 +10,9 @@ export default function ProfilePage() {
   const [msg, setMsg] = useState("");
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeUploading, setResumeUploading] = useState(false);
+  const [viewAvatar, setViewAvatar] = useState(false);
+
+  const showToast = (text) => { setMsg(text); setTimeout(() => setMsg(""), 2500); };
 
   useEffect(() => {
     api.getProfile(token).then((data) => {
@@ -23,28 +26,22 @@ export default function ProfilePage() {
     const updated = await api.updateProfile(token, { ...form, yearsOfExperience: Number(form.yearsOfExperience) });
     setProfile(updated);
     setEditing(false);
-    setMsg("Profile updated!");
-    setTimeout(() => setMsg(""), 2000);
+    showToast("Profile updated!");
   };
 
-  const uploadResume = async () => {
-    if (!resumeFile) return;
-    setResumeUploading(true);
-    const data = await api.uploadResume(token, resumeFile);
-    if (data.resumeUrl) {
-      setProfile((p) => ({ ...p, resumeUrl: data.resumeUrl, resumeOriginalName: data.resumeOriginalName }));
-      setMsg("Resume uploaded!");
-      setTimeout(() => setMsg(""), 2000);
-    }
-    setResumeFile(null);
-    setResumeUploading(false);
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const updated = await api.uploadAvatar(token, file);
+    setProfile(updated);
+    showToast("Profile picture updated!");
   };
 
-  const deleteResume = async () => {
-    await api.deleteResume(token);
-    setProfile((p) => ({ ...p, resumeUrl: "", resumeOriginalName: "" }));
-    setMsg("Resume deleted!");
-    setTimeout(() => setMsg(""), 2000);
+  const handleDeleteAvatar = async () => {
+    const updated = await api.deleteAvatar(token);
+    setProfile(updated);
+    setViewAvatar(false);
+    showToast("Profile picture removed!");
   };
 
   const calcCompletion = (p) => {
@@ -67,6 +64,7 @@ export default function ProfilePage() {
         {!editing && <button className="btn-secondary" onClick={() => setEditing(true)}>Edit Profile</button>}
       </div>
       {msg && <div className="toast success">{msg}</div>}
+
       {editing ? (
         <form onSubmit={save} className="card form-card">
           <div className="form-grid">
@@ -94,7 +92,26 @@ export default function ProfilePage() {
         </form>
       ) : (
         <div className="card profile-card">
-          <div className="profile-avatar">{profile.name?.charAt(0).toUpperCase()}</div>
+          {/* Avatar area */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <div className="avatar-upload-wrapper" onClick={() => document.getElementById("avatar-input").click()} title="Click to change photo">
+              <div className="profile-avatar">
+                {profile.avatar
+                  ? <img src={profile.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                  : profile.name?.charAt(0).toUpperCase()
+                }
+              </div>
+              <div className="avatar-overlay">📷</div>
+              <input id="avatar-input" type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarChange} />
+            </div>
+            {profile.avatar && (
+              <div style={{ display: "flex", gap: 6 }}>
+                <button className="btn-sm btn-secondary" onClick={() => setViewAvatar(true)}>View</button>
+                <button className="btn-sm btn-secondary" style={{ color: "var(--danger)", borderColor: "var(--danger)" }} onClick={handleDeleteAvatar}>Delete</button>
+              </div>
+            )}
+          </div>
+
           <div className="profile-details">
             <h3>{profile.name}</h3>
             <p className="profile-email">{profile.email}</p>
@@ -104,10 +121,12 @@ export default function ProfilePage() {
               {profile.yearsOfExperience > 0 && <span className="badge badge-exp">{profile.yearsOfExperience} yrs exp</span>}
             </div>
           </div>
+
           <div className="profile-stats">
             <div className="stat"><span className="stat-val">{profile.skills?.length || 0}</span><span className="stat-lbl">Skills</span></div>
             <div className="stat"><span className="stat-val">{profile.certifications?.length || 0}</span><span className="stat-lbl">Certs</span></div>
           </div>
+
           <div className="profile-completion">
             {(() => {
               const { percent, missing } = calcCompletion(profile);
@@ -118,20 +137,12 @@ export default function ProfilePage() {
                     <span>{percent}%</span>
                   </div>
                   <div className="completion-track">
-                    <div
-                      className="completion-fill"
-                      style={{
-                        width: `${percent}%`,
-                        backgroundColor: percent === 100 ? "#22c55e" : percent >= 50 ? "#f59e0b" : "#ef4444",
-                      }}
-                    />
+                    <div className="completion-fill" style={{ width: `${percent}%`, backgroundColor: percent === 100 ? "#22c55e" : percent >= 50 ? "#f59e0b" : "#ef4444" }} />
                   </div>
                   {missing.length > 0 && (
                     <div className="completion-missing">
                       <small>Missing:</small>
-                      {missing.map((m) => (
-                        <span key={m} className="missing-tag">{m}</span>
-                      ))}
+                      {missing.map((m) => <span key={m} className="missing-tag">{m}</span>)}
                     </div>
                   )}
                 </>
@@ -141,49 +152,27 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="card resume-card">
-        <div className="resume-card-header">
-          <span className="resume-card-icon">📄</span>
-          <div>
-            <h3>Resume</h3>
-            <small>Upload your latest resume for visibility</small>
-          </div>
-          {profile.resumeUrl && <span className="resume-status-badge">✅ Uploaded</span>}
-        </div>
-
-        {profile.resumeUrl ? (
-          <div className="resume-uploaded-box">
-            <div className="resume-file-info">
-              <span className="resume-file-icon">📎</span>
-              <div>
-                <p className="resume-file-name">{profile.resumeOriginalName || profile.resumeUrl.split("/").pop()}</p>
-                <small className="resume-file-sub">Uploaded successfully</small>
-              </div>
-            </div>
-            <div className="resume-actions">
-              <a href={`http://localhost:5009${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="btn-view-resume"> View </a>
-              <button className="btn-delete-resume" onClick={deleteResume} title="Delete resume">🗑 Delete</button>
+      {/* Avatar view modal */}
+      {viewAvatar && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}
+          onClick={() => setViewAvatar(false)}
+        >
+          <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+            <img src={profile.avatar} alt="Profile" style={{ maxWidth: "90vw", maxHeight: "80vh", borderRadius: 16, boxShadow: "0 8px 40px rgba(0,0,0,0.5)" }} />
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 14 }}>
+              <button className="btn-secondary" onClick={() => setViewAvatar(false)}>Close</button>
+              <button
+                className="btn-primary"
+                style={{ background: "var(--danger)", borderColor: "var(--danger)" }}
+                onClick={handleDeleteAvatar}
+              >
+                Delete Photo
+              </button>
             </div>
           </div>
-        ) : (
-          <div className="resume-empty-box">
-            <span className="resume-empty-icon">📭</span>
-            <p>No resume uploaded yet</p>
-          </div>
-        )}
-
-        <div className="resume-upload-zone">
-          <label className="resume-upload-label">
-            <span>🗂 {resumeFile ? resumeFile.name : "Choose a file (PDF, DOC, DOCX)"}</span>
-            <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => setResumeFile(e.target.files[0])} hidden />
-          </label>
-          {resumeFile && (
-            <button className="btn-primary btn-sm" onClick={uploadResume} disabled={resumeUploading}>
-              {resumeUploading ? "⏳ Uploading..." : "⬆ Upload Resume"}
-            </button>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -100,13 +100,18 @@ input:focus, select:focus { outline: none; border-color: var(--primary); box-sha
 .auth-hint { text-align: center; margin-top: 12px; color: var(--text-muted); }
 
 /* ── Toast ──────────────────────────────────────────────────────────────────── */
-.toast { padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; }
-.toast.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.toast { position: fixed; top: 24px; right: 24px; z-index: 9999; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: toastIn 0.25s ease; }
+.toast.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── Profile Card ──────────────────────────────────────────────────────────── */
 .profile-card { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
 .profile-completion { width: 100%; }
 .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+.avatar-upload-wrapper { position: relative; width: 72px; height: 72px; flex-shrink: 0; cursor: pointer; }
+.avatar-upload-wrapper .profile-avatar { width: 100%; height: 100%; }
+.avatar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0; transition: opacity 0.15s; }
+.avatar-upload-wrapper:hover .avatar-overlay { opacity: 1; }
 .profile-details { flex: 1; }
 .profile-details h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .profile-email { color: var(--text-muted); font-size: 14px; margin-bottom: 10px; }

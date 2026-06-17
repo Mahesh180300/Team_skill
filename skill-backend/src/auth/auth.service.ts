@@ -31,10 +31,15 @@ export class AuthService {
   }
 
   async me(userId: string) {
+    if (!this.isUuid(userId)) throw new UnauthorizedException('Invalid session, please log in again');
     const user = await this.usersRepo.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('Not found');
     const { password, ...rest } = user;
     return rest;
+  }
+
+  private isUuid(id: string) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   }
 
   private signToken(user: User) {

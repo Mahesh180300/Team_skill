@@ -19,6 +19,17 @@ const api = {
     fetch(`${BASE}/profile`, { headers: headers(token) }).then((r) => r.json()),
   updateProfile: (token, data) =>
     fetch(`${BASE}/profile`, { method: "PUT", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
+  uploadAvatar: (token, file) => {
+    const fd = new FormData();
+    fd.append("avatar", file);
+    return fetch(`${BASE}/profile/avatar`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+    }).then((r) => r.json());
+  },
+  deleteAvatar: (token) =>
+    fetch(`${BASE}/profile/avatar`, { method: "DELETE", headers: headers(token) }).then((r) => r.json()),
 
   // Skills
   addSkill: (token, data) =>

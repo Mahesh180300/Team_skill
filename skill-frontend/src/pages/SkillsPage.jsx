@@ -56,6 +56,9 @@ export default function SkillsPage() {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
   useEffect(() => {
     api.getProfile(token).then((d) => setSkills(d.skills || []));
@@ -68,17 +71,20 @@ export default function SkillsPage() {
     if (data.error) return setError(data.error);
     setSkills(data.skills);
     setForm({ name: "", proficiency: "Beginner", yearsUsed: "" });
+    showToast("Skill added successfully!");
   };
 
   const save = async (skillId) => {
     const data = await api.updateSkill(token, skillId, { ...editForm, yearsUsed: Number(editForm.yearsUsed) || 0 });
     setSkills(data.skills);
     setEditId(null);
+    showToast("Skill updated successfully!");
   };
 
   const remove = async (skillId) => {
     const data = await api.deleteSkill(token, skillId);
     setSkills(data.skills);
+    showToast("Skill deleted!");
   };
 
   const counts = {
@@ -91,6 +97,7 @@ export default function SkillsPage() {
   return (
     <div className="page">
       <div className="page-header"><h2>My Skills</h2></div>
+      {toast && <div className="toast success">{toast}</div>}
 
       <div className="card form-card">
         <h3>Add Skill</h3>
@@ -173,8 +180,8 @@ export default function SkillsPage() {
       ) : (
         <div className="skills-grid">
           {skills.map((s) => (
-            <div key={s._id} className="skill-card">
-              {editId === s._id ? (
+            <div key={s.id} className="skill-card">
+              {editId === s.id ? (
                 <div className="skill-edit">
                   <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
                   <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
@@ -182,7 +189,7 @@ export default function SkillsPage() {
                   </select>
                   <input type="number" min="0" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} style={{ width: 80 }} />
                   <div className="skill-actions">
-                    <button className="btn-primary btn-sm" onClick={() => save(s._id)}>Save</button>
+                    <button className="btn-primary btn-sm" onClick={() => save(s.id)}>Save</button>
                     <button className="btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
                   </div>
                 </div>
@@ -192,8 +199,8 @@ export default function SkillsPage() {
                   <span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span>
                   {s.yearsUsed > 0 && <span className="skill-years">{s.yearsUsed} yr{s.yearsUsed !== 1 ? "s" : ""}</span>}
                   <div className="skill-actions">
-                    <button className="btn-icon" onClick={() => { setEditId(s._id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed }); }} title="Edit">✏️</button>
-                    <button className="btn-icon btn-danger" onClick={() => remove(s._id)} title="Delete">🗑️</button>
+                    <button className="btn-icon" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed }); }} title="Edit">✏️</button>
+                    <button className="btn-icon btn-danger" onClick={() => remove(s.id)} title="Delete">🗑️</button>
                   </div>
                 </>
               )}

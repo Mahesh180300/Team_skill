@@ -37,6 +37,9 @@ export class User {
   @OneToMany(() => Skill, (skill) => skill.user, { cascade: true, eager: true })
   skills: Skill[];
 
+  @Column({ type: 'text', nullable: true, default: null })
+  avatar: string;
+
   @OneToMany(() => Certification, (cert) => cert.user, { cascade: true, eager: true })
   certifications: Certification[];
 
