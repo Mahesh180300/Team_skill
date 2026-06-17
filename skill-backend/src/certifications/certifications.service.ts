@@ -11,7 +11,7 @@ export class CertificationsService {
     @InjectRepository(User) private usersRepo: Repository<User>,
   ) {}
 
-  async addCertification(userId: string, body: any, file?: { buffer: Buffer; mimetype: string; originalname: string }) {
+  async addCertification(userId: string, body: any, file?: Express.Multer.File) {
     const { name, issuer, year } = body;
     if (!name) throw new BadRequestException('Certification name required');
     const cert = this.certsRepo.create({
@@ -29,7 +29,7 @@ export class CertificationsService {
     return this.getUser(userId);
   }
 
-  async editCertification(userId: string, certId: string, body: any, file?: { buffer: Buffer; mimetype: string; originalname: string }) {
+  async editCertification(userId: string, certId: string, body: any, file?: Express.Multer.File) {
     const cert = await this.certsRepo.findOne({ where: { id: certId, userId } });
     if (!cert) throw new BadRequestException('Certification not found');
     const { name, issuer, year } = body;
