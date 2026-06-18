@@ -20,7 +20,7 @@ export default function EmployeesPage() {
   const remove = async (id) => {
     if (!confirm("Remove this employee?")) return;
     await api.deleteEmployee(token, id);
-    setEmployees((prev) => prev.filter((e) => e._id !== id));
+    setEmployees((prev) => prev.filter((e) => e.id !== id));
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -37,8 +37,8 @@ export default function EmployeesPage() {
       ) : (
         <div className="employee-list">
           {employees.map((emp) => (
-            <div key={emp._id} className="employee-card">
-              <div className="emp-header" onClick={() => setExpanded(expanded === emp._id ? null : emp._id)}>
+            <div key={emp.id} className="employee-card">
+              <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
                 <div className="emp-avatar">{emp.name?.charAt(0).toUpperCase()}</div>
                 <div className="emp-info">
                   <div className="emp-name">{emp.name}</div>
@@ -54,18 +54,18 @@ export default function EmployeesPage() {
                   {emp.yearsOfExperience > 0 && <span>{emp.yearsOfExperience} yrs</span>}
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-icon btn-danger" onClick={() => remove(emp._id)}>🗑️</button>
+                  <button className="btn-icon btn-danger" onClick={() => remove(emp.id)}>🗑️</button>
                 </div>
-                <span className="expand-icon">{expanded === emp._id ? "▲" : "▼"}</span>
+                <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
               </div>
-              {expanded === emp._id && (
+              {expanded === emp.id && (
                 <div className="emp-details">
                   {emp.skills?.length > 0 && (
                     <div className="detail-section">
                       <h4>Skills</h4>
                       <div className="skills-inline">
                         {emp.skills.map((s) => (
-                          <span key={s._id} className={`badge ${LEVEL_COLOR[s.proficiency]}`}>
+                          <span key={s.id} className={`badge ${LEVEL_COLOR[s.proficiency]}`}>
                             {s.name} · {s.proficiency}
                           </span>
                         ))}
@@ -77,7 +77,7 @@ export default function EmployeesPage() {
                       <h4>Certifications</h4>
                       <div className="certs-inline">
                         {emp.certifications.map((c) => (
-                          <span key={c._id} className="badge badge-cert">
+                          <span key={c.id} className="badge badge-cert">
                             🏆 {c.name}{c.issuer ? ` (${c.issuer})` : ""}{c.year ? ` ${c.year}` : ""}
                           </span>
                         ))}

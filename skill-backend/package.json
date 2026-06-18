@@ -4,6 +4,7 @@
   "scripts": {
     "start": "node dist/main",
     "dev": "nest start --watch",
+    "kill-port": "for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :5009') do taskkill /F /PID %a",
     "build": "nest build"
   },
   "dependencies": {

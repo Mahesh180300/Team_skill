@@ -49,8 +49,8 @@ export default function DashboardPage() {
           ) : (
             <div className="skill-bars">
               {stats.topSkills.map((s) => (
-                <div key={s._id} className="skill-bar-row">
-                  <span className="skill-bar-name">{s._id}</span>
+                <div key={s.name} className="skill-bar-row">
+                  <span className="skill-bar-name">{s.name}</span>
                   <div className="skill-bar-track">
                     <div className="skill-bar-fill" style={{ width: `${(s.count / maxSkillCount) * 100}%` }} />
                   </div>
@@ -68,8 +68,8 @@ export default function DashboardPage() {
           ) : (
             <div className="dept-list">
               {stats.departmentDistribution.map((d) => (
-                <div key={d._id} className="dept-row">
-                  <span className="dept-name">{d._id || "Unassigned"}</span>
+                <div key={d.department} className="dept-row">
+                  <span className="dept-name">{d.department || "Unassigned"}</span>
                   <span className="dept-count badge badge-dept">{d.count} employee{d.count !== 1 ? "s" : ""}</span>
                 </div>
               ))}
