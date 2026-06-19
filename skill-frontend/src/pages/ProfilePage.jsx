@@ -8,7 +8,6 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [msg, setMsg] = useState("");
-  const [resumeFile, setResumeFile] = useState(null);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [viewAvatar, setViewAvatar] = useState(false);
 
@@ -26,27 +25,25 @@ export default function ProfilePage() {
     const updated = await api.updateProfile(token, { ...form, yearsOfExperience: Number(form.yearsOfExperience) });
     setProfile(updated);
     setEditing(false);
-    showToast("Profile updated!");
+    showToast("Profile updated");
   };
   
 
-  const uploadResume = async () => {
-    if (!resumeFile) return;
+  const uploadResume = async (file) => {
+    if (!file) return;
     setResumeUploading(true);
-    const data = await api.uploadResume(token, resumeFile);
+    const data = await api.uploadResume(token, file);
     if (data.resumeUrl) {
       setProfile((p) => ({ ...p, resumeUrl: data.resumeUrl, resumeOriginalName: data.resumeOriginalName }));
-      setMsg("Resume uploaded!");
-      setTimeout(() => setMsg(""), 2000);
+      showToast("Resume uploaded");
     }
-    setResumeFile(null);
     setResumeUploading(false);
   };
 
   const deleteResume = async () => {
     await api.deleteResume(token);
     setProfile((p) => ({ ...p, resumeUrl: "", resumeOriginalName: "" }));
-    setMsg("Resume deleted!");
+    showToast("Resume deleted!");
     setTimeout(() => setMsg(""), 2000);
   };
 
@@ -55,14 +52,14 @@ export default function ProfilePage() {
     if (!file) return;
     const updated = await api.uploadAvatar(token, file);
     setProfile(updated);
-    showToast("Profile picture updated!");
+    showToast("Profile picture updated");
   };
 
   const handleDeleteAvatar = async () => {
     const updated = await api.deleteAvatar(token);
     setProfile(updated);
     setViewAvatar(false);
-    showToast("Profile picture removed!");
+    showToast("Profile picture removed");
   };
 
   const calcCompletion = (p) => {
@@ -83,37 +80,50 @@ export default function ProfilePage() {
     <div className="page">
       <div className="page-header">
         <h2>My Profile</h2>
-        {!editing && <button className="btn-secondary" onClick={() => setEditing(true)}>Edit Profile</button>}
+        <button className="btn-secondary" onClick={() => setEditing(true)} style={{  backgroundColor: "var(--primary)", color: "white" }}>
+          Edit Profile
+        </button>
       </div>
       {msg && <div className="toast success">{msg}</div>}
 
-      {editing ? (
-        <form onSubmit={save} className="card form-card">
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Full Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+      {editing && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000}}
+          onClick={() => setEditing(false)}
+        >
+          <div style={{ background: "var(--card-bg, #fff)", borderRadius: 12, padding: 28, width: "100%", maxWidth: 480, boxShadow: "0 8px 40px rgba(0,0,0,0.2)"}} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h3 style={{ margin: 0 }}>Edit Profile</h3>
+              <button type="button" onClick={() => setEditing(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
-            <div className="form-group">
-              <label>Department</label>
-              <input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="e.g. Engineering" />
-            </div>
-            <div className="form-group">
-              <label>Job Title</label>
-              <input value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })} placeholder="e.g. Frontend Developer" />
-            </div>
-            <div className="form-group">
-              <label>Years of Experience</label>
-              <input type="number" min="0" value={form.yearsOfExperience} onChange={(e) => setForm({ ...form, yearsOfExperience: e.target.value })} />
-            </div>
+            <form onSubmit={save}>
+              <div className="form-grid" style={{ border: "1px solid var(--border-color, #ccc)", borderRadius: 8, padding: 16, gap: 16 }}>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                </div>
+                <div className="form-group">
+                  <label>Department</label>
+                  <input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="e.g. Engineering" />
+                </div>
+                <div className="form-group">
+                  <label>Job Title</label>
+                  <input value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })} placeholder="e.g. Frontend Developer" />
+                </div>
+                <div className="form-group">
+                  <label>Years of Experience</label>
+                  <input type="number" min="0" value={form.yearsOfExperience} onChange={(e) => setForm({ ...form, yearsOfExperience: e.target.value })} />
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">Save</button>
+              </div>
+            </form>
           </div>
-          <div className="form-actions">
-            <button type="submit" className="btn-primary">Save</button>
-            <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
-          </div>
-        </form>
-      ) : (
-        <div className="card profile-card">
+        </div>
+      )}
+
+      <div className="card profile-card">
           {/* Avatar area */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <div className="avatar-upload-wrapper">
@@ -178,50 +188,45 @@ export default function ProfilePage() {
             })()}
           </div>
         </div>
-      )}
 
-      <div className="card resume-card">
-        <div className="resume-card-header">
-          <span className="resume-card-icon">📄</span>
-          <div>
-            <h3>Resume</h3>
-            <small>Upload your latest resume for visibility</small>
+      <div className="card resume-section-card">
+        <input id="resume-input" type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={(e) => { if (e.target.files[0]) uploadResume(e.target.files[0]); e.target.value = ""; }} />
+        <div className="resume-section-header">
+          <div className="resume-section-title">
+            <div className="resume-section-icon-wrap">📄</div>
+            <div>
+              <h3>Resume</h3>
+              <p>Your professional resume for recruiters &amp; managers</p>
+            </div>
           </div>
-          {profile.resumeUrl && <span className="resume-status-badge">✅ Uploaded</span>}
         </div>
 
         {profile.resumeUrl ? (
-          <div className="resume-uploaded-box">
-            <div className="resume-file-info">
-              <span className="resume-file-icon">📎</span>
-              <div>
-                <p className="resume-file-name">{profile.resumeOriginalName || profile.resumeUrl.split("/").pop()}</p>
-                <small className="resume-file-sub">Uploaded successfully</small>
-              </div>
+          <div className="resume-file-card">
+            <div className="resume-file-thumb">📎</div>
+            <div className="resume-file-meta">
+              <span className="resume-file-name" style={{ textDecoration: "underline" }}>
+                {profile.resumeOriginalName || profile.resumeUrl.split("/").pop()}
+              </span>
             </div>
-            <div className="resume-actions">
-              <a href={`http://localhost:5009${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="btn-view-resume"> View </a>
-              <button className="btn-delete-resume" onClick={deleteResume} title="Delete resume">🗑 Delete</button>
+            <div className="resume-file-actions">
+              <a href={`http://localhost:5009${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="resume-btn resume-btn-view">View Resume ↗</a>
+              <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("resume-input").click()} disabled={resumeUploading}>Edit</button>
+              <button className="resume-btn resume-btn-delete" onClick={deleteResume} disabled={resumeUploading}>Delete</button>
             </div>
           </div>
         ) : (
-          <div className="resume-empty-box">
-            <span className="resume-empty-icon">📭</span>
-            <p>No resume uploaded yet</p>
+          <div className="resume-empty-state">
+            <div className="resume-empty-illustration">📎</div>
+            <div>
+              <p className="resume-empty-title">No resume uploaded yet</p>
+              <p className="resume-empty-sub">PDF, DOC or DOCX supported</p>
+            </div>
+            <button className="resume-btn resume-btn-upload-main" onClick={() => document.getElementById("resume-input").click()} disabled={resumeUploading}>
+              {resumeUploading ? "Uploading..." : "Upload"}
+            </button>
           </div>
         )}
-
-        <div className="resume-upload-zone">
-          <label className="resume-upload-label">
-            <span>🗂 {resumeFile ? resumeFile.name : "Choose a file (PDF, DOC, DOCX)"}</span>
-            <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => setResumeFile(e.target.files[0])} hidden />
-          </label>
-          {resumeFile && (
-            <button className="btn-primary btn-sm" onClick={uploadResume} disabled={resumeUploading}>
-              {resumeUploading ? "⏳ Uploading..." : "⬆ Upload Resume"}
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Avatar view modal */}

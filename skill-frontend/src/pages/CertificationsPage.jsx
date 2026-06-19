@@ -315,6 +315,7 @@ export default function CertificationsPage() {
               onSubmit={saveEdit}
               style={{ display: "flex", flexDirection: "column", gap: 12 }}
             >
+              <label style={{fontWeight:"500",fontSize:"14px"}}>Certification Name</label>
               <input
                 placeholder="Certification name"
                 value={editForm.name}
@@ -322,6 +323,7 @@ export default function CertificationsPage() {
                   setEditForm({ ...editForm, name: e.target.value })
                 }
               />
+              <label style={{fontWeight:"500",fontSize:"14px"}}>Issuer</label>
               <input
                 placeholder="Issuer (e.g. AWS, Google)"
                 value={editForm.issuer}
@@ -329,6 +331,7 @@ export default function CertificationsPage() {
                   setEditForm({ ...editForm, issuer: e.target.value })
                 }
               />
+              <label style={{fontWeight:"500",fontSize:"14px"}}>Year</label>
               <input
                 type="number"
                 placeholder="Year"
