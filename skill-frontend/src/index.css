@@ -94,7 +94,48 @@ input:focus, select:focus { outline: none; border-color: var(--primary); box-sha
 .auth-header p { font-size: 14px; color: var(--text-muted); }
 .auth-form { display: flex; flex-direction: column; gap: 12px; }
 .auth-form input { width: 100%; }
+.auth-form .password-wrapper { position: relative; }
+.auth-form .password-wrapper input { padding-right: 44px; }
+.auth-form .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 18px;
+  padding: 0;
+  line-height: 1;
+}
+.auth-form .password-toggle:hover {
+  color: var(--primary);
+}
 .auth-form .btn-primary { width: 100%; padding: 12px; font-size: 15px; margin-top: 4px; }
+.auth-form .otp-inputs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(56px, 1fr));
+  gap: 5px;
+  justify-items: center;
+  margin-bottom: 8px;
+}
+.auth-form .otp-input {
+  width: 50%;
+  max-width: 50px;
+  text-align: center;
+  letter-spacing: 0.25em;
+  font-size: 1.4rem;
+  padding: 14px 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.auth-form .otp-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
 .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-muted); }
 .auth-switch button { background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; padding: 0 4px; }
 .auth-hint { text-align: center; margin-top: 12px; color: var(--text-muted); }

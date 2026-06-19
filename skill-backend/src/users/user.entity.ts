@@ -43,6 +43,12 @@ export class User {
   @OneToMany(() => Certification, (cert) => cert.user, { cascade: true, eager: true })
   certifications: Certification[];
 
+  @Column({ type: 'varchar', nullable: true, default: null })
+  resetToken: string;
+
+  @Column({ type: 'bigint', nullable: true, default: null })
+  resetTokenExpiry: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

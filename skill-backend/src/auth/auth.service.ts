@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import * as nodemailer from 'nodemailer';
 import { User } from '../users/user.entity';
 
 @Injectable()
@@ -28,6 +29,56 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: email?.toLowerCase() } });
     if (!user || !(await bcrypt.compare(password, user.password))) throw new UnauthorizedException('Invalid credentials');
     return this.signToken(user);
+  }
+
+  private getTransporter() {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
+    if (!user) return { message: 'If that email exists, an OTP has been sent.' };
+
+    const otp = String(Math.floor(1000 + Math.random() * 9000)); 
+    user.resetToken = otp;
+    user.resetTokenExpiry = Date.now() + 1 * 60 * 1000; 
+    await this.usersRepo.save(user);
+
+    await this.getTransporter().sendMail({
+      from: `"Kyyba Skill Tracker" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Your Password Reset OTP',
+      html: `<p>Hello ${user.name},</p><p>Your OTP to reset your password is:</p><h2 style="letter-spacing:8px">${otp}</h2><p>This OTP is valid for <strong>2 minutes</strong>.</p>`,
+    });
+
+    return { message: 'OTP sent to your email.' };
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
+    if (!user || user.resetToken !== otp)
+      throw new BadRequestException('Invalid OTP');
+    if (!user.resetTokenExpiry || user.resetTokenExpiry < Date.now())
+      throw new BadRequestException('OTP has expired');
+    return { message: 'OTP verified' };
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
+    if (!user || user.resetToken !== otp)
+      throw new BadRequestException('Invalid OTP');
+    if (!user.resetTokenExpiry || user.resetTokenExpiry < Date.now())
+      throw new BadRequestException('OTP has expired');
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await this.usersRepo.save(user);
+    return { message: 'Password reset successful' };
   }
 
   async me(userId: string) {

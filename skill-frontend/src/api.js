@@ -14,6 +14,13 @@ const api = {
   me: (token) =>
     fetch(`${BASE}/auth/me`, { headers: headers(token) }).then((r) => r.json()),
 
+  forgotPassword: (email) =>
+    fetch(`${BASE}/auth/forgot-password`, { method: "POST", headers: headers(), body: JSON.stringify({ email }) }).then((r) => r.json()),
+  verifyOtp: (email, otp) =>
+    fetch(`${BASE}/auth/verify-otp`, { method: "POST", headers: headers(), body: JSON.stringify({ email, otp }) }).then((r) => r.json()),
+  resetPassword: (email, otp, password) =>
+    fetch(`${BASE}/auth/reset-password`, { method: "POST", headers: headers(), body: JSON.stringify({ email, otp, password }) }).then((r) => r.json()),
+
   // Profile
   getProfile: (token) =>
     fetch(`${BASE}/profile`, { headers: headers(token) }).then((r) => r.json()),

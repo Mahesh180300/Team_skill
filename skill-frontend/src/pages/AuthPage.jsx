@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 export default function AuthPage({ mode, onNavigate }) {
@@ -6,6 +7,7 @@ export default function AuthPage({ mode, onNavigate }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", department: "", jobTitle: "", yearsOfExperience: "", role: "employee" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const set = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -51,11 +53,36 @@ export default function AuthPage({ mode, onNavigate }) {
             </>
           )}
           <input name="email" type="email" placeholder="Email" value={form.email} onChange={set} required />
-          <input name="password" type="password" placeholder="Password" value={form.password} onChange={set} required />
+          <div className="password-wrapper">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={form.password}
+              onChange={set}
+              required
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((value) => !value)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
           {error && <p className="error">{error}</p>}
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? "Please wait..." : mode === "login" ? "Sign In" : "Register"}
           </button>
+          {mode === "login" && (
+            <div style={{ textAlign: "right", marginTop: "4px" }}>
+              <button type="button" style={{ background: "none", border: "none", color: "#6366f1", cursor: "pointer", fontSize: "0.85rem" }} onClick={() => onNavigate("forgot-password")}>
+                Forgot password?
+              </button>
+            </div>
+          )}
         </form>
         <div className="auth-switch">
           {mode === "login" ? (

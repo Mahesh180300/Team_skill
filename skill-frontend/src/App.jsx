@@ -9,6 +9,7 @@ import CertificationsPage from "./pages/CertificationsPage";
 import DashboardPage from "./pages/DashboardPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import SearchPage from "./pages/SearchPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import api from "./api";
 
 function AppInner() {
@@ -29,6 +30,7 @@ function AppInner() {
   if (loading) return <div className="loading full-screen">Loading...</div>;
 
   if (!user) {
+    if (page === "forgot-password") return <ForgotPasswordPage onNavigate={setPage} />;
     return <AuthPage mode={page === "register" ? "register" : "login"} onNavigate={setPage} />;
   }
 
