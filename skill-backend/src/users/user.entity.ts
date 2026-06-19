@@ -29,10 +29,13 @@ export class User {
   yearsOfExperience: number;
 
   @Column({ default: '' })
-  resumeUrl: string;
+  resumeData: string;
 
   @Column({ default: '' })
-  resumeOriginalName: string;
+  resumeFileName: string;
+
+  @Column({ default: '' })
+  resumeFileType: string;
 
   @OneToMany(() => Skill, (skill) => skill.user, { cascade: true, eager: true })
   skills: Skill[];

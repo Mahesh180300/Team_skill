@@ -35,8 +35,8 @@ export default function ProfilePage() {
     if (!file) return;
     setResumeUploading(true);
     const data = await api.uploadResume(token, file);
-    if (data.resumeUrl) {
-      setProfile((p) => ({ ...p, resumeUrl: data.resumeUrl, resumeOriginalName: data.resumeOriginalName }));
+    if (data.resumeData) {
+      setProfile((p) => ({ ...p, resumeData: data.resumeData, resumeFileName: data.resumeFileName, resumeFileType: data.resumeFileType }));
       showToast("Resume uploaded");
     }
     setResumeUploading(false);
@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
   const deleteResume = async () => {
     await api.deleteResume(token);
-    setProfile((p) => ({ ...p, resumeUrl: "", resumeOriginalName: "" }));
+    setProfile((p) => ({ ...p, resumeData: '', resumeFileName: '', resumeFileType: '' }));
     setShowDeleteResume(false);
     showToast("Resume deleted!");
   };
@@ -69,7 +69,7 @@ export default function ProfilePage() {
       { label: "Profile Picture", done: !!p.avatar },
       { label: "Skills", done: p.skills?.length > 0 },
       { label: "Certifications", done: p.certifications?.length > 0 },
-      { label: "Resume", done: !!p.resumeUrl },
+      { label: "Resume", done: !!p.resumeData },
     ];
     const percent = Math.round((fields.filter((f) => f.done).length / fields.length) * 100);
     const missing = fields.filter((f) => !f.done).map((f) => f.label);
@@ -203,16 +203,23 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {profile.resumeUrl ? (
+        {profile.resumeData ? (
           <div className="resume-file-card">
             <div className="resume-file-thumb">📎</div>
             <div className="resume-file-meta">
               <span className="resume-file-name" style={{ textDecoration: "underline" }}>
-                {profile.resumeOriginalName || profile.resumeUrl.split("/").pop()}
+                {profile.resumeFileName}
               </span>
             </div>
             <div className="resume-file-actions">
-              <a href={`http://localhost:5009${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="resume-btn resume-btn-view">View Resume ↗</a>
+              <button
+                className="resume-btn resume-btn-view"
+                onClick={() => {
+                  const bytes = Uint8Array.from(atob(profile.resumeData), (ch) => ch.charCodeAt(0));
+                  const url = URL.createObjectURL(new Blob([bytes], { type: profile.resumeFileType }));
+                  window.open(url, "_blank");
+                }}
+              >View Resume ↗</button>
               <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("resume-input").click()} disabled={resumeUploading}>Edit</button>
               <button className="resume-btn resume-btn-delete" onClick={() => setShowDeleteResume(true)} disabled={resumeUploading}>Delete</button>
             </div>

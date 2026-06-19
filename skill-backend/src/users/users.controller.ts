@@ -1,7 +1,6 @@
 import { Controller, Get, Put, Post, Delete, Body, Query, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UsersService } from './users.service';
 import { CurrentUser } from '../common/current-user.decorator';
@@ -23,13 +22,6 @@ export class UsersController {
 
   @Post('profile/resume')
   @UseInterceptors(FileInterceptor('resume', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const unique = `resume_${(req.user as any).id}_${Date.now()}${extname(file.originalname)}`;
-        cb(null, unique);
-      },
-    }),
     fileFilter: (req, file, cb) => {
       const allowed = ['.pdf', '.doc', '.docx'];
       cb(null, allowed.includes(extname(file.originalname).toLowerCase()));

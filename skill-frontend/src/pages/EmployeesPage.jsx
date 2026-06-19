@@ -157,20 +157,74 @@ export default function EmployeesPage() {
                       </div>
                     </div>
                   )}
+
                   {emp.certifications?.length > 0 && (
                     <div className="detail-section">
                       <h4>Certifications</h4>
-                      <div className="certs-inline">
+                      <div className="emp-cert-list">
                         {emp.certifications.map((c) => (
-                          <span key={c.id} className="badge badge-cert">
-                            🏆 {c.name}{c.issuer ? ` (${c.issuer})` : ""}{c.year ? ` ${c.year}` : ""}
-                          </span>
+                          <div key={c.id} className="emp-cert-item">
+                            <div className="emp-cert-info">
+                              <span className="emp-cert-name">🏆 {c.name}</span>
+                              <span className="emp-cert-meta">
+                                {c.issuer && <span>{c.issuer}</span>}
+                                {c.year && <span>📅 {c.year}</span>}
+                              </span>
+                            </div>
+                            {c.fileData && (
+                              <button
+                                className="emp-file-btn"
+                                onClick={() => {
+                                  const bytes = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0));
+                                  const url = URL.createObjectURL(new Blob([bytes], { type: c.fileType }));
+                                  window.open(url, "_blank");
+                                }}
+                              >
+                                📄 View Certificate
+                              </button>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
                   )}
-                  {emp.skills?.length === 0 && emp.certifications?.length === 0 && (
-                    <p className="empty-sm">No skills or certifications added.</p>
+
+                  {emp.certifications?.length === 0 && (
+                    <div className="detail-section">
+                      <h4>Certifications</h4>
+                      <p className="empty-sm">⚠️ No certifications uploaded yet.</p>
+                    </div>
+                  )}
+
+                  {emp.resumeData ? (
+                    <div className="detail-section">
+                      <h4>Resume</h4>
+                      <div className="emp-resume-box">
+                        <div className="emp-resume-info">
+                          <span className="emp-resume-icon">📎</span>
+                          <span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span>
+                        </div>
+                        <button
+                          className="emp-file-btn"
+                          onClick={() => {
+                            const bytes = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0));
+                            const url = URL.createObjectURL(new Blob([bytes], { type: emp.resumeFileType }));
+                            window.open(url, "_blank");
+                          }}
+                        >
+                          📄 View Resume
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="detail-section">
+                      <h4>Resume</h4>
+                      <p className="empty-sm">⚠️ No resume uploaded yet.</p>
+                    </div>
+                  )}
+
+                  {emp.skills?.length === 0 && emp.certifications?.length === 0 && !emp.resumeData && (
+                    <p className="empty-sm">No skills, certifications or resume added.</p>
                   )}
                 </div>
               )}

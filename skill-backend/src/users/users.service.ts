@@ -2,8 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import * as fs from 'fs';
-import * as path from 'path';
 
 const isUuid = (id: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -26,19 +24,15 @@ export class UsersService {
   }
 
   async uploadResume(userId: string, file: Express.Multer.File) {
-    const resumeUrl = `/uploads/${file.filename}`;
-    const resumeOriginalName = file.originalname;
-    await this.repo.update(userId, { resumeUrl, resumeOriginalName });
+    const resumeData = file.buffer.toString('base64');
+    const resumeFileName = file.originalname;
+    const resumeFileType = file.mimetype;
+    await this.repo.update(userId, { resumeData, resumeFileName, resumeFileType });
     return this.getProfile(userId);
   }
 
   async deleteResume(userId: string) {
-    const user = await this.repo.findOne({ where: { id: userId } });
-    if (user?.resumeUrl) {
-      const filePath = path.join(process.cwd(), 'uploads', path.basename(user.resumeUrl));
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    }
-    await this.repo.update(userId, { resumeUrl: '', resumeOriginalName: '' });
+    await this.repo.update(userId, { resumeData: '', resumeFileName: '', resumeFileType: '' });
     return { success: true };
   }
 

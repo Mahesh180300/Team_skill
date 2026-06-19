@@ -514,3 +514,18 @@ input:focus, select:focus { outline: none; border-color: var(--primary); box-sha
 .confirm-btn-danger:hover { background: #dc2626; }
 .confirm-btn-primary { background: var(--primary); color: #fff; }
 .confirm-btn-primary:hover { background: var(--primary-dark); }
+
+
+/* ── Employee Cert & Resume ───────────────────────────────────────────────────── */
+.emp-cert-list { display: flex; flex-direction: column; gap: 8px; }
+.emp-cert-item { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
+.emp-cert-info { display: flex; flex-direction: column; gap: 3px; }
+.emp-cert-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.emp-cert-meta { display: flex; gap: 10px; font-size: 12px; color: var(--text-muted); }
+.emp-file-btn { background: #eef2ff; color: #6366f1; border: 1px solid #c7d2fe; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; transition: background 0.15s; }
+.emp-file-btn:hover { background: #e0e7ff; }
+.emp-resume-box { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #eef2ff, #e0e7ff); border: 1px solid #c7d2fe; border-radius: 10px; padding: 12px 16px; gap: 12px; flex-wrap: wrap; }
+.emp-resume-info { display: flex; align-items: center; gap: 10px; }
+.emp-resume-icon { font-size: 24px; }
+.emp-resume-name { font-size: 14px; font-weight: 600; color: #4338ca; }
+
