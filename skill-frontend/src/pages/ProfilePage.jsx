@@ -70,6 +70,7 @@ export default function ProfilePage() {
       { label: "Profile Picture", done: !!p.avatar },
       { label: "Skills", done: p.skills?.length > 0 },
       { label: "Certifications", done: p.certifications?.length > 0 },
+      { label: "Resume", done: !!p.resumeUrl },
     ];
     const percent = Math.round((fields.filter((f) => f.done).length / fields.length) * 100);
     const missing = fields.filter((f) => !f.done).map((f) => f.label);
