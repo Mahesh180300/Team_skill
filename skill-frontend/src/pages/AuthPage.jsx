@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function AuthPage({ mode, onNavigate }) {
   const { login, register } = useAuth();
-  const [form, setForm] = useState({ name: "", email: "", password: "", department: "", jobTitle: "", yearsOfExperience: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", department: "", jobTitle: "", yearsOfExperience: "", role: "employee" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +43,11 @@ export default function AuthPage({ mode, onNavigate }) {
               <input name="department" placeholder="Department (e.g. Engineering)" value={form.department} onChange={set} />
               <input name="jobTitle" placeholder="Job Title (e.g. Frontend Developer)" value={form.jobTitle} onChange={set} />
               <input name="yearsOfExperience" type="number" min="0" placeholder="Years of Experience" value={form.yearsOfExperience} onChange={set} />
+              <label htmlFor="role" style={{color:"gray"}}>Role</label>
+              <select style={{color:"gray"}} id="role" name="role" value={form.role} onChange={set}>
+                <option style={{color:"gray"}} value="employee">Employee</option>
+                <option style={{color:"gray"}} value="admin">Admin</option>
+              </select>
             </>
           )}
           <input name="email" type="email" placeholder="Email" value={form.email} onChange={set} required />
