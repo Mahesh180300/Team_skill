@@ -31,13 +31,15 @@ export class AdminService {
       .orderBy('count', 'DESC')
       .getRawMany();
 
-    const skillGapCount = await this.usersRepo
+    const skillGapRows = await this.usersRepo
       .createQueryBuilder('user')
       .leftJoin('user.skills', 'skill')
+      .select('user.id', 'userId')
       .where('user.role = :role', { role: 'employee' })
       .groupBy('user.id')
       .having('COUNT(skill.id) = 0')
-      .getCount();
+      .getRawMany();
+    const skillGapCount = skillGapRows.length;
 
     return { totalEmployees, topSkills, departmentDistribution, skillGapCount };
   }
