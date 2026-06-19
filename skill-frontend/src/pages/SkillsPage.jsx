@@ -20,22 +20,13 @@ export default function SkillsPage() {
   const [editForm, setEditForm] = useState({});
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
   useEffect(() => {
     api.getProfile(token).then((d) => setSkills(d.skills || []));
   }, []);
-
-  const add = async (e) => {
-    e.preventDefault();
-    setError("");
-    const data = await api.addSkill(token, { ...form, yearsUsed: Number(form.yearsUsed) || 0 });
-    if (data.error) return setError(data.error);
-    setSkills(data.skills);
-    setForm({ name: "", proficiency: "Beginner", yearsUsed: "" });
-    showToast("Skill added successfully!");
-  };
 
   const save = async (skillId) => {
     const data = await api.updateSkill(token, skillId, { ...editForm, yearsUsed: Number(editForm.yearsUsed) || 0 });
@@ -57,23 +48,49 @@ export default function SkillsPage() {
     Advanced:     skills.filter((s) => s.proficiency === "Advanced").length,
   };
 
+  const add = async (e) => {
+    e.preventDefault();
+    setError("");
+    const data = await api.addSkill(token, { ...form, yearsUsed: Number(form.yearsUsed) || 0 });
+    if (data.error) return setError(data.error);
+    setSkills(data.skills);
+    setForm({ name: "", proficiency: "Beginner", yearsUsed: "" });
+    setShowAddModal(false);
+    showToast("Skill added successfully!");
+  };
+
   return (
     <div className="page">
       <div className="page-header"><h2>My Skills</h2></div>
       {toast && <div className="toast success">{toast}</div>}
 
-      <div className="card form-card">
-        <h3>Add Skill</h3>
-        <form onSubmit={add} className="inline-form">
-          <input placeholder="Skill name (e.g. React)" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <select value={form.proficiency} onChange={(e) => setForm({ ...form, proficiency: e.target.value })}>
-            {LEVELS.map((l) => <option key={l}>{l}</option>)}
-          </select>
-          <input type="number" min="0" placeholder="Years used" value={form.yearsUsed} onChange={(e) => setForm({ ...form, yearsUsed: e.target.value })} style={{ width: 110 }} />
-          <button type="submit" className="btn-primary">Add</button>
-        </form>
-        {error && <p className="error">{error}</p>}
-      </div>
+      <button
+        className="btn-primary"
+        style={{ width: "20%", marginLeft: "80%" }}
+        onClick={() => setShowAddModal(true)}
+      >
+        + Add Skill
+      </button>
+
+      {showAddModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-btn" onClick={() => setShowAddModal(false)}>✕</button>
+            <div className="card form-card">
+              <h3>Add Skill</h3>
+              <form onSubmit={add} className="inline-form">
+                <input placeholder="Skill name (e.g. React)" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                <select value={form.proficiency} onChange={(e) => setForm({ ...form, proficiency: e.target.value })}>
+                  {LEVELS.map((l) => <option key={l}>{l}</option>)}
+                </select>
+                <input type="number" min="0" placeholder="Years used" value={form.yearsUsed} onChange={(e) => setForm({ ...form, yearsUsed: e.target.value })} style={{ width: 110 }} />
+                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }}>Add</button>
+              </form>
+              {error && <p className="error">{error}</p>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Stat Cards ── */}
       <div className="skill-stats-grid">
