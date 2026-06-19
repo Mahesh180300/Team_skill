@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { FaReact, FaJava, FaPython, FaNodeJs, FaAws } from "react-icons/fa";
 import { SiMongodb, SiJavascript, SiHtml5, SiCss } from "react-icons/si";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function CertificationsPage() {
   const { token } = useAuth();
@@ -12,6 +13,7 @@ export default function CertificationsPage() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -47,6 +49,7 @@ export default function CertificationsPage() {
   const remove = async (certId) => {
     const data = await api.deleteCert(token, certId);
     setCerts(data.certifications);
+    setDeleteTargetId(null);
     showToast("Certification deleted");
   };
   const openEdit = (cert) => {
@@ -257,7 +260,7 @@ export default function CertificationsPage() {
               <button className="edit-icon" onClick={() => openEdit(c)}>
                 Edit
               </button>
-              <button className="delete-btn" onClick={() => remove(c.id)}>
+              <button className="delete-btn" onClick={() => setDeleteTargetId(c.id)}>
                 Delete
               </button>
             </div>
@@ -428,6 +431,18 @@ export default function CertificationsPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {deleteTargetId && (
+        <ConfirmDialog
+          icon="🏅"
+          title="Delete Certification"
+          message="Are you sure you want to delete this certification? This cannot be undone."
+          confirmText="Yes, Delete"
+          cancelText="Cancel"
+          onConfirm={() => remove(deleteTargetId)}
+          onCancel={() => setDeleteTargetId(null)}
+        />
       )}
     </div>
   );

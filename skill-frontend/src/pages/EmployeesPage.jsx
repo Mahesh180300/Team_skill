@@ -1,27 +1,62 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 
+const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "" };
+
 export default function EmployeesPage() {
   const { token } = useAuth();
+  const [allEmployees, setAllEmployees] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [filtered, setFiltered] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   useEffect(() => {
     api.getAdminEmployees(token).then((data) => {
-      setEmployees(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setAllEmployees(list);
+      setEmployees(list);
       setLoading(false);
     });
   }, []);
 
   const remove = async (id) => {
-    if (!confirm("Remove this employee?")) return;
     await api.deleteEmployee(token, id);
-    setEmployees((prev) => prev.filter((e) => e.id !== id));
+    const updated = allEmployees.filter((e) => e.id !== id);
+    setAllEmployees(updated);
+    setEmployees(updated.filter(applyFilters));
+    setDeleteTargetId(null);
   };
+
+  const applyFilters = (emp) => {
+    const { skill, department, minExp, certification } = filters;
+    if (skill && !emp.skills?.some((s) => s.name.toLowerCase().includes(skill.toLowerCase()))) return false;
+    if (department && !emp.department?.toLowerCase().includes(department.toLowerCase())) return false;
+    if (minExp && emp.yearsOfExperience < Number(minExp)) return false;
+    if (certification && !emp.certifications?.some((c) => c.name.toLowerCase().includes(certification.toLowerCase()))) return false;
+    return true;
+  };
+
+  const search = (e) => {
+    e.preventDefault();
+    setEmployees(allEmployees.filter(applyFilters));
+    setFiltered(true);
+  };
+
+  const reset = () => {
+    setFilters(EMPTY_FILTERS);
+    setEmployees(allEmployees);
+    setFiltered(false);
+  };
+
+  const set = (e) => setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   if (loading) return <div className="loading">Loading...</div>;
 
@@ -29,17 +64,67 @@ export default function EmployeesPage() {
     <div className="page">
       <div className="page-header">
         <h2>Employee Management</h2>
-        <span className="count-badge">{employees.length} employees</span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          {filtered
+            ? <span className="count-badge" style={{ color: "var(--primary)" }}>{employees.length} of {allEmployees.length} employees</span>
+            : <span className="count-badge">{allEmployees.length} employees</span>
+          }
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button className= "filter" onClick={() => setShowFilters((v) => !v)}>
+           Filters {showFilters ? "▲" : "▼"}
+        </button>
+      </div>
+
+      {/* ── Slide-down Filter Panel ── */}
+      <div style={{
+        overflow: "hidden",
+        maxHeight: showFilters ? 300 : 0,
+        transition: "max-height 0.3s ease",
+      }}>
+        <div className="card" style={{ padding: "20px 24px" }}>
+          <form onSubmit={search}>
+            <div className="filter-grid">
+              <div className="form-group">
+                <label>Skill</label>
+                <input name="skill" placeholder="e.g. React, Node.js" value={filters.skill} onChange={set} />
+              </div>
+              <div className="form-group">
+                <label>Department</label>
+                <input name="department" placeholder="e.g. Engineering" value={filters.department} onChange={set} />
+              </div>
+              <div className="form-group">
+                <label>Min. Experience (years)</label>
+                <input name="minExp" type="number" min="0" placeholder="e.g. 2" value={filters.minExp} onChange={set} />
+              </div>
+              <div className="form-group">
+                <label>Certification</label>
+                <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={set} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="submit" className="btn-primary btn-sm">Apply Filters</button>
+              {filtered && <button type="button" className="btn-secondary btn-sm" onClick={reset}>Clear</button>}
+            </div>
+          </form>
+        </div>
       </div>
 
       {employees.length === 0 ? (
-        <div className="empty">No employees registered yet.</div>
+        <div className="empty">{filtered ? "No employees match the filters." : "No employees registered yet."}</div>
       ) : (
         <div className="employee-list">
           {employees.map((emp) => (
             <div key={emp.id} className="employee-card">
               <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
-                <div className="emp-avatar">{emp.name?.charAt(0).toUpperCase()}</div>
+                <div className="emp-avatar">
+                  {emp.avatar
+                    ? <img src={emp.avatar} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                    : emp.name?.charAt(0).toUpperCase()
+                  }
+                </div>
                 <div className="emp-info">
                   <div className="emp-name">{emp.name}</div>
                   <div className="emp-meta">
@@ -54,7 +139,7 @@ export default function EmployeesPage() {
                   {emp.yearsOfExperience > 0 && <span>{emp.yearsOfExperience} yrs</span>}
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-icon btn-danger" onClick={() => remove(emp.id)}>🗑️</button>
+                  <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(emp.id)}>🗑️</button>
                 </div>
                 <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
               </div>
@@ -92,6 +177,17 @@ export default function EmployeesPage() {
             </div>
           ))}
         </div>
+      )}
+      {deleteTargetId && (
+        <ConfirmDialog
+          icon="👤"
+          title="Remove Employee"
+          message="Are you sure you want to remove this employee? This cannot be undone."
+          confirmText="Yes, Remove"
+          cancelText="Cancel"
+          onConfirm={() => remove(deleteTargetId)}
+          onCancel={() => setDeleteTargetId(null)}
+        />
       )}
     </div>
   );

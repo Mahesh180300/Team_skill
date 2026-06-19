@@ -12,9 +12,9 @@ export class SkillsService {
   ) {}
 
   async addSkill(userId: string, body: any) {
-    const { name, proficiency, yearsUsed } = body;
+    const { name, proficiency, yearsUsed, monthsUsed } = body;
     if (!name || !proficiency) throw new BadRequestException('Skill name and proficiency required');
-    const skill = this.skillsRepo.create({ name, proficiency, yearsUsed: yearsUsed || 0, userId });
+    const skill = this.skillsRepo.create({ name, proficiency, yearsUsed: yearsUsed || 0, monthsUsed: monthsUsed || 0, userId });
     await this.skillsRepo.save(skill);
     return this.getUser(userId);
   }

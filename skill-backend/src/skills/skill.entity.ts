@@ -15,6 +15,9 @@ export class Skill {
   @Column({ type: 'int', default: 0 })
   yearsUsed: number;
 
+  @Column({ type: 'int', default: 0 })
+  monthsUsed: number;
+
   @ManyToOne(() => User, (user) => user.skills, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;

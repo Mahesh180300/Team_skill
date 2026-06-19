@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function ProfilePage() {
   const { user, token } = useAuth();
@@ -10,6 +11,7 @@ export default function ProfilePage() {
   const [msg, setMsg] = useState("");
   const [resumeUploading, setResumeUploading] = useState(false);
   const [viewAvatar, setViewAvatar] = useState(false);
+  const [showDeleteResume, setShowDeleteResume] = useState(false);
 
   const showToast = (text) => { setMsg(text); setTimeout(() => setMsg(""), 2500); };
 
@@ -43,8 +45,8 @@ export default function ProfilePage() {
   const deleteResume = async () => {
     await api.deleteResume(token);
     setProfile((p) => ({ ...p, resumeUrl: "", resumeOriginalName: "" }));
+    setShowDeleteResume(false);
     showToast("Resume deleted!");
-    setTimeout(() => setMsg(""), 2000);
   };
 
   const handleAvatarChange = async (e) => {
@@ -212,7 +214,7 @@ export default function ProfilePage() {
             <div className="resume-file-actions">
               <a href={`http://localhost:5009${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="resume-btn resume-btn-view">View Resume ↗</a>
               <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("resume-input").click()} disabled={resumeUploading}>Edit</button>
-              <button className="resume-btn resume-btn-delete" onClick={deleteResume} disabled={resumeUploading}>Delete</button>
+              <button className="resume-btn resume-btn-delete" onClick={() => setShowDeleteResume(true)} disabled={resumeUploading}>Delete</button>
             </div>
           </div>
         ) : (
@@ -228,6 +230,18 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {showDeleteResume && (
+        <ConfirmDialog
+          icon="🗑️"
+          title="Delete Resume"
+          message="Are you sure you want to delete your resume? This cannot be undone."
+          confirmText="Yes, Delete"
+          cancelText="Cancel"
+          onConfirm={deleteResume}
+          onCancel={() => setShowDeleteResume(false)}
+        />
+      )}
 
       {/* Avatar view modal */}
       {viewAvatar && (
