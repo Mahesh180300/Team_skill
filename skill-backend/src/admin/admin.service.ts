@@ -57,11 +57,14 @@ export class AdminService {
   }
 
   async seedAdmin() {
-    const exists = await this.usersRepo.findOne({ where: { role: 'admin' } });
-    if (exists) return { message: 'Admin already exists' };
     const hashed = await bcrypt.hash('admin123', 10);
+    const exists = await this.usersRepo.findOne({ where: { role: 'admin' } });
+    if (exists) {
+      await this.usersRepo.update(exists.id, { name: 'Sajith Kumar Sivanandan', email: 'sajiths@kyyba.com', password: hashed });
+      return { message: 'Admin updated' };
+    }
     await this.usersRepo.save(
-      this.usersRepo.create({ name: 'Admin', email: 'admin@kyyba.com', password: hashed, role: 'admin' }),
+      this.usersRepo.create({ name: 'Sajith Kumar Sivanandan', email: 'sajiths@kyyba.com', password: hashed, role: 'admin' }),
     );
     return { message: 'Admin created' };
   }
