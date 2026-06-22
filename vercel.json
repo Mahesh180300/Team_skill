@@ -1,0 +1,6 @@
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "buildCommand": "cd skill-frontend && npm install && npm run build",
+  "outputDirectory": "skill-frontend/dist",
+  "installCommand": "echo 'skip root install'"
+}
