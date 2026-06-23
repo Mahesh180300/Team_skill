@@ -25,6 +25,7 @@ import { Certification } from './certifications/certification.entity';
         database: config.get('DB_NAME'),
         entities: [User, Skill, Certification],
         synchronize: true,
+        ssl: config.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),
     }),
     AuthModule,
