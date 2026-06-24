@@ -26,6 +26,7 @@ export default function Navbar({ page, onNavigate }) {
               <>
                 <button className={page === "dashboard" ? "active" : ""} onClick={() => onNavigate("dashboard")}>Dashboard</button>
                 <button className={page === "employees" ? "active" : ""} onClick={() => onNavigate("employees")}>Employees</button>
+                <button className={page === "lookup" ? "active" : ""} onClick={() => onNavigate("lookup")}>Master Data</button>
               </>
             ) : (
               <>

@@ -14,12 +14,13 @@ export class AuthService {
   ) {}
 
   async register(body: any) {
-    const { name, email, password, department, jobTitle, yearsOfExperience } = body;
-    if (!name || !email || !password) throw new BadRequestException('Name, email and password required');
+    const { firstName, lastName, email, password, department, jobTitle } = body;
+    if (!firstName || !lastName || !email || !password) throw new BadRequestException('First name, last name, email and password required');
     const exists = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
     if (exists) throw new BadRequestException('Email already exists');
     const hashed = await bcrypt.hash(password, 10);
-    const user = this.usersRepo.create({ name, email: email.toLowerCase(), password: hashed, department, jobTitle, yearsOfExperience });
+    const name = `${firstName} ${lastName}`;
+    const user = this.usersRepo.create({ firstName, lastName, name, email: email.toLowerCase(), password: hashed, department, jobTitle });
     await this.usersRepo.save(user);
     return this.signToken(user);
   }

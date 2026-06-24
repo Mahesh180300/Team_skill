@@ -9,6 +9,10 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [msg, setMsg] = useState("");
+  const [departments, setDepartments] = useState([]);
+  const [jobTitles, setJobTitles] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [managers, setManagers] = useState([]);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [viewAvatar, setViewAvatar] = useState(false);
   const [showDeleteResume, setShowDeleteResume] = useState(false);
@@ -18,13 +22,30 @@ export default function ProfilePage() {
   useEffect(() => {
     api.getProfile(token).then((data) => {
       setProfile(data);
-      setForm({ name: data.name, department: data.department, jobTitle: data.jobTitle, yearsOfExperience: data.yearsOfExperience });
+      setForm({ firstName: data.firstName || '', lastName: data.lastName || '', department: data.department, jobTitle: data.jobTitle, currentProject: data.currentProject || '', dateOfJoining: data.dateOfJoining || '', dateOfProjectAssigning: data.dateOfProjectAssigning || '', billable: data.billable || 'no', manager: data.manager || '' });
     });
+    api.getLookupValues('Department').then((v) => setDepartments(Array.isArray(v) ? v : []));
+    api.getLookupValues('Job Title').then((v) => setJobTitles(Array.isArray(v) ? v : []));
+    api.getLookupValues('Project').then((v) => setProjects(Array.isArray(v) ? v : []));
+    api.getLookupValues('Manager').then((v) => setManagers(Array.isArray(v) ? v : []));
   }, []);
+
+  const calcDuration = (dateStr) => {
+    if (!dateStr) return "";
+    const start = new Date(dateStr);
+    const now = new Date();
+    let months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+    if (months < 0) return "";
+    const yrs = Math.floor(months / 12);
+    const mo = months % 12;
+    if (yrs === 0) return `${mo}mo`;
+    if (mo === 0) return `${yrs}yr`;
+    return `${yrs}yr ${mo}mo`;
+  };
 
   const save = async (e) => {
     e.preventDefault();
-    const updated = await api.updateProfile(token, { ...form, yearsOfExperience: Number(form.yearsOfExperience) });
+    const updated = await api.updateProfile(token, form);
     setProfile(updated);
     setEditing(false);
     showToast("Profile updated");
@@ -90,37 +111,102 @@ export default function ProfilePage() {
 
       {editing && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000}}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "16px" }}
           onClick={() => setEditing(false)}
         >
-          <div style={{ background: "var(--card-bg, #fff)", borderRadius: 12, padding: 28, width: "100%", maxWidth: 480, boxShadow: "0 8px 40px rgba(0,0,0,0.2)"}} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div
+            style={{ background: "var(--card-bg,#fff)", borderRadius: 14, width: "100%", maxWidth: 560, maxHeight: "calc(100vh - 32px)", display: "flex", flexDirection: "column", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* fixed header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px 16px", borderBottom: "1px solid var(--border)" }}>
               <h3 style={{ margin: 0 }}>Edit Profile</h3>
-              <button type="button" onClick={() => setEditing(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>✕</button>
+              <button type="button" onClick={() => setEditing(false)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", lineHeight: 1, color: "var(--text-muted)" }}>✕</button>
             </div>
-            <form onSubmit={save}>
-              <div className="form-grid" style={{ border: "1px solid var(--border-color, #ccc)", borderRadius: 8, padding: 16, gap: 16 }}>
-                <div className="form-group">
-                  <label>Full Name</label>
-                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            {/* scrollable body */}
+            <div style={{ overflowY: "auto", flex: 1, padding: "20px 24px" }}>
+              <form id="edit-profile-form" onSubmit={save}>
+                <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Personal Info</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+                  <div className="form-group">
+                    <label>First Name</label>
+                    <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Last Name</label>
+                    <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Department</label>
+                    <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}>
+                      <option value="">Select Department</option>
+                      {departments.map((d) => <option key={d.id} value={d.value}>{d.value}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Job Title</label>
+                    <select value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}>
+                      <option value="">Select Job Title</option>
+                      {jobTitles.map((j) => <option key={j.id} value={j.value}>{j.value}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>Department</label>
-                  <input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="e.g. Engineering" />
+
+                <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Experience &amp; Project</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 8 }}>
+                  <div className="form-group">
+                    <label>Date of Joining</label>
+                    <input type="date" value={form.dateOfJoining} onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Years of Experience</label>
+                    <input value={calcDuration(form.dateOfJoining)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
+                  </div>
+                  <div className="form-group">
+                    <label>Current Project</label>
+                    <select value={form.currentProject} onChange={(e) => setForm({ ...form, currentProject: e.target.value })}>
+                      <option value="">Select Project</option>
+                      {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Date of Project Assigning</label>
+                    <input type="date" value={form.dateOfProjectAssigning} onChange={(e) => setForm({ ...form, dateOfProjectAssigning: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Relevant Date</label>
+                    <input value={calcDuration(form.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
+                  </div>
+                  <div className="form-group">
+                    <label>Manager</label>
+                    <select value={form.manager} onChange={(e) => setForm({ ...form, manager: e.target.value })}>
+                      <option value="">Select Manager</option>
+                      {managers.map((m) => <option key={m.id} value={m.value}>{m.value}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label>Billable</label>
+                    <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+                      {["yes", "no"].map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setForm({ ...form, billable: opt })}
+                          style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${form.billable === opt ? "var(--primary)" : "var(--border)"}`, background: form.billable === opt ? "var(--primary)" : "var(--card-bg)", color: form.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}
+                        >
+                          {opt === "yes" ? "✓ Yes" : "✗ No"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>Job Title</label>
-                  <input value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })} placeholder="e.g. Frontend Developer" />
-                </div>
-                <div className="form-group">
-                  <label>Years of Experience</label>
-                  <input type="number" min="0" value={form.yearsOfExperience} onChange={(e) => setForm({ ...form, yearsOfExperience: e.target.value })} />
-                </div>
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn-primary">Save</button>
-              </div>
-            </form>
+              </form>
+            </div>
+            {/* fixed footer */}
+            <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid var(--border)", justifyContent: "flex-end" }}>
+              <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+              <button type="submit" form="edit-profile-form" className="btn-primary">Save Changes</button>
+            </div>
           </div>
         </div>
       )}
@@ -149,16 +235,17 @@ export default function ProfilePage() {
               </button>
               <input id="avatar-input" type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarChange} />
             </div>
-           
           </div>
 
           <div className="profile-details">
-            <h3>{profile.name}</h3>
+            <h3>{profile.firstName || profile.name} {profile.firstName ? profile.lastName : ''}</h3>
             <p className="profile-email">{profile.email}</p>
             <div className="profile-meta">
               {profile.jobTitle && <span className="badge">{profile.jobTitle}</span>}
               {profile.department && <span className="badge badge-dept">{profile.department}</span>}
-              {profile.yearsOfExperience > 0 && <span className="badge badge-exp">{profile.yearsOfExperience} yrs exp</span>}
+              {profile.dateOfJoining && <span className="badge badge-exp">{calcDuration(profile.dateOfJoining)} exp</span>}
+              {profile.currentProject && <span className="badge">{profile.currentProject}</span>}
+              {profile.billable === 'yes' && <span className="badge" style={{ background: '#22c55e', color: '#fff' }}>Billable</span>}
             </div>
           </div>
 

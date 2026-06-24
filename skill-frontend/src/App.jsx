@@ -8,6 +8,7 @@ import SkillsPage from "./pages/SkillsPage";
 import CertificationsPage from "./pages/CertificationsPage";
 import DashboardPage from "./pages/DashboardPage";
 import EmployeesPage from "./pages/EmployeesPage";
+import LookupPage from "./pages/LookupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import api from "./api";
 
@@ -42,6 +43,7 @@ function AppInner() {
         {page === "certs" && <CertificationsPage />}
         {page === "dashboard" && <DashboardPage />}
         {page === "employees" && <EmployeesPage />}
+        {page === "lookup" && <LookupPage />}
       </main>
     </>
   );

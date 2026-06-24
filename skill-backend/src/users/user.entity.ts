@@ -7,7 +7,14 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ default: '' })
+  firstName: string;
+
+  @Column({ default: '' })
+  lastName: string;
+
+  // Keep name for backward compat (derived from firstName + lastName)
+  @Column({ default: '' })
   name: string;
 
   @Column({ unique: true })
@@ -25,8 +32,20 @@ export class User {
   @Column({ default: '' })
   jobTitle: string;
 
-  @Column({ type: 'int', default: 0 })
-  yearsOfExperience: number;
+  @Column({ default: '' })
+  currentProject: string;
+
+  @Column({ type: 'date', nullable: true, default: null })
+  dateOfJoining: string;
+
+  @Column({ type: 'date', nullable: true, default: null })
+  dateOfProjectAssigning: string;
+
+  @Column({ default: 'no' })
+  billable: string;
+
+  @Column({ default: '' })
+  manager: string;
 
   @Column({ default: '' })
   resumeData: string;

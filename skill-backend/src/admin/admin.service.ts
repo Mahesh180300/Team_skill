@@ -52,6 +52,18 @@ export class AdminService {
     return employees.map(({ password, ...rest }) => rest);
   }
 
+  async updateEmployee(id: string, body: any) {
+    const { firstName, lastName, department, jobTitle, currentProject, dateOfJoining, dateOfProjectAssigning, billable, manager } = body;
+    const updates: any = { department, jobTitle, currentProject, dateOfJoining: dateOfJoining || null, dateOfProjectAssigning: dateOfProjectAssigning || null, billable, manager };
+    if (firstName) { updates.firstName = firstName; }
+    if (lastName) { updates.lastName = lastName; }
+    if (firstName && lastName) updates.name = `${firstName} ${lastName}`;
+    await this.usersRepo.update(id, updates);
+    const user = await this.usersRepo.findOne({ where: { id } });
+    const { password, ...rest } = user;
+    return rest;
+  }
+
   async deleteEmployee(id: string) {
     await this.usersRepo.delete(id);
   }
