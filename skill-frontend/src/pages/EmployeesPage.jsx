@@ -218,7 +218,8 @@ export default function EmployeesPage() {
                               <span className="emp-cert-name">🏆 {c.name}</span>
                               <span className="emp-cert-meta">
                                 {c.issuer && <span>{c.issuer}</span>}
-                                {c.year && <span>📅 {c.year}</span>}
+                                {c.issuedOn && <span>📅 Issued On: {c.issuedOn}</span>}
+                                {c.expiryDate && <span>🗓️ Expires On: {c.expiryDate}</span>}
                               </span>
                             </div>
                             {c.fileData && (

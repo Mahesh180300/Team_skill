@@ -52,6 +52,8 @@ const api = {
     fd.append("name", data.name);
     if (data.issuer) fd.append("issuer", data.issuer);
     if (data.year) fd.append("year", data.year);
+    if (data.issuedOn) fd.append("issuedOn", data.issuedOn);
+    if (data.expiryDate) fd.append("expiryDate", data.expiryDate);
     if (file) fd.append("file", file);
     return fetch(`${BASE}/profile/certifications`, {
       method: "POST",
@@ -64,6 +66,8 @@ const api = {
     fd.append("name", data.name);
     if (data.issuer) fd.append("issuer", data.issuer);
     if (data.year) fd.append("year", data.year);
+    if (data.issuedOn) fd.append("issuedOn", data.issuedOn);
+    if (data.expiryDate) fd.append("expiryDate", data.expiryDate);
     if (file) fd.append("file", file);
     return fetch(`${BASE}/profile/certifications/${certId}`, {
       method: "PATCH",

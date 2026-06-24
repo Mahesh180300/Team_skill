@@ -7,11 +7,6 @@ import { SkillsModule } from './skills/skills.module';
 import { CertificationsModule } from './certifications/certifications.module';
 import { AdminModule } from './admin/admin.module';
 import { LookupModule } from './lookup/lookup.module';
-import { User } from './users/user.entity';
-import { Skill } from './skills/skill.entity';
-import { Certification } from './certifications/certification.entity';
-import { LookupType } from './lookup/lookup-type.entity';
-import { LookupValue } from './lookup/lookup-value.entity';
 
 @Module({
   imports: [
@@ -26,7 +21,7 @@ import { LookupValue } from './lookup/lookup-value.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [User, Skill, Certification, LookupType, LookupValue],
+        autoLoadEntities: true,
         synchronize: true,
         // ssl: config.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),

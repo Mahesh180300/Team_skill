@@ -11,7 +11,7 @@ import { useApi } from "../hooks/useApi";
 export default function CertificationsPage() {
   const { token } = useAuth();
   const [certs, setCerts] = useState([]);
-  const [form, setForm] = useState({ name: "", issuer: "", year: "" });
+  const [form, setForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
@@ -33,7 +33,7 @@ export default function CertificationsPage() {
 
   // ── Edit state ──────────────────────────────────────────────────────────────
   const [editingCert, setEditingCert] = useState(null); // holds the cert being edited
-  const [editForm, setEditForm] = useState({ name: "", issuer: "", year: "" });
+  const [editForm, setEditForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [editFile, setEditFile] = useState(null);
   const [editError, setEditError] = useState("");
 
@@ -49,10 +49,10 @@ export default function CertificationsPage() {
     e.preventDefault();
     setError("");
     await callAdd(async () => {
-      const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined }, selectedFile);
+      const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
       if (data.error) { setError(data.error); return; }
       setCerts(data.certifications);
-      setForm({ name: "", issuer: "", year: "" });
+      setForm({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
       setSelectedFile(null);
       setShowModal(false);
       showToast("Certification added successfully!");
@@ -72,7 +72,8 @@ export default function CertificationsPage() {
     setEditForm({
       name: cert.name,
       issuer: cert.issuer || "",
-      year: cert.year || "",
+       issuedOn: cert.issuedOn || "",
+      expiryDate: cert.expiryDate || "",
     });
     setEditFile(null);
     setEditError("");
@@ -88,7 +89,7 @@ export default function CertificationsPage() {
     e.preventDefault();
     setEditError("");
     await callUpdate(async () => {
-      const data = await api.editCert(token, editingCert.id, editForm, editFile);
+      const data = await api.editCert(token, editingCert.id, { ...editForm,  issuedOn: editForm.issuedOn || undefined, expiryDate: editForm.expiryDate || undefined }, editFile);
       if (data.error) { setEditError(data.error); return; }
       setCerts(data.certifications);
       closeEdit();
@@ -153,20 +154,37 @@ export default function CertificationsPage() {
                   required
                 />
                 <input
-                  placeholder="Issuer (e.g. AWS, Google)"
+                  placeholder="Issuer by (e.g. AWS, Google)"
                   value={form.issuer}
                   onChange={(e) => setForm({ ...form, issuer: e.target.value })}
                   required
                 />
-                <input
+                {/* <input
                   type="number"
-                  placeholder="Year"
+                  placeholder="Issued on"
                   min="1990"
                   max={new Date().getFullYear()}
                   value={form.year}
                   onChange={(e) => setForm({ ...form, year: e.target.value })}
                   style={{ width: 90 }}
                   required
+                /> */}
+                <input
+  type="date"
+  value={form.issuedOn}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      issuedOn: e.target.value,
+    })
+  }
+  required
+/>
+                <input
+                  type="date"
+                  value={form.expiryDate}
+                  onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
+                  style={{ width: 180 }}
                 />
                 <div style={{ marginTop: 16, width: "100%" }}>
                   <label
@@ -255,9 +273,15 @@ export default function CertificationsPage() {
               <div className="modern-cert-content">
                 <h3>{c.name}</h3>
                 {c.issuer && (
-                  <div className="cert-issuer">Issuer : {c.issuer}</div>
+                  <div className="cert-issuer">Issued by : {c.issuer}</div>
                 )}
-                {c.year && <div className="cert-year">📅 {c.year}</div>}
+               {c.issuedOn && (
+  <div className="cert-year">
+    📅 Issued On: {(c.issuedOn)}
+  </div>
+)}
+
+                {c.expiryDate && <div className="cert-year">🗓️ Expires on: {c.expiryDate}</div>}
               </div>
               {c.fileData && (
                 <button
@@ -346,15 +370,15 @@ export default function CertificationsPage() {
                   setEditForm({ ...editForm, name: e.target.value })
                 }
               />
-              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Issuer</label>
+              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Issued by</label>
               <input
-                placeholder="Issuer (e.g. AWS, Google)"
+                placeholder="Issued by (e.g. AWS, Google)"
                 value={editForm.issuer}
                 onChange={(e) =>
                   setEditForm({ ...editForm, issuer: e.target.value })
                 }
               />
-              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Year</label>
+              {/* <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Year</label>
               <input
                 type="number"
                 placeholder="Year"
@@ -365,8 +389,48 @@ export default function CertificationsPage() {
                   setEditForm({ ...editForm, year: e.target.value })
                 }
                 style={{ width: 90 }}
-              />
+              /> */}
+              <label
+  style={{
+    fontWeight: "500",
+    fontSize: "14px",
+    color: "var(--text-muted)",
+  }}
+>
+  Issued On
+</label>
 
+<input
+  type="date"
+  value={editForm.issuedOn}
+  onChange={(e) =>
+    setEditForm({
+      ...editForm,
+      issuedOn: e.target.value,
+    })
+  }
+/>
+               <label
+  style={{
+    fontWeight: "500",
+    fontSize: "14px",
+    color: "var(--text-muted)",
+  }}
+>
+  Expiry Date
+</label>
+
+<input
+  type="date"
+  value={editForm.expiryDate}
+  onChange={(e) =>
+    setEditForm({
+      ...editForm,
+      expiryDate: e.target.value,
+    })
+  }
+  style={{ width: 180 }}
+/>
               <label
                 htmlFor="edit-cert-file"
                 onDragOver={(e) => e.preventDefault()}
