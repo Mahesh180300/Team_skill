@@ -17,7 +17,10 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await api.login({ email, password });
-    if (data.error) throw new Error(data.error);
+    if (!data.token) {
+      const msg = Array.isArray(data.message) ? data.message[0] : data.message;
+      throw new Error(msg || 'Login failed');
+    }
     localStorage.setItem("skill_token", data.token);
     setToken(data.token);
     setUser(data.user);
