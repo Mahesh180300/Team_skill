@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Loader from "../components/Loader";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 export default function ProfilePage() {
   const { user, token } = useAuth();
@@ -16,13 +19,26 @@ export default function ProfilePage() {
   const [resumeUploading, setResumeUploading] = useState(false);
   const [viewAvatar, setViewAvatar] = useState(false);
   const [showDeleteResume, setShowDeleteResume] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [deletingAvatar, setDeletingAvatar] = useState(false);
+  const [deletingResume, setDeletingResume] = useState(false);
+
+  const callSave = useApi(setSavingProfile);
+  const callAvatar = useApi(setUploadingAvatar);
+  const callDeleteAvatar = useApi(setDeletingAvatar);
+  const callResume = useApi(setResumeUploading);
+  const callDeleteResume = useApi(setDeletingResume);
 
   const showToast = (text) => { setMsg(text); setTimeout(() => setMsg(""), 2500); };
 
   useEffect(() => {
+    setLoadingProfile(true);
     api.getProfile(token).then((data) => {
       setProfile(data);
       setForm({ firstName: data.firstName || '', lastName: data.lastName || '', department: data.department, jobTitle: data.jobTitle, currentProject: data.currentProject || '', dateOfJoining: data.dateOfJoining || '', dateOfProjectAssigning: data.dateOfProjectAssigning || '', billable: data.billable || 'no', manager: data.manager || '' });
+      setLoadingProfile(false);
     });
     api.getLookupValues('Department').then((v) => setDepartments(Array.isArray(v) ? v : []));
     api.getLookupValues('Job Title').then((v) => setJobTitles(Array.isArray(v) ? v : []));
@@ -45,44 +61,52 @@ export default function ProfilePage() {
 
   const save = async (e) => {
     e.preventDefault();
-    const updated = await api.updateProfile(token, form);
-    setProfile(updated);
-    setEditing(false);
-    showToast("Profile updated");
+    await callSave(async () => {
+      const updated = await api.updateProfile(token, form);
+      setProfile(updated);
+      setEditing(false);
+      showToast("Profile updated");
+    });
   };
   
 
   const uploadResume = async (file) => {
     if (!file) return;
-    setResumeUploading(true);
-    const data = await api.uploadResume(token, file);
-    if (data.resumeData) {
-      setProfile((p) => ({ ...p, resumeData: data.resumeData, resumeFileName: data.resumeFileName, resumeFileType: data.resumeFileType }));
-      showToast("Resume uploaded");
-    }
-    setResumeUploading(false);
+    await callResume(async () => {
+      const data = await api.uploadResume(token, file);
+      if (data.resumeData) {
+        setProfile((p) => ({ ...p, resumeData: data.resumeData, resumeFileName: data.resumeFileName, resumeFileType: data.resumeFileType }));
+        showToast("Resume uploaded");
+      }
+    });
   };
 
   const deleteResume = async () => {
-    await api.deleteResume(token);
-    setProfile((p) => ({ ...p, resumeData: '', resumeFileName: '', resumeFileType: '' }));
-    setShowDeleteResume(false);
-    showToast("Resume deleted!");
+    await callDeleteResume(async () => {
+      await api.deleteResume(token);
+      setProfile((p) => ({ ...p, resumeData: '', resumeFileName: '', resumeFileType: '' }));
+      setShowDeleteResume(false);
+      showToast("Resume deleted!");
+    });
   };
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const updated = await api.uploadAvatar(token, file);
-    setProfile(updated);
-    showToast("Profile picture updated");
+    await callAvatar(async () => {
+      const updated = await api.uploadAvatar(token, file);
+      setProfile(updated);
+      showToast("Profile picture updated");
+    });
   };
 
   const handleDeleteAvatar = async () => {
-    const updated = await api.deleteAvatar(token);
-    setProfile(updated);
-    setViewAvatar(false);
-    showToast("Profile picture removed");
+    await callDeleteAvatar(async () => {
+      const updated = await api.deleteAvatar(token);
+      setProfile(updated);
+      setViewAvatar(false);
+      showToast("Profile picture removed");
+    });
   };
 
   const calcCompletion = (p) => {
@@ -97,7 +121,7 @@ export default function ProfilePage() {
     return { percent, missing };
   };
 
-  if (!profile) return <div className="loading">Loading...</div>;
+  if (loadingProfile) return <Loader message="Loading profile..." />;
 
   return (
     <div className="page">
@@ -205,7 +229,9 @@ export default function ProfilePage() {
             {/* fixed footer */}
             <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid var(--border)", justifyContent: "flex-end" }}>
               <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
-              <button type="submit" form="edit-profile-form" className="btn-primary">Save Changes</button>
+              <button type="submit" form="edit-profile-form" className="btn-primary" disabled={savingProfile}>
+                  {savingProfile ? "Saving..." : "Save Changes"}
+                </button>
             </div>
           </div>
         </div>
@@ -346,18 +372,25 @@ export default function ProfilePage() {
           <div style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
             <img src={profile.avatar} alt="Profile" style={{ maxWidth: "90vw", maxHeight: "80vh", borderRadius: 16, boxShadow: "0 8px 40px rgba(0,0,0,0.5)" }} />
             <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 14 }}>
-              <button className="btn-secondary" onClick={() => setViewAvatar(false)}>Close</button>
+              <button className="btn-secondary" onClick={() => setViewAvatar(false)} disabled={deletingAvatar}>Close</button>
               <button
                 className="btn-primary"
                 style={{ background: "var(--danger)", borderColor: "var(--danger)" }}
                 onClick={handleDeleteAvatar}
+                disabled={deletingAvatar}
               >
-                Delete Photo
+                {deletingAvatar ? "Deleting..." : "Delete Photo"}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {savingProfile && <LoaderDialog message="Saving profile..." />}
+      {uploadingAvatar && <LoaderDialog message="Uploading profile picture..." />}
+      {deletingAvatar && <LoaderDialog message="Deleting profile picture..." />}
+      {resumeUploading && <LoaderDialog message="Uploading resume..." />}
+      {deletingResume && <LoaderDialog message="Deleting resume..." />}
     </div>
   );
 }

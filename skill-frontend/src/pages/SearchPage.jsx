@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 
@@ -11,39 +13,42 @@ export default function SearchPage() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const callSearch = useApi(setLoading);
 
   const search = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    const data = await api.searchEmployees(token, filters);
-    setResults(Array.isArray(data) ? data : []);
-    setSearched(true);
-    setLoading(false);
+    await callSearch(async () => {
+      const data = await api.searchEmployees(token, filters);
+      setResults(Array.isArray(data) ? data : []);
+      setSearched(true);
+    });
   };
 
   const set = (e) => setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   return (
-    <div className="page">
+    <>
+      {loading && <LoaderDialog message="Searching employees..." />}
+      <div className="page">
       <div className="page-header"><h2>Skill-Based Search</h2></div>
       <div className="card form-card">
         <form onSubmit={search}>
           <div className="filter-grid">
             <div className="form-group">
               <label>Skill</label>
-              <input name="skill" placeholder="e.g. React, Node.js, AWS" value={filters.skill} onChange={set} />
+              <input name="skill" placeholder="e.g. React, Node.js, AWS" value={filters.skill} onChange={set} disabled={loading} />
             </div>
             <div className="form-group">
               <label>Departments</label>
-              <input name="department" placeholder="e.g. Engineering" value={filters.department} onChange={set} />
+              <input name="department" placeholder="e.g. Engineering" value={filters.department} onChange={set} disabled={loading} />
             </div>
             <div className="form-group">
               <label>Min. Experience (years)</label>
-              <input name="minExp" type="number" min="0" placeholder="e.g. 2" value={filters.minExp} onChange={set} />
+              <input name="minExp" type="number" min="0" placeholder="e.g. 2" value={filters.minExp} onChange={set} disabled={loading} />
             </div>
             <div className="form-group">
               <label>Certification</label>
-              <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={set} />
+              <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={set} disabled={loading} />
             </div>
           </div>
           <button type="submit" className="btn-primary" disabled={loading}>{loading ? "Searching..." : "Search Employees"}</button>
@@ -110,5 +115,6 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

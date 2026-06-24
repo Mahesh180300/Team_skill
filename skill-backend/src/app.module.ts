@@ -28,7 +28,7 @@ import { LookupValue } from './lookup/lookup-value.entity';
         database: config.get('DB_NAME'),
         entities: [User, Skill, Certification, LookupType, LookupValue],
         synchronize: true,
-        ssl: config.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+        // ssl: config.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),
     }),
     AuthModule,

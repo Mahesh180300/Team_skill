@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api";
+import Loader from "../components/Loader";
 
 export default function ResetPasswordPage({ onNavigate }) {
   const [token, setToken] = useState("");
@@ -34,16 +35,20 @@ export default function ResetPasswordPage({ onNavigate }) {
   };
 
   if (!token) return (
-    <div className="auth-page">
+    <>
+      <div className="auth-page">
       <div className="auth-card">
         <p className="error" style={{ textAlign: "center" }}>Invalid or missing reset token.</p>
         <div className="auth-switch"><button onClick={() => onNavigate("login")}>Back to Sign In</button></div>
       </div>
     </div>
+    </>
   );
 
   return (
-    <div className="auth-page">
+    <>
+      {loading && <Loader fullScreen message="Resetting password..." />}
+      <div className="auth-page">
       <div className="auth-card">
         <div className="auth-header">
           <span className="auth-icon">🔒</span>
@@ -67,5 +72,6 @@ export default function ResetPasswordPage({ onNavigate }) {
         )}
       </div>
     </div>
+    </>
   );
 }

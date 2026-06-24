@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { useApi } from "../hooks/useApi";
+import LoaderDialog from "../components/LoaderDialog";
 import api from "../api";
 
 export default function AuthPage({ mode, onNavigate }) {
@@ -9,6 +11,7 @@ export default function AuthPage({ mode, onNavigate }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const callApi = useApi(setLoading);
   const [departments, setDepartments] = useState([]);
   const [jobTitles, setJobTitles] = useState([]);
 
@@ -24,24 +27,24 @@ export default function AuthPage({ mode, onNavigate }) {
   const submit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-    try {
-      if (mode === "login") {
-        const user = await login(form.email, form.password);
-        onNavigate(user.role === "admin" ? "dashboard" : "profile");
-      } else {
-        const user = await register({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password, department: form.department, jobTitle: form.jobTitle });
-        onNavigate(user.role === "admin" ? "dashboard" : "profile");
+    await callApi(async () => {
+      try {
+        if (mode === "login") {
+          const user = await login(form.email, form.password);
+          onNavigate(user.role === "admin" ? "dashboard" : "profile");
+        } else {
+          const user = await register({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password, department: form.department, jobTitle: form.jobTitle });
+          onNavigate(user.role === "admin" ? "dashboard" : "profile");
+        }
+      } catch (err) {
+        setError(err.message);
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
     <div className="auth-page">
+      {loading && <LoaderDialog message={mode === "login" ? "Signing in..." : "Creating account..."} />}
       <div className="auth-card">
         <div className="auth-header">
           <span className="auth-icon">🎯</span>
@@ -88,7 +91,7 @@ export default function AuthPage({ mode, onNavigate }) {
           </div>
           {error && <p className="error">{error}</p>}
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Please wait..." : mode === "login" ? "Sign In" : "Register"}
+            {loading ? (mode === "login" ? "Signing in..." : "Creating...") : mode === "login" ? "Sign In" : "Register"}
           </button>
           {mode === "login" && (
             <div style={{ textAlign: "right", marginTop: "4px" }}>

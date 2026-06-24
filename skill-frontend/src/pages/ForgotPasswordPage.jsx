@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import api from "../api";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 export default function ForgotPasswordPage({ onNavigate }) {
   const [step, setStep] = useState("email"); // "email" | "otp" | "reset"
@@ -12,6 +14,7 @@ export default function ForgotPasswordPage({ onNavigate }) {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
+  const callApi = useApi(setLoading);
 
   const otpDigits = otp.split("").concat(Array(4).fill("")).slice(0, 4);
 
@@ -52,9 +55,8 @@ export default function ForgotPasswordPage({ onNavigate }) {
   }, [step, otpTimer]);
 
   const sendOtpRequest = async () => {
-    setLoading(true);
     setError("");
-    try {
+    await callApi(async () => {
       const res = await api.forgotPassword(email);
       if (res.message) {
         setStep("otp");
@@ -63,11 +65,7 @@ export default function ForgotPasswordPage({ onNavigate }) {
       } else {
         setError(res.error || "Something went wrong");
       }
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const sendOtp = async (e) => {
@@ -77,37 +75,28 @@ export default function ForgotPasswordPage({ onNavigate }) {
 
   const verifyOtp = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
-    try {
+    await callApi(async () => {
       const res = await api.verifyOtp(email, otp);
       if (res.message === "OTP verified") setStep("reset");
-      else setError(res.message || "Invalid OTP");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+      else setError(res.message || res.error || "Invalid OTP");
+    });
   };
 
   const resetPassword = async (e) => {
     e.preventDefault();
     if (password !== confirm) return setError("Passwords do not match");
-    setLoading(true);
     setError("");
-    try {
+    await callApi(async () => {
       const res = await api.resetPassword(email, otp, password);
-      if (res.message) setSuccessMsg(res.message);
+      if (res.message && !res.statusCode) setSuccessMsg(res.message);
       else setError(res.message || "Something went wrong");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   if (successMsg) return (
-    <div className="auth-page">
+    <>
+      <div className="auth-page">
       <div className="auth-card">
         <div className="auth-header">
           <span className="auth-icon">✅</span>
@@ -119,10 +108,14 @@ export default function ForgotPasswordPage({ onNavigate }) {
         </div>
       </div>
     </div>
+    </>
   );
 
   return (
-    <div className="auth-page">
+    <>
+      {loading && <LoaderDialog message={step === "email" ? "Sending OTP..." : step === "otp" ? "Verifying OTP..." : "Resetting password..."} />
+      }
+      <div className="auth-page">
       <div className="auth-card">
         <div className="auth-header">
           <span className="auth-icon">{step === "email" ? "🔑" : step === "otp" ? "📩" : "🔒"}</span>
@@ -201,5 +194,6 @@ export default function ForgotPasswordPage({ onNavigate }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

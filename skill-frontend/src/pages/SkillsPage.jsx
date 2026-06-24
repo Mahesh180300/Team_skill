@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Loader from "../components/Loader";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
@@ -26,30 +29,48 @@ export default function SkillsPage() {
   const [toast, setToast] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [loadingSkills, setLoadingSkills] = useState(true);
+  const [addingSkill, setAddingSkill] = useState(false);
+  const [updatingSkill, setUpdatingSkill] = useState(false);
+  const [deletingSkill, setDeletingSkill] = useState(false);
+
+  const callAdd = useApi(setAddingSkill);
+  const callUpdate = useApi(setUpdatingSkill);
+  const callDelete = useApi(setDeletingSkill);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
   useEffect(() => {
-    api.getProfile(token).then((d) => setSkills(d.skills || []));
+    setLoadingSkills(true);
+    api.getProfile(token).then((d) => {
+      setSkills(d.skills || []);
+      setLoadingSkills(false);
+    });
   }, []);
 
   const save = async (skillId) => {
-    const data = await api.updateSkill(token, skillId, {
-      ...editForm,
-      yearsUsed: Number(editForm.yearsUsed) || 0,
-      monthsUsed: Number(editForm.monthsUsed) || 0,
+    await callUpdate(async () => {
+      const data = await api.updateSkill(token, skillId, {
+        ...editForm,
+        yearsUsed: Number(editForm.yearsUsed) || 0,
+        monthsUsed: Number(editForm.monthsUsed) || 0,
+      });
+      setSkills(data.skills);
+      setEditId(null);
+      showToast("Skill updated successfully!");
     });
-    setSkills(data.skills);
-    setEditId(null);
-    showToast("Skill updated successfully!");
   };
 
   const remove = async (skillId) => {
-    const data = await api.deleteSkill(token, skillId);
-    setSkills(data.skills);
-    setDeleteTargetId(null);
-    showToast("Skill deleted!");
+    await callDelete(async () => {
+      const data = await api.deleteSkill(token, skillId);
+      setSkills(data.skills);
+      setDeleteTargetId(null);
+      showToast("Skill deleted!");
+    });
   };
+
+  if (loadingSkills) return <Loader message="Loading skills..." />;
 
   const counts = {
     total: skills.length,
@@ -66,16 +87,18 @@ export default function SkillsPage() {
       setDurationError("Please enter at least Years or Months used.");
       return;
     }
-    const data = await api.addSkill(token, {
-      ...form,
-      yearsUsed: Number(form.yearsUsed) || 0,
-      monthsUsed: Number(form.monthsUsed) || 0,
+    await callAdd(async () => {
+      const data = await api.addSkill(token, {
+        ...form,
+        yearsUsed: Number(form.yearsUsed) || 0,
+        monthsUsed: Number(form.monthsUsed) || 0,
+      });
+      if (data.error) { setError(data.error); return; }
+      setSkills(data.skills);
+      setForm(EMPTY_FORM);
+      setShowAddModal(false);
+      showToast("Skill added successfully!");
     });
-    if (data.error) return setError(data.error);
-    setSkills(data.skills);
-    setForm(EMPTY_FORM);
-    setShowAddModal(false);
-    showToast("Skill added successfully!");
   };
 
   const formatDuration = (s) => {
@@ -86,7 +109,11 @@ export default function SkillsPage() {
   };
 
   return (
-    <div className="page">
+    <>
+      {addingSkill && <LoaderDialog message="Adding skill..." />}
+      {updatingSkill && <LoaderDialog message="Updating skill..." />}
+      {deletingSkill && <LoaderDialog message="Deleting skill..." />}
+      <div className="page">
       <div className="page-header"><h2>My Skills</h2></div>
       {toast && <div className="toast success">{toast}</div>}
 
@@ -94,6 +121,7 @@ export default function SkillsPage() {
         className="btn-primary"
         style={{ width: "20%", marginLeft: "80%" }}
         onClick={() => setShowAddModal(true)}
+        disabled={addingSkill || updatingSkill || deletingSkill}
       >
         + Add Skill
       </button>
@@ -124,7 +152,9 @@ export default function SkillsPage() {
                   <input type="number" min="0" max="11" placeholder="0" value={form.monthsUsed} onChange={(e) => setForm({ ...form, monthsUsed: e.target.value })} />
                 </div>
                 {durationError && <p className="error" style={{ width: "100%" }}>{durationError}</p>}
-                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }}>Add</button>
+                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }} disabled={addingSkill}>
+                  {addingSkill ? "Adding..." : "Add"}
+                </button>
               </form>
               {error && <p className="error">{error}</p>}
             </div>
@@ -175,7 +205,9 @@ export default function SkillsPage() {
                     </div>
                   </div>
                   <div className="skill-actions">
-                    <button className="btn-primary btn-sm" onClick={() => save(s.id)}>Save</button>
+                    <button className="btn-primary btn-sm" onClick={() => save(s.id)} disabled={updatingSkill}>
+                      {updatingSkill ? "Saving..." : "Save"}
+                    </button>
                     <button className="btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
                   </div>
                 </div>
@@ -206,6 +238,7 @@ export default function SkillsPage() {
           onCancel={() => setDeleteTargetId(null)}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Loader from "../components/Loader";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "" };
@@ -37,6 +40,11 @@ export default function EmployeesPage() {
   const [jobTitles, setJobTitles] = useState([]);
   const [projects, setProjects] = useState([]);
   const [managers, setManagers] = useState([]);
+  const [filteringEmployees, setFilteringEmployees] = useState(false);
+  const [deletingEmployee, setDeletingEmployee] = useState(false);
+
+  const callDelete = useApi(setDeletingEmployee);
+  const callFilter = useApi(setFilteringEmployees);
 
   useEffect(() => {
     api.getAdminEmployees(token).then((data) => {
@@ -52,11 +60,13 @@ export default function EmployeesPage() {
   }, []);
 
   const remove = async (id) => {
-    await api.deleteEmployee(token, id);
-    const updated = allEmployees.filter((e) => e.id !== id);
-    setAllEmployees(updated);
-    setEmployees(updated.filter(applyFilters));
-    setDeleteTargetId(null);
+    await callDelete(async () => {
+      await api.deleteEmployee(token, id);
+      const updated = allEmployees.filter((e) => e.id !== id);
+      setAllEmployees(updated);
+      setEmployees(updated.filter(applyFilters));
+      setDeleteTargetId(null);
+    });
   };
 
   const applyFilters = (emp) => {
@@ -72,7 +82,7 @@ export default function EmployeesPage() {
     return true;
   };
 
-  const search = (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); };
+  const search = async (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); };
   const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); };
   const setF = (e) => setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -101,10 +111,13 @@ export default function EmployeesPage() {
     setEditSaving(false);
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <Loader fullScreen message="Loading employees..." />;
 
   return (
-    <div className="page">
+    <>
+      {filteringEmployees && <LoaderDialog message="Applying filters..." />}
+      {deletingEmployee && <LoaderDialog message="Deleting employee..." />}
+      <div className="page">
       <div className="page-header">
         <h2>Employee Management</h2>
         {filtered
@@ -141,8 +154,10 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button type="submit" className="btn-primary btn-sm">Apply Filters</button>
-              {filtered && <button type="button" className="btn-secondary btn-sm" onClick={reset}>Clear</button>}
+              <button type="submit" className="btn-primary btn-sm" disabled={filteringEmployees}>
+                {filteringEmployees ? "Filtering..." : "Apply Filters"}
+              </button>
+              {filtered && <button type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>Clear</button>}
             </div>
           </form>
         </div>
@@ -344,6 +359,7 @@ export default function EmployeesPage() {
           onCancel={() => setDeleteTargetId(null)}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

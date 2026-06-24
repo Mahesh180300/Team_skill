@@ -4,6 +4,9 @@ import api from "../api";
 import { FaReact, FaJava, FaPython, FaNodeJs, FaAws } from "react-icons/fa";
 import { SiMongodb, SiJavascript, SiHtml5, SiCss } from "react-icons/si";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Loader from "../components/Loader";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 export default function CertificationsPage() {
   const { token } = useAuth();
@@ -14,6 +17,14 @@ export default function CertificationsPage() {
   const [toast, setToast] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [loadingCerts, setLoadingCerts] = useState(true);
+  const [addingCert, setAddingCert] = useState(false);
+  const [updatingCert, setUpdatingCert] = useState(false);
+  const [deletingCert, setDeletingCert] = useState(false);
+
+  const callAdd = useApi(setAddingCert);
+  const callUpdate = useApi(setUpdatingCert);
+  const callDelete = useApi(setDeletingCert);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -27,30 +38,34 @@ export default function CertificationsPage() {
   const [editError, setEditError] = useState("");
 
   useEffect(() => {
-    api.getProfile(token).then((d) => setCerts(d.certifications || []));
+    setLoadingCerts(true);
+    api.getProfile(token).then((d) => {
+      setCerts(d.certifications || []);
+      setLoadingCerts(false);
+    });
   }, []);
 
   const add = async (e) => {
     e.preventDefault();
     setError("");
-    const data = await api.addCert(
-      token,
-      { ...form, year: form.year ? Number(form.year) : undefined },
-      selectedFile,
-    );
-    if (data.error) return setError(data.error);
-    setCerts(data.certifications);
-    setForm({ name: "", issuer: "", year: "" });
-    setSelectedFile(null);
-    setShowModal(false);
-    showToast("Certification added successfully!");
+    await callAdd(async () => {
+      const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined }, selectedFile);
+      if (data.error) { setError(data.error); return; }
+      setCerts(data.certifications);
+      setForm({ name: "", issuer: "", year: "" });
+      setSelectedFile(null);
+      setShowModal(false);
+      showToast("Certification added successfully!");
+    });
   };
 
   const remove = async (certId) => {
-    const data = await api.deleteCert(token, certId);
-    setCerts(data.certifications);
-    setDeleteTargetId(null);
-    showToast("Certification deleted");
+    await callDelete(async () => {
+      const data = await api.deleteCert(token, certId);
+      setCerts(data.certifications);
+      setDeleteTargetId(null);
+      showToast("Certification deleted");
+    });
   };
   const openEdit = (cert) => {
     setEditingCert(cert);
@@ -72,11 +87,13 @@ export default function CertificationsPage() {
   const saveEdit = async (e) => {
     e.preventDefault();
     setEditError("");
-    const data = await api.editCert(token, editingCert.id, editForm, editFile);
-    if (data.error) return setEditError(data.error);
-    setCerts(data.certifications);
-    closeEdit();
-    showToast("Certification updated successfully");
+    await callUpdate(async () => {
+      const data = await api.editCert(token, editingCert.id, editForm, editFile);
+      if (data.error) { setEditError(data.error); return; }
+      setCerts(data.certifications);
+      closeEdit();
+      showToast("Certification updated successfully");
+    });
   };
 
   const techIcons = [
@@ -97,8 +114,14 @@ export default function CertificationsPage() {
     );
   };
 
+  if (loadingCerts) return <Loader message="Loading certifications..." />;
+
   return (
-    <div className="page">
+    <>
+      {addingCert && <LoaderDialog message="Adding certification..." />}
+      {updatingCert && <LoaderDialog message="Updating certification..." />}
+      {deletingCert && <LoaderDialog message="Deleting certification..." />}
+      <div className="page">
       <div className="page-header">
         <h2>My Certifications</h2>
       </div>
@@ -211,12 +234,8 @@ export default function CertificationsPage() {
                     </p>
                   )}
                 </div>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ display: "block", margin: "15px auto 0" }}
-                >
-                  Add
+                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }} disabled={addingCert}>
+                  {addingCert ? "Adding..." : "Add"}
                 </button>
               </form>
               {error && <p className="error">{error}</p>}
@@ -269,6 +288,7 @@ export default function CertificationsPage() {
       )}
 
       {/* ── Edit Modal ───────────────────────────────────────────────────────── */}
+      {updatingCert && <LoaderDialog message="Updating certification..." />}
       {editingCert && (
         <div
           style={{
@@ -412,12 +432,8 @@ export default function CertificationsPage() {
               {editError && <p className="error">{editError}</p>}
 
               <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ flex: 1 }}
-                >
-                  Save Changes
+                <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={updatingCert}>
+                  {updatingCert ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   type="button"
@@ -444,6 +460,7 @@ export default function CertificationsPage() {
           onCancel={() => setDeleteTargetId(null)}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
