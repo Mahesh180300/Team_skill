@@ -41,6 +41,8 @@ const api = {
   // Skills
   addSkill: (token, data) =>
     fetch(`${BASE}/profile/skills`, { method: "POST", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
+  bulkAddSkills: (token, skills) =>
+    fetch(`${BASE}/profile/skills/bulk`, { method: "POST", headers: headers(token), body: JSON.stringify({ skills }) }).then((r) => r.json()),
   updateSkill: (token, skillId, data) =>
     fetch(`${BASE}/profile/skills/${skillId}`, { method: "PUT", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   deleteSkill: (token, skillId) =>

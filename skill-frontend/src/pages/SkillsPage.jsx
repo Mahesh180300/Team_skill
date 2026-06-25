@@ -8,6 +8,7 @@ import { useApi } from "../hooks/useApi";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
+const SKILL_TYPES = ["Primary Skill", "Secondary Skill"];
 
 const STAT_META = [
   { key: "total",        label: "Total Skills", icon: "🗂️", iconBg: "#ede9fe", iconColor: "#6366f1", accent: "#6366f1", lightBg: "#f5f3ff" },
@@ -16,7 +17,7 @@ const STAT_META = [
   { key: "Advanced",     label: "Advanced",     icon: "🏆", iconBg: "#d1fae5", iconColor: "#10b981", accent: "#10b981", lightBg: "#ecfdf5" },
 ];
 
-const EMPTY_FORM = { name: "", proficiency: "Beginner", yearsUsed: "", monthsUsed: "" };
+const EMPTY_FORM = { name: "", skillType: "Primary Skill", proficiency: "Beginner", yearsUsed: "", monthsUsed: "" };
 
 export default function SkillsPage() {
   const { token } = useAuth();
@@ -33,6 +34,8 @@ export default function SkillsPage() {
   const [addingSkill, setAddingSkill] = useState(false);
   const [updatingSkill, setUpdatingSkill] = useState(false);
   const [deletingSkill, setDeletingSkill] = useState(false);
+  const [pendingSkills, setPendingSkills] = useState([]);
+  const [skillOptions, setSkillOptions] = useState([]);
 
   const callAdd = useApi(setAddingSkill);
   const callUpdate = useApi(setUpdatingSkill);
@@ -42,8 +45,12 @@ export default function SkillsPage() {
 
   useEffect(() => {
     setLoadingSkills(true);
-    api.getProfile(token).then((d) => {
-      setSkills(d.skills || []);
+    Promise.all([
+      api.getProfile(token),
+      api.getLookupValues("Skills"),
+    ]).then(([profileData, lookupData]) => {
+      setSkills(profileData.skills || []);
+      setSkillOptions(Array.isArray(lookupData) ? lookupData.map((v) => v.value || v) : []);
       setLoadingSkills(false);
     });
   }, []);
@@ -79,25 +86,32 @@ export default function SkillsPage() {
     Advanced:     skills.filter((s) => s.proficiency === "Advanced").length,
   };
 
-  const add = async (e) => {
+  const addToPending = (e) => {
     e.preventDefault();
     setError("");
     setDurationError("");
+    if (!form.name) { setError("Please select a skill."); return; }
     if (!Number(form.yearsUsed) && !Number(form.monthsUsed)) {
       setDurationError("Please enter at least Years or Months used.");
       return;
     }
+    setPendingSkills((prev) => [...prev, { ...form, yearsUsed: Number(form.yearsUsed) || 0, monthsUsed: Number(form.monthsUsed) || 0 }]);
+    setForm(EMPTY_FORM);
+    setDurationError("");
+  };
+
+  const removePending = (idx) => setPendingSkills((prev) => prev.filter((_, i) => i !== idx));
+
+  const bulkSave = async () => {
+    if (!pendingSkills.length) return;
     await callAdd(async () => {
-      const data = await api.addSkill(token, {
-        ...form,
-        yearsUsed: Number(form.yearsUsed) || 0,
-        monthsUsed: Number(form.monthsUsed) || 0,
-      });
+      const data = await api.bulkAddSkills(token, pendingSkills);
       if (data.error) { setError(data.error); return; }
       setSkills(data.skills);
+      setPendingSkills([]);
       setForm(EMPTY_FORM);
       setShowAddModal(false);
-      showToast("Skill added successfully!");
+      showToast("Skills added successfully!");
     });
   };
 
@@ -129,13 +143,34 @@ export default function SkillsPage() {
       {showAddModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <button className="close-btn" onClick={() => setShowAddModal(false)}>✕</button>
+            <button className="close-btn" onClick={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); }}>✕</button>
             <div className="card form-card">
-              <h3>Add Skill</h3>
-              <form onSubmit={add} className="inline-form">
+              <h3>Add Skills</h3>
+
+              {pendingSkills.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                  {pendingSkills.map((s, i) => (
+                    <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#ede9fe", color: "#6366f1", borderRadius: 20, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>
+                      {s.name} <span style={{ fontSize: 10, opacity: 0.7 }}>({s.skillType})</span>
+                      <button type="button" onClick={() => removePending(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6366f1", fontWeight: 700, lineHeight: 1, padding: "0 2px" }}>✕</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <form onSubmit={addToPending} className="inline-form">
                 <div className="form-group" style={{ width: "100%" }}>
                   <label>Skill Name</label>
-                  <input placeholder="e.g. React" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
+                    <option value="">-- Select Skill --</option>
+                    {skillOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="form-group" style={{ width: "100%" }}>
+                  <label>Skill Type</label>
+                  <select value={form.skillType} onChange={(e) => setForm({ ...form, skillType: e.target.value })}>
+                    {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Proficiency</label>
@@ -152,11 +187,17 @@ export default function SkillsPage() {
                   <input type="number" min="0" max="11" placeholder="0" value={form.monthsUsed} onChange={(e) => setForm({ ...form, monthsUsed: e.target.value })} />
                 </div>
                 {durationError && <p className="error" style={{ width: "100%" }}>{durationError}</p>}
-                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }} disabled={addingSkill}>
-                  {addingSkill ? "Adding..." : "Add"}
+                {error && <p className="error" style={{ width: "100%" }}>{error}</p>}
+                <button type="submit" className="btn-secondary" style={{ display: "block", margin: "15px auto 0" }}>
+                  + Add
                 </button>
               </form>
-              {error && <p className="error">{error}</p>}
+
+              {pendingSkills.length > 0 && (
+                <button className="btn-primary" style={{ display: "block", margin: "12px auto 0", width: "100%" }} onClick={bulkSave} disabled={addingSkill}>
+                  {addingSkill ? "Saving..." : `Save ${pendingSkills.length} Skill${pendingSkills.length > 1 ? "s" : ""}`}
+                </button>
+              )}
             </div>
           </div>
         </div>
