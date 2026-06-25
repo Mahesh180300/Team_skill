@@ -42,9 +42,12 @@ export default function EmployeesPage() {
   const [managers, setManagers] = useState([]);
   const [filteringEmployees, setFilteringEmployees] = useState(false);
   const [deletingEmployee, setDeletingEmployee] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 4;
 
   const callDelete = useApi(setDeletingEmployee);
   const callFilter = useApi(setFilteringEmployees);
+  const callEdit = useApi(setEditSaving);
 
   useEffect(() => {
     api.getAdminEmployees(token).then((data) => {
@@ -82,8 +85,8 @@ export default function EmployeesPage() {
     return true;
   };
 
-  const search = async (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); };
-  const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); };
+  const search = async (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); setPage(1); };
+  const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); setPage(1); };
   const setF = (e) => setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const openEdit = (emp) => {
@@ -103,20 +106,21 @@ export default function EmployeesPage() {
 
   const saveEdit = async (e) => {
     e.preventDefault();
-    setEditSaving(true);
-    const updated = await api.updateEmployee(token, editEmp.id, editForm);
-    setAllEmployees((prev) => prev.map((e) => e.id === editEmp.id ? { ...e, ...updated } : e));
-    setEmployees((prev) => prev.map((e) => e.id === editEmp.id ? { ...e, ...updated } : e));
-    setEditEmp(null);
-    setEditSaving(false);
+    await callEdit(async () => {
+      const updated = await api.updateEmployee(token, editEmp.id, editForm);
+      setAllEmployees((prev) => prev.map((e) => e.id === editEmp.id ? { ...e, ...updated } : e));
+      setEmployees((prev) => prev.map((e) => e.id === editEmp.id ? { ...e, ...updated } : e));
+      setEditEmp(null);
+    });
   };
 
-  if (loading) return <Loader fullScreen message="Loading employees..." />;
+  if (loading) return <LoaderDialog message="Loading employees..." />;
 
   return (
     <>
       {filteringEmployees && <LoaderDialog message="Applying filters..." />}
       {deletingEmployee && <LoaderDialog message="Deleting employee..." />}
+      {editSaving && <LoaderDialog message="Saving employee..." />}
       <div className="page">
       <div className="page-header">
         <h2>Employee Management</h2>
@@ -167,7 +171,7 @@ export default function EmployeesPage() {
         <div className="empty">{filtered ? "No employees match the filters." : "No employees registered yet."}</div>
       ) : (
         <div className="employee-list">
-          {employees.map((emp) => (
+          {employees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
             <div key={emp.id} className="employee-card">
               <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
                 <div className="emp-avatar">
@@ -249,6 +253,16 @@ export default function EmployeesPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {employees.length > PAGE_SIZE && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 16 }}>
+          <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>← Prev</button>
+          {Array.from({ length: Math.ceil(employees.length / PAGE_SIZE) }, (_, i) => (
+            <button key={i} className={page === i + 1 ? "btn-primary btn-sm" : "btn-secondary btn-sm"} onClick={() => setPage(i + 1)}>{i + 1}</button>
+          ))}
+          <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page === Math.ceil(employees.length / PAGE_SIZE)}>Next →</button>
         </div>
       )}
 
