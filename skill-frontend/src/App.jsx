@@ -38,7 +38,7 @@ function AppInner() {
     <>
       <Navbar page={page} onNavigate={setPage} />
       <main className="main-content">
-        {page === "profile" && <ProfilePage />}
+        {page === "profile" && <ProfilePage onNavigate={setPage} />}
         {page === "skills" && <SkillsPage />}
         {page === "certs" && <CertificationsPage />}
         {page === "dashboard" && <DashboardPage />}

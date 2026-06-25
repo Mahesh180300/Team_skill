@@ -6,7 +6,7 @@ import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 
-export default function ProfilePage() {
+export default function ProfilePage({ onNavigate }) {
   const { user, token } = useAuth();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -276,8 +276,8 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-stats">
-            <div className="stat"><span className="stat-val">{profile.skills?.length || 0}</span><span className="stat-lbl">Skills</span></div>
-            <div className="stat"><span className="stat-val">{profile.certifications?.length || 0}</span><span className="stat-lbl">Certs</span></div>
+            <div className="stat" onClick={() => onNavigate("skills")} style={{ cursor: "pointer" }}><span className="stat-val">{profile.skills?.length || 0}</span><span className="stat-lbl">Skills</span></div>
+            <div className="stat" onClick={() => onNavigate("certs")} style={{ cursor: "pointer" }}><span className="stat-val">{profile.certifications?.length || 0}</span><span className="stat-lbl">Certs</span></div>
           </div>
 
           <div className="profile-completion">
@@ -295,7 +295,15 @@ export default function ProfilePage() {
                   {missing.length > 0 && (
                     <div className="completion-missing">
                       <small>Missing:</small>
-                      {missing.map((m) => <span key={m} className="missing-tag">{m}</span>)}
+                      {missing.map((m) => {
+                        const navMap = { Skills: "skills", Certifications: "certs" };
+                        const target = navMap[m];
+                        return target ? (
+                          <span key={m} className="missing-tag" onClick={() => onNavigate(target)} style={{ cursor: "pointer", textDecoration: "underline" }}>{m}</span>
+                        ) : (
+                          <span key={m} className="missing-tag">{m}</span>
+                        );
+                      })}
                     </div>
                   )}
                 </>
