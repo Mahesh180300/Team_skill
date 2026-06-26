@@ -294,16 +294,12 @@ export default function ProfilePage({ onNavigate }) {
                   </div>
                   {missing.length > 0 && (
                     <div className="completion-missing">
-                      <small>Missing:</small>
-                      {missing.map((m) => {
-                        const navMap = { Skills: "skills", Certifications: "certs" };
-                        const target = navMap[m];
-                        return target ? (
-                          <span key={m} className="missing-tag" onClick={() => onNavigate(target)} style={{ cursor: "pointer", textDecoration: "underline" }}>{m}</span>
-                        ) : (
-                          <span key={m} className="missing-tag">{m}</span>
-                        );
-                      })}
+                    <small>Missing:</small>
+{missing.map((m) => (
+  <span key={m} className="missing-tag">
+    {m}
+  </span>
+))}
                     </div>
                   )}
                 </>

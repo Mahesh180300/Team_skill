@@ -11,10 +11,9 @@ const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermedi
 const SKILL_TYPES = ["Primary Skill", "Secondary Skill"];
 
 const STAT_META = [
-  { key: "total",        label: "Total Skills", icon: "🗂️", iconBg: "#ede9fe", iconColor: "#6366f1", accent: "#6366f1", lightBg: "#f5f3ff" },
-  { key: "Beginner",     label: "Beginner",     icon: "📶", iconBg: "#dbeafe", iconColor: "#3b82f6", accent: "#3b82f6", lightBg: "#eff6ff" },
-  { key: "Intermediate", label: "Intermediate", icon: "✨", iconBg: "#fef3c7", iconColor: "#f59e0b", accent: "#f59e0b", lightBg: "#fffbeb" },
-  { key: "Advanced",     label: "Advanced",     icon: "🏆", iconBg: "#d1fae5", iconColor: "#10b981", accent: "#10b981", lightBg: "#ecfdf5" },
+  { key: "total",          label: "Total Skills",     icon: " 🗂️", iconBg: "#dbeafe", iconColor: "#1d4ed8", accent: "#1d4ed8", lightBg: "#eff6ff", subtitle: "All skills added" },
+  { key: "primarySkill",   label: "Primary Skills",   icon: " ⭐", iconBg: "#dcfce7", iconColor: "#16a34a", accent: "#16a34a", lightBg: "#f0fdf4", subtitle: "Core expertise" },
+  { key: "secondarySkill", label: "Secondary Skills", icon: "🔶", iconBg: "#fef3c7", iconColor: "#d97706", accent: "#d97706", lightBg: "#fffbeb", subtitle: "Supporting skills" },
 ];
 
 const EMPTY_FORM = { name: "", skillType: "Primary Skill", proficiency: "Beginner", yearsUsed: "", monthsUsed: "" };
@@ -80,10 +79,9 @@ export default function SkillsPage() {
   if (loadingSkills) return <Loader message="Loading skills..." />;
 
   const counts = {
-    total: skills.length,
-    Beginner:     skills.filter((s) => s.proficiency === "Beginner").length,
-    Intermediate: skills.filter((s) => s.proficiency === "Intermediate").length,
-    Advanced:     skills.filter((s) => s.proficiency === "Advanced").length,
+    total:          skills.length,
+    primarySkill:   skills.filter((s) => s.skillType === "Primary Skill").length,
+    secondarySkill: skills.filter((s) => s.skillType === "Secondary Skill").length,
   };
 
   const addToPending = (e) => {
@@ -91,6 +89,8 @@ export default function SkillsPage() {
     setError("");
     setDurationError("");
     if (!form.name) { setError("Please select a skill."); return; }
+    const alreadyExists = skills.some((s) => s.name === form.name) || pendingSkills.some((s) => s.name === form.name);
+    if (alreadyExists) { setError(`"${form.name}" is already added.`); return; }
     if (!Number(form.yearsUsed) && !Number(form.monthsUsed)) {
       setDurationError("Please enter at least Years or Months used.");
       return;
@@ -149,27 +149,37 @@ export default function SkillsPage() {
 
               {pendingSkills.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-                  {pendingSkills.map((s, i) => (
-                    <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#ede9fe", color: "#6366f1", borderRadius: 20, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>
-                      {s.name} <span style={{ fontSize: 10, opacity: 0.7 }}>({s.skillType})</span>
-                      <button type="button" onClick={() => removePending(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6366f1", fontWeight: 700, lineHeight: 1, padding: "0 2px" }}>✕</button>
-                    </span>
-                  ))}
+                    <div className="form-group" style={{ width: "100%" }}>
+                  <label>Selected Skills ({pendingSkills.length})</label>
+                  </div>
+
+                  {pendingSkills.map((s, i) => {
+                    const isPrimary = s.skillType === "Primary Skill";
+                    const clr = isPrimary ? "#10b981" : "#854d0e";
+                    const bg  = isPrimary ? "#d1fae5" : "#fef3c7";
+                    return (
+                      <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: bg, color: clr, borderRadius: 20, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>
+                        {s.name} <span style={{ fontSize: 10, opacity: 0.7 }}>({s.skillType})</span>
+                        <button type="button" onClick={() => removePending(i)} style={{ background: "none", border: "none", cursor: "pointer", color: clr, fontWeight: 700, lineHeight: 1, padding: "0 2px" }}>✕</button>
+                      </span>
+                    );
+                  })}
                 </div>
               )}
 
               <form onSubmit={addToPending} className="inline-form">
-                <div className="form-group" style={{ width: "100%" }}>
-                  <label>Skill Name</label>
-                  <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
-                    <option value="">-- Select Skill --</option>
-                    {skillOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
+               
                 <div className="form-group" style={{ width: "100%" }}>
                   <label>Skill Type</label>
                   <select value={form.skillType} onChange={(e) => setForm({ ...form, skillType: e.target.value })}>
                     {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                 <div className="form-group" style={{ width: "100%" }}>
+                  <label>Skill Name</label>
+                  <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
+                    <option value="">-- Select Skill --</option>
+                    {skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s)).map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -195,7 +205,7 @@ export default function SkillsPage() {
 
               {pendingSkills.length > 0 && (
                 <button className="btn-primary" style={{ display: "block", margin: "12px auto 0", width: "100%" }} onClick={bulkSave} disabled={addingSkill}>
-                  {addingSkill ? "Saving..." : `Save ${pendingSkills.length} Skill${pendingSkills.length > 1 ? "s" : ""}`}
+                  {addingSkill ? "Saving..." : "Save"}
                 </button>
               )}
             </div>
@@ -205,61 +215,93 @@ export default function SkillsPage() {
 
       {/* ── Stat Cards ── */}
       <div className="skill-stats-grid">
-        {STAT_META.map(({ key, label, icon, iconBg, iconColor, accent, lightBg }) => (
-          <div key={key} className="skill-stat-card" style={{ borderTop: `4px solid ${accent}` }}>
-            <div className="skill-stat-top">
-              <div className="skill-stat-icon" style={{ background: iconBg, color: iconColor }}>{icon}</div>
-              <span className="skill-stat-label" style={{ background: lightBg, color: accent }}>{label}</span>
+        {STAT_META.map(({ key, label, icon, iconBg, iconColor, accent, lightBg, subtitle }) => {
+          const pct = counts.total > 0 ? Math.round((counts[key] / counts.total) * 100) : (key === "total" ? 100 : 0);
+          const barWidth = key === "total" ? 100 : pct;
+          return (
+            <div key={key} className="skill-stat-card" style={{ "--stat-accent": accent }}>
+              <div className="skill-stat-top">
+                <div className="skill-stat-icon" style={{ background: iconBg, color: iconColor }}>{icon}</div>
+                <span className="skill-stat-label" style={{ background: lightBg, color: accent }}>{label}</span>
+              </div>
+              <div className="skill-stat-count" style={{ color: accent }}>{counts[key]}</div>
+              {/* <div className="skill-stat-subtitle">{subtitle}</div> */}
+              <div className="skill-stat-bar-track">
+                <div className="skill-stat-bar-fill" style={{ width: `${barWidth}%`, background: accent }} />
+              </div>
+              <hr className="skill-stat-divider" />
+              {/* <div className="skill-stat-footer">
+                <span className="skill-stat-footer-label">{key === "total" ? "All categories" : `of ${counts.total} total`}</span>
+                <span className="skill-stat-pct-badge" style={{ background: lightBg, color: accent }}>
+                  {key === "total" ? `${counts.total} skills` : `${pct}%`}
+                </span>
+              </div> */}
             </div>
-            <div className="skill-stat-count" style={{ color: "#1e293b" }}>{counts[key]}</div>
-            <hr className="skill-stat-divider" />
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {skills.length === 0 ? (
         <div className="empty">No skills added yet. Add your first skill above!</div>
       ) : (
-        <div className="skills-grid">
-          {skills.map((s) => (
-            <div key={s.id} className="skill-card">
+        <div className="skills-table">
+          <div className="skills-table-header">
+            <div className="st-col st-col-num">#</div>
+            <div className="st-col st-col-name">Skill Name</div>
+            <div className="st-col st-col-type">Type</div>
+            <div className="st-col st-col-proficiency">Proficiency</div>
+            <div className="st-col st-col-duration">Experience</div>
+            <div className="st-col st-col-actions">Actions</div>
+          </div>
+          {[...skills].sort((a, b) => {
+            if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
+            if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
+            return 0;
+          }).map((s, idx) => (
+            <div key={s.id} className={`skills-table-row ${s.skillType === "Primary Skill" ? "skill-card--primary" : "skill-card--secondary"}`}>
               {editId === s.id ? (
-                <div className="skill-edit">
-                  <div className="form-group">
-                    <label>Skill Name</label>
-                    <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+                <div className="skill-edit-inline">
+                  <div className="form-group" style={{ flex: 2 }}>
+                    <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Skill Name" />
                   </div>
-                  <div className="form-group">
-                    <label>Proficiency</label>
+                  <div className="form-group" style={{ flex: 1 }}>
                     <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
                       {LEVELS.map((l) => <option key={l}>{l}</option>)}
                     </select>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <div className="form-group" style={{ flex: 1 }}>
-                      <label>Years Used</label>
-                      <input type="number" min="0" placeholder="0" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
-                    </div>
-                    <div className="form-group" style={{ flex: 1 }}>
-                      <label>Months Used</label>
-                      <input type="number" min="0" max="11" placeholder="0" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
-                    </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <input type="number" min="0" placeholder="Yrs" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
                   </div>
-                  <div className="skill-actions">
-                    <button className="btn-primary btn-sm" onClick={() => save(s.id)} disabled={updatingSkill}>
-                      {updatingSkill ? "Saving..." : "Save"}
-                    </button>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <input type="number" min="0" max="11" placeholder="Mo" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    <button className="btn-primary btn-sm" onClick={() => save(s.id)} disabled={updatingSkill}>{updatingSkill ? "Saving..." : "Save"}</button>
                     <button className="btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
                   </div>
                 </div>
               ) : (
                 <>
-                  <div className="skill-name">{s.name}</div>
-                  <span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span>
-                  {formatDuration(s) && <span className="skill-years">{formatDuration(s)}</span>}
-                  <div className="skill-actions">
-                    <button className="btn-icon" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); }} title="Edit">✏️</button>
-                    <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(s.id)} title="Delete">🗑️</button>
+                  <div className="st-col st-col-num">
+                    <span className="st-num">{idx + 1}</span>
+                  </div>
+                  <div className="st-col st-col-name">
+                    <span className="skill-name">{s.name}</span>
+                  </div>
+                  <div className="st-col st-col-type">
+                    <span className={`skill-type-badge ${s.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"}`}>
+                      {s.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
+                    </span>
+                  </div>
+                  <div className="st-col st-col-proficiency">
+                    <span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span>
+                  </div>
+                  <div className="st-col st-col-duration">
+                    <span className="skill-years">{formatDuration(s) || "—"}</span>
+                  </div>
+                  <div className="st-col st-col-actions">
+                    <button className="skill-btn-edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); }}>Edit</button>
+                    <button className="skill-btn-delete" onClick={() => setDeleteTargetId(s.id)}>Delete</button>
                   </div>
                 </>
               )}
