@@ -35,7 +35,7 @@ function AppInner() {
   }
 
   return (
-    <>
+    <div className="app-layout">
       <Navbar page={page} onNavigate={setPage} />
       <main className="main-content">
         {page === "profile" && <ProfilePage onNavigate={setPage} />}
@@ -45,7 +45,7 @@ function AppInner() {
         {page === "employees" && <EmployeesPage />}
         {page === "lookup" && <LookupPage />}
       </main>
-    </>
+    </div>
   );
 }
 

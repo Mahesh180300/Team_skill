@@ -6,42 +6,61 @@ export default function Navbar({ page, onNavigate }) {
   const { user, logout } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleLogout = () => setShowLogoutConfirm(true);
-
   const confirmLogout = () => {
     logout();
     onNavigate("login");
   };
 
+  const adminLinks = [
+    { key: "dashboard", label: "Dashboard", icon: "📊" },
+    { key: "employees", label: "Employees", icon: "👥" },
+    { key: "lookup", label: "Master Data", icon: "🗂️" },
+  ];
+
+  const userLinks = [
+    { key: "profile", label: "My Profile", icon: "👤" },
+    { key: "skills", label: "My Skills", icon: "💡" },
+    { key: "certs", label: "Certifications", icon: "🏅" },
+  ];
+
+  const links = user?.role === "admin" ? adminLinks : userLinks;
+
   return (
     <>
-      <nav className="navbar">
-        <div className="navbar-brand" onClick={() => onNavigate(user?.role === "admin" ? "dashboard" : "profile")}>
+      <aside className="sidebar">
+        <div className="sidebar-brand" onClick={() => onNavigate(user?.role === "admin" ? "dashboard" : "profile")}>
           <span className="brand-icon">🎯</span>
-          <span>Kyyba Skill Tracker</span>
+          <span>Skill Tracker</span>
         </div>
+
         {user && (
-          <div className="navbar-links">
-            {user.role === "admin" ? (
-              <>
-                <button className={page === "dashboard" ? "active" : ""} onClick={() => onNavigate("dashboard")}>Dashboard</button>
-                <button className={page === "employees" ? "active" : ""} onClick={() => onNavigate("employees")}>Employees</button>
-                <button className={page === "lookup" ? "active" : ""} onClick={() => onNavigate("lookup")}>Master Data</button>
-              </>
-            ) : (
-              <>
-                <button className={page === "profile" ? "active" : ""} onClick={() => onNavigate("profile")}>My Profile</button>
-                <button className={page === "skills" ? "active" : ""} onClick={() => onNavigate("skills")}>My Skills</button>
-                <button className={page === "certs" ? "active" : ""} onClick={() => onNavigate("certs")}>Certifications</button>
-              </>
-            )}
-            <div className="user-menu">
-              <span className="user-name">{user.name}</span>
-              <button className="btn-logout" onClick={handleLogout}>Logout</button>
+          <>
+            <nav className="sidebar-links">
+              {links.map(({ key, label, icon }) => (
+                <button
+                  key={key}
+                  className={`sidebar-link${page === key ? " active" : ""}`}
+                  onClick={() => onNavigate(key)}
+                >
+                  <span className="sidebar-link-icon">{icon}</span>
+                  <span>{label}</span>
+                </button>
+              ))}
+            </nav>
+
+            <div className="sidebar-footer">
+              <div className="sidebar-user">
+                <div className="sidebar-avatar">{user.name?.charAt(0).toUpperCase()}</div>
+                <div className="sidebar-user-info">
+                  <span className="sidebar-user-name">{user.name}</span>
+                  <span className="sidebar-user-role">{user.role}</span>
+                </div>
+              </div>
+              <button className="btn-logout" onClick={() => setShowLogoutConfirm(true)}>Logout</button>
             </div>
-          </div>
+          </>
         )}
-      </nav>
+      </aside>
 
       {showLogoutConfirm && (
         <ConfirmDialog
