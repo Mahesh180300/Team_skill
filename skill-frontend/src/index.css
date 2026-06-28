@@ -465,6 +465,62 @@ input:focus, select:focus { outline: none; border-color: var(--primary); box-sha
   padding: 0;
   line-height: 1;
 }
+.avatar-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.avatar-btn {
+  width: 90px;
+  height: 35px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Primary */
+.avatar-btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.avatar-btn-primary:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+/* Danger */
+.avatar-btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.avatar-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* Secondary */
+.avatar-btn-secondary {
+  background: #eaecef;
+  color: #374151;
+  border: 01px solid #dddee1;
+}
+
+.avatar-btn-secondary:hover {
+  background: #e5e7eb;
+}
 .avatar-edit-btn:hover { background: var(--primary-dark); transform: scale(1.12); }
 .profile-details { flex: 1; }
 .profile-details h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }

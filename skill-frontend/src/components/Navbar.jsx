@@ -13,8 +13,6 @@ export default function Sidebar({ page, onNavigate }) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAvatar, setDeletingAvatar] = useState(false);
 
-
-  
   useEffect(() => {
     if (token) {
       api.getProfile(token).then((data) => {
@@ -106,7 +104,6 @@ export default function Sidebar({ page, onNavigate }) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-    
 
   return (
     <>
@@ -131,7 +128,6 @@ export default function Sidebar({ page, onNavigate }) {
           <div
             className={`sidebar-profile-section${collapsed ? " sidebar-profile-section--collapsed" : ""}`}
           >
-           
             <div className="sidebar-profile-avatar-wrap">
               <div
                 className="sidebar-profile-avatar-large"
@@ -197,31 +193,31 @@ export default function Sidebar({ page, onNavigate }) {
                     }}
                   />
 
-                  <div
-                    style={{
-                      marginTop: 20,
-                      display: "flex",
-                      justifyContent: "center",
-                      gap: 12,
-                    }}
-                  >
+                  <div className="avatar-modal-actions">
                     <button
+                      className="avatar-btn avatar-btn-primary"
                       onClick={() =>
                         document.getElementById("sidebar-avatar-input").click()
                       }
                       disabled={uploadingAvatar}
                     >
-                      {uploadingAvatar ? "Uploading..." : "✏️ Change"}
+                      {uploadingAvatar ? "Uploading..." : "Change"}
                     </button>
 
                     <button
+                      className="avatar-btn avatar-btn-danger"
                       onClick={handleDeleteAvatar}
                       disabled={deletingAvatar}
                     >
-                      {deletingAvatar ? "Deleting..." : "🗑️ Remove"}
+                      {deletingAvatar ? "Deleting..." : " Remove"}
                     </button>
 
-                    <button onClick={() => setViewAvatar(false)}>Close</button>
+                    <button
+                      className="avatar-btn avatar-btn-secondary"
+                      onClick={() => setViewAvatar(false)}
+                    >
+                      Close
+                    </button>
                   </div>
                 </div>
               </div>
@@ -244,8 +240,7 @@ export default function Sidebar({ page, onNavigate }) {
                   </div>
                 </div>
 
-             
-               <div className="profile-completion">
+                <div className="profile-completion">
                   {(() => {
                     const { percent, missing } = calcCompletion(profile);
                     return (
@@ -328,13 +323,11 @@ export default function Sidebar({ page, onNavigate }) {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-      
         <button
           className="sidebar-logout-text"
           onClick={() => setShowLogoutConfirm(true)}
           title="Logout"
         >
-          
           <span className="sidebar-link-logout">⎋ </span>
           {!collapsed && <span>Logout</span>}
         </button>
