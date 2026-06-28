@@ -95,7 +95,7 @@ export default function Sidebar({ page, onNavigate }) {
 
   const employeeLinks = [
     { key: "profile", icon: "👤", label: "My Profile" },
-    { key: "skills", icon: "🎯", label: "My Skills" },
+    { key: "skills", icon: "📚", label: "My Skills" },
     { key: "certs", icon: "🏆", label: "Certifications" },
   ];
 
