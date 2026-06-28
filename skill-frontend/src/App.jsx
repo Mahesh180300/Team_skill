@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Navbar from "./components/Navbar";
+import Sidebar from "./components/Navbar";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import SkillsPage from "./pages/SkillsPage";
@@ -36,7 +36,7 @@ function AppInner() {
 
   return (
     <div className="app-layout">
-      <Navbar page={page} onNavigate={setPage} />
+      <Sidebar page={page} onNavigate={setPage} />
       <main className="main-content">
         {page === "profile" && <ProfilePage onNavigate={setPage} />}
         {page === "skills" && <SkillsPage />}
