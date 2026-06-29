@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import LoaderDialog from "../components/LoaderDialog";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { useApi } from "../hooks/useApi";
 
 export default function MastersPage() {
@@ -15,6 +16,7 @@ export default function MastersPage() {
   const [editingValueId, setEditingValueId] = useState(null);
   const [editValueText, setEditValueText] = useState("");
   const [msg, setMsg] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null); // { kind: 'type'|'value', id, name }
   const addTypeRef = useRef(null);
 
   const [addingType, setAddingType] = useState(false);
@@ -56,18 +58,18 @@ export default function MastersPage() {
   const saveType = async (id) => {
     if (!editTypeText.trim()) return;
     await callSaveType(async () => {
-      await api.createLookupType(token, editTypeText.trim());
+      await api.updateLookupType(token, id, editTypeText.trim());
       setEditingTypeId(null);
       await load();
       showToast("Type updated");
     });
   };
 
-  const removeType = async (id, e) => {
-    e.stopPropagation();
+  const removeType = async (id) => {
     await callDeleteType(async () => {
       await api.deleteLookupType(token, id);
       if (expanded === id) setExpanded(null);
+      setConfirmDelete(null);
       await load();
       showToast("Type deleted");
     });
@@ -97,6 +99,7 @@ export default function MastersPage() {
   const removeValue = async (id) => {
     await callDeleteValue(async () => {
       await api.deleteLookupValue(token, id);
+      setConfirmDelete(null);
       await load();
       showToast("Value deleted");
     });
@@ -182,8 +185,8 @@ export default function MastersPage() {
                     </>
                   ) : (
                     <>
-                      <button className="btn-secondary btn-sm" onClick={(e) => startEditType(type, e)} style={{ color: "var(--primary)", borderColor: "var(--primary)" }} disabled={anyLoading}>Edit</button>
-                      <button className="btn-secondary btn-sm" onClick={(e) => removeType(type.id, e)} style={{ color: "var(--danger)", borderColor: "var(--danger)" }} disabled={anyLoading}>Delete</button>
+                      <button className="btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); startEditType(type, e); }} style={{ color: "var(--primary)", borderColor: "var(--primary)" }} disabled={anyLoading}>Edit</button>
+                      <button className="btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ kind: 'type', id: type.id, name: type.name }); }} style={{ color: "var(--danger)", borderColor: "var(--danger)" }} disabled={anyLoading}>Delete</button>
                     </>
                   )}
                 </div>
@@ -214,7 +217,7 @@ export default function MastersPage() {
                             <>
                               <span style={{ flex: 1, fontSize: 14, color: "var(--text)" }}>{v.value}</span>
                               <button className="btn-secondary btn-sm" onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }} style={{ color: "var(--primary)", borderColor: "var(--primary)" }} disabled={anyLoading}>Edit</button>
-                              <button className="btn-secondary btn-sm" onClick={() => removeValue(v.id)} style={{ color: "var(--danger)", borderColor: "var(--danger)" }} disabled={anyLoading}>Delete</button>
+                              <button className="btn-secondary btn-sm" onClick={() => setConfirmDelete({ kind: 'value', id: v.id, name: v.value })} style={{ color: "var(--danger)", borderColor: "var(--danger)" }} disabled={anyLoading}>Delete</button>
                             </>
                           )}
                         </div>
@@ -240,6 +243,17 @@ export default function MastersPage() {
           );
         })}
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          icon="🗑️"
+          title={`Delete ${confirmDelete.kind === 'type' ? 'Type' : 'Value'}`}
+          message={`Are you sure you want to delete "${confirmDelete.name}"? This cannot be undone.`}
+          confirmText="Delete"
+          onConfirm={() => confirmDelete.kind === 'type' ? removeType(confirmDelete.id) : removeValue(confirmDelete.id)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }

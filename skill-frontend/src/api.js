@@ -114,14 +114,16 @@ const api = {
     fetch(`${BASE}/lookup/types`, { headers: headers(token) }).then((r) => r.json()),
   createLookupType: (token, name) =>
     fetch(`${BASE}/lookup/types`, { method: 'POST', headers: headers(token), body: JSON.stringify({ name }) }).then((r) => r.json()),
+  updateLookupType: (token, id, name) =>
+    fetch(`${BASE}/lookup/types/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ name }) }).then((r) => r.json()),
   deleteLookupType: (token, id) =>
-    fetch(`${BASE}/lookup/types/${id}`, { method: 'DELETE', headers: headers(token) }).then((r) => r.json()),
+    fetch(`${BASE}/lookup/types/${id}`, { method: 'DELETE', headers: headers(token) }).then((r) => (r.ok ? {} : r.json())),
   createLookupValue: (token, typeId, value) =>
     fetch(`${BASE}/lookup/types/${typeId}/values`, { method: 'POST', headers: headers(token), body: JSON.stringify({ value }) }).then((r) => r.json()),
   updateLookupValue: (token, id, value) =>
     fetch(`${BASE}/lookup/values/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ value }) }).then((r) => r.json()),
   deleteLookupValue: (token, id) =>
-    fetch(`${BASE}/lookup/values/${id}`, { method: 'DELETE', headers: headers(token) }).then((r) => r.json()),
+    fetch(`${BASE}/lookup/values/${id}`, { method: 'DELETE', headers: headers(token) }).then((r) => (r.ok ? {} : r.json())),
 };
 
 export default api;

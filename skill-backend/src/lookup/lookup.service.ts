@@ -27,6 +27,11 @@ export class LookupService {
     return this.typeRepo.save(this.typeRepo.create({ name }));
   }
 
+  async updateType(id: number, name: string) {
+    await this.typeRepo.update(id, { name });
+    return this.typeRepo.findOne({ where: { id }, relations: ['values'] });
+  }
+
   async deleteType(id: number) {
     await this.typeRepo.delete(id);
   }

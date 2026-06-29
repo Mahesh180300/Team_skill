@@ -26,6 +26,12 @@ export class LookupController {
     return this.lookupService.createType(name);
   }
 
+  @Patch('types/:id')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  updateType(@Param('id', ParseIntPipe) id: number, @Body('name') name: string) {
+    return this.lookupService.updateType(id, name);
+  }
+
   @Delete('types/:id')
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   deleteType(@Param('id', ParseIntPipe) id: number) {
