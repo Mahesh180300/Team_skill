@@ -29,6 +29,8 @@ export default function SkillsPage() {
   const [toast, setToast] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 5;
   const [loadingSkills, setLoadingSkills] = useState(true);
   const [addingSkill, setAddingSkill] = useState(false);
   const [updatingSkill, setUpdatingSkill] = useState(false);
@@ -124,6 +126,14 @@ export default function SkillsPage() {
     if (s.monthsUsed > 0) parts.push(`${s.monthsUsed} mo`);
     return parts.join(" ");
   };
+
+  const sorted = [...skills].sort((a, b) => {
+    if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
+    if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
+    return 0;
+  });
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <>
@@ -247,69 +257,75 @@ export default function SkillsPage() {
       {skills.length === 0 ? (
         <div className="empty">No skills added yet. Add your first skill above!</div>
       ) : (
-        <div className="skills-table">
-          <div className="skills-table-header">
-            <div className="st-col st-col-num">#</div>
-            <div className="st-col st-col-name">Skill Name</div>
-            <div className="st-col st-col-type">Type</div>
-            <div className="st-col st-col-proficiency">Proficiency</div>
-            <div className="st-col st-col-duration">Experience</div>
-            <div className="st-col st-col-actions">Actions</div>
-          </div>
-          {[...skills].sort((a, b) => {
-            if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
-            if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
-            return 0;
-          }).map((s, idx) => (
-            <div key={s.id} className={`skills-table-row ${s.skillType === "Primary Skill" ? "skill-card--primary" : "skill-card--secondary"}`}>
-              {editId === s.id ? (
-                <div className="skill-edit-inline">
-                  <div className="form-group" style={{ flex: 2 }}>
-                    <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Skill Name" />
-                  </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
-                      {LEVELS.map((l) => <option key={l}>{l}</option>)}
-                    </select>
-                  </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <input type="number" min="0" placeholder="Yrs" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
-                  </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <input type="number" min="0" max="11" placeholder="Mo" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <button className="btn-primary btn-sm" onClick={() => save(s.id)} disabled={updatingSkill}>{updatingSkill ? "Saving..." : "Save"}</button>
-                    <button className="btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="st-col st-col-num">
-                    <span className="st-num">{idx + 1}</span>
-                  </div>
-                  <div className="st-col st-col-name">
-                    <span className="skill-name">{s.name}</span>
-                  </div>
-                  <div className="st-col st-col-type">
-                    <span className={`skill-type-badge ${s.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"}`}>
-                      {s.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
-                    </span>
-                  </div>
-                  <div className="st-col st-col-proficiency">
-                    <span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span>
-                  </div>
-                  <div className="st-col st-col-duration">
-                    <span className="skill-years">{formatDuration(s) || "—"}</span>
-                  </div>
-                  <div className="st-col st-col-actions">
-                    <button className="skill-btn-edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); }}>Edit</button>
-                    <button className="skill-btn-delete" onClick={() => setDeleteTargetId(s.id)}>Delete</button>
-                  </div>
-                </>
-              )}
+        <div>
+          <div className="skills-table">
+            <div className="skills-table-header">
+              <div className="st-col st-col-num">#</div>
+              <div className="st-col st-col-name">Skill Name</div>
+              <div className="st-col st-col-type">Type</div>
+              <div className="st-col st-col-proficiency">Proficiency</div>
+              <div className="st-col st-col-duration">Experience</div>
+              <div className="st-col st-col-actions">Actions</div>
             </div>
-          ))}
+            {paginated.map((s, idx) => {
+              const globalIdx = (currentPage - 1) * PAGE_SIZE + idx;
+              return (
+                <div key={s.id} className={`skills-table-row ${s.skillType === "Primary Skill" ? "skill-card--primary" : "skill-card--secondary"}`}>
+                  {editId === s.id ? (
+                    <div className="skill-edit-inline">
+                      <div className="form-group" style={{ flex: 2 }}>
+                        <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Skill Name" />
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
+                          {LEVELS.map((l) => <option key={l}>{l}</option>)}
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <input type="number" min="0" placeholder="Yrs" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <input type="number" min="0" max="11" placeholder="Mo" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
+                      </div>
+                      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                        <button className="btn-primary btn-sm" onClick={() => save(s.id)} disabled={updatingSkill}>{updatingSkill ? "Saving..." : "Save"}</button>
+                        <button className="btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="st-col st-col-num"><span className="st-num">{globalIdx + 1}</span></div>
+                      <div className="st-col st-col-name"><span className="skill-name">{s.name}</span></div>
+                      <div className="st-col st-col-type">
+                        <span className={`skill-type-badge ${s.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"}`}>
+                          {s.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
+                        </span>
+                      </div>
+                      <div className="st-col st-col-proficiency"><span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span></div>
+                      <div className="st-col st-col-duration"><span className="skill-years">{formatDuration(s) || "—"}</span></div>
+                      <div className="st-col st-col-actions">
+                        <button className="skill-btn-edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); }}>Edit</button>
+                        <button className="skill-btn-delete" onClick={() => setDeleteTargetId(s.id)}>Delete</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {totalPages > 1 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
+              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Page {currentPage} of {totalPages}</span>
+              <button className="btn-secondary btn-sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>← Prev</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button key={p} className="btn-secondary btn-sm" onClick={() => setCurrentPage(p)}
+                  style={p === currentPage ? { background: "var(--primary)", color: "#fff", borderColor: "var(--primary)" } : {}}>
+                  {p}
+                </button>
+              ))}
+              <button className="btn-secondary btn-sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next →</button>
+            </div>
+          )}
         </div>
       )}
 
