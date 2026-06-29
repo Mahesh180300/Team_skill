@@ -52,6 +52,7 @@ export default function CertificationsPage() {
       const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
       if (data.error) { setError(data.error); return; }
       setCerts(data.certifications);
+      setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
       setForm({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
       setSelectedFile(null);
       setShowModal(false);
@@ -63,6 +64,7 @@ export default function CertificationsPage() {
     await callDelete(async () => {
       const data = await api.deleteCert(token, certId);
       setCerts(data.certifications);
+      setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
       setDeleteTargetId(null);
       showToast("Certification deleted");
     });
