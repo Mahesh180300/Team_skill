@@ -4,22 +4,13 @@ import ConfirmDialog from "./ConfirmDialog";
 import api from "../api";
 
 export default function Sidebar({ page, onNavigate }) {
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, profile, setProfile } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [profile, setProfile] = useState(null);
 
   const [viewAvatar, setViewAvatar] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAvatar, setDeletingAvatar] = useState(false);
-
-  useEffect(() => {
-    if (token) {
-      api.getProfile(token).then((data) => {
-        setProfile(data);
-      });
-    }
-  }, [token]);
 
   const calcDuration = (dateStr) => {
     if (!dateStr) return "";
@@ -95,6 +86,7 @@ export default function Sidebar({ page, onNavigate }) {
     { key: "profile", icon: "👤", label: "My Profile" },
     { key: "skills", icon: "📚", label: "My Skills" },
     { key: "certs", icon: "🏆", label: "Certifications" },
+    { key: "documents", icon: "📁", label: "Documents" },
   ];
 
   const links = user?.role === "admin" ? adminLinks : employeeLinks;

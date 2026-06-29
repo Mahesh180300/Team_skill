@@ -10,6 +10,7 @@ import DashboardPage from "./pages/DashboardPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import LookupPage from "./pages/LookupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import DocumentsPage from "./pages/DocumentsPage";
 import api from "./api";
 
 function AppInner() {
@@ -44,6 +45,7 @@ function AppInner() {
         {page === "dashboard" && <DashboardPage />}
         {page === "employees" && <EmployeesPage />}
         {page === "lookup" && <LookupPage />}
+        {page === "documents" && <DocumentsPage />}
       </main>
     </div>
   );

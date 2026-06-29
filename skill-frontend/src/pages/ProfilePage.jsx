@@ -7,7 +7,7 @@ import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 
 export default function ProfilePage({ onNavigate }) {
-  const { user, token } = useAuth();
+  const { user, token, setProfile: setSharedProfile } = useAuth();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
@@ -85,6 +85,7 @@ export default function ProfilePage({ onNavigate }) {
     await callSave(async () => {
       const updated = await api.updateProfile(token, form);
       setProfile(updated);
+      setSharedProfile(updated);
       setEditing(false);
       showToast("Profile updated");
     });
@@ -101,6 +102,12 @@ export default function ProfilePage({ onNavigate }) {
           resumeFileName: data.resumeFileName,
           resumeFileType: data.resumeFileType,
         }));
+        setSharedProfile((p) => ({
+          ...p,
+          resumeData: data.resumeData,
+          resumeFileName: data.resumeFileName,
+          resumeFileType: data.resumeFileType,
+        }));
         showToast("Resume uploaded");
       }
     });
@@ -110,6 +117,12 @@ export default function ProfilePage({ onNavigate }) {
     await callDeleteResume(async () => {
       await api.deleteResume(token);
       setProfile((p) => ({
+        ...p,
+        resumeData: "",
+        resumeFileName: "",
+        resumeFileType: "",
+      }));
+      setSharedProfile((p) => ({
         ...p,
         resumeData: "",
         resumeFileName: "",
@@ -457,41 +470,41 @@ export default function ProfilePage({ onNavigate }) {
       <div className="profile-header">
         <div className="profile-stats">
           <div className="stat" onClick={() => onNavigate("skills")}>
-            {/* <div className="stat-icon">🎯</div> */}
+            <span className="stat-icon-emoji">🎯</span>
             <span className="stat-val">{profile.skills?.length || 0}</span>
             <span className="stat-lbl">Skills</span>
           </div>
 
           <div className="stat" onClick={() => onNavigate("certs")}>
-            {/* <div className="stat-icon">🏆</div> */}
+            <span className="stat-icon-emoji">🏆</span>
             <span className="stat-val">
               {profile.certifications?.length || 0}
             </span>
             <span className="stat-lbl">Certificates</span>
           </div>
-          <div
-  className="stat"
-  onClick={() =>
-    document
-      .getElementById("resume-section")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-  }
->
-  <span className="stat-val">
-    {profile.resumeData ? "✔️" : "❌"}
-  </span>
 
-  <span className="stat-lbl">
-    Resume Upload
-  </span>
-</div>
+          <div className="stat stat-exp">
+            <span className="stat-icon-emoji">📅</span>
+            <span className="stat-val">
+              {calcDuration(profile.dateOfJoining) || "—"}
+            </span>
+            <span className="stat-lbl">Years of Exp</span>
+          </div>
+
+          <div className="stat stat-relevant">
+            <span className="stat-icon-emoji">💼</span>
+            <span className="stat-val stat-val-relevant">
+              {calcDuration(profile.dateOfProjectAssigning) || "—"}
+            </span>
+            <span className="stat-lbl">Relevant Exp</span>
+          </div>
         </div>
       </div>
 
       <div className="details-container">
         
         <div className="employment-card">
-          <h3 className="employment-title">Employment Details</h3>
+          <h3 className="employment-title">Personal Information</h3>
 
           <div className="employment-row">
             <span className="employment-label">📧 Email</span>
@@ -536,20 +549,25 @@ export default function ProfilePage({ onNavigate }) {
         </div>
       
         <div className="skill-card">
-          <h3 className="skill-title">Skill Proficiency</h3>
+          <h3 className="skill-title">Skill Overview</h3>
 
           {profile.skills?.length > 0 ? (
             profile.skills.map((skill) => (
               <div className="skill-row" key={skill.id || skill.name}>
                 <div className="skill-info">
                   <span className="skill-name">{skill.name}</span>
-                </div>
-
-                <div className="skill-progress">
-                  <div
-                    className="skill-progress-fill"
-                    style={{ width: `${skill.level}%` }}
-                  />
+                  <span className={`skill-type-badge ${
+                    skill.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"
+                  }`}>
+                    {skill.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
+                  </span>
+                  <span className={`badge ${
+                    skill.proficiency === "Advanced" ? "badge-advanced"
+                    : skill.proficiency === "Intermediate" ? "badge-intermediate"
+                    : "badge-beginner"
+                  }`}>
+                    {skill.proficiency}
+                  </span>
                 </div>
               </div>
             ))

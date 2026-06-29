@@ -9,7 +9,7 @@ import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 
 export default function CertificationsPage() {
-  const { token } = useAuth();
+  const { token, setProfile: setSharedProfile } = useAuth();
   const [certs, setCerts] = useState([]);
   const [form, setForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [selectedFile, setSelectedFile] = useState(null);
@@ -145,47 +145,43 @@ export default function CertificationsPage() {
             </button>
 
             <div className="card form-card">
-              <h3>Add Certification</h3>
-              <form onSubmit={add} className="inline-form">
-                <input
-                  placeholder="Certification name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  required
-                />
-                <input
-                  placeholder="Issuer by (e.g. AWS, Google)"
-                  value={form.issuer}
-                  onChange={(e) => setForm({ ...form, issuer: e.target.value })}
-                  required
-                />
-                {/* <input
-                  type="number"
-                  placeholder="Issued on"
-                  min="1990"
-                  max={new Date().getFullYear()}
-                  value={form.year}
-                  onChange={(e) => setForm({ ...form, year: e.target.value })}
-                  style={{ width: 90 }}
-                  required
-                /> */}
-                <input
-  type="date"
-  value={form.issuedOn}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      issuedOn: e.target.value,
-    })
-  }
-  required
-/>
-                <input
-                  type="date"
-                  value={form.expiryDate}
-                  onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
-                  style={{ width: 180 }}
-                />
+              <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div className="form-group">
+                  <label>Certification Name</label>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                  <div className="form-group">
+                    <label>Issued by</label>
+                    <input
+                      placeholder="(e.g. AWS, Google)"
+                      value={form.issuer}
+                      onChange={(e) => setForm({ ...form, issuer: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Issued On</label>
+                    <input
+                      type="date"
+                      value={form.issuedOn}
+                      onChange={(e) => setForm({ ...form, issuedOn: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Expiry Date</label>
+                    <input
+                      type="date"
+                      value={form.expiryDate}
+                      onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
+                    />
+                  </div>
+                </div>
                 <div style={{ marginTop: 16, width: "100%" }}>
                   <label
                     htmlFor="cert-file"

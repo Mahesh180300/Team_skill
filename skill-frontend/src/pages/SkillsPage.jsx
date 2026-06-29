@@ -19,7 +19,7 @@ const STAT_META = [
 const EMPTY_FORM = { name: "", skillType: "Primary Skill", proficiency: "Beginner", yearsUsed: "", monthsUsed: "" };
 
 export default function SkillsPage() {
-  const { token } = useAuth();
+  const { token, setProfile: setSharedProfile } = useAuth();
   const [skills, setSkills] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
@@ -62,6 +62,7 @@ export default function SkillsPage() {
         monthsUsed: Number(editForm.monthsUsed) || 0,
       });
       setSkills(data.skills);
+      setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setEditId(null);
       showToast("Skill updated successfully!");
     });
@@ -71,6 +72,7 @@ export default function SkillsPage() {
     await callDelete(async () => {
       const data = await api.deleteSkill(token, skillId);
       setSkills(data.skills);
+      setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setDeleteTargetId(null);
       showToast("Skill deleted!");
     });
@@ -108,6 +110,7 @@ export default function SkillsPage() {
       const data = await api.bulkAddSkills(token, pendingSkills);
       if (data.error) { setError(data.error); return; }
       setSkills(data.skills);
+      setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setPendingSkills([]);
       setForm(EMPTY_FORM);
       setShowAddModal(false);
