@@ -469,20 +469,7 @@ export default function ProfilePage({ onNavigate }) {
 
       <div className="profile-header">
         <div className="profile-stats">
-          <div className="stat" onClick={() => onNavigate("skills")}>
-            <span className="stat-icon-emoji">🎯</span>
-            <span className="stat-val">{profile.skills?.length || 0}</span>
-            <span className="stat-lbl">Skills</span>
-          </div>
-
-          <div className="stat" onClick={() => onNavigate("certs")}>
-            <span className="stat-icon-emoji">🏆</span>
-            <span className="stat-val">
-              {profile.certifications?.length || 0}
-            </span>
-            <span className="stat-lbl">Certificates</span>
-          </div>
-
+     
           <div className="stat stat-exp">
             <span className="stat-icon-emoji">📅</span>
             <span className="stat-val">
@@ -498,6 +485,21 @@ export default function ProfilePage({ onNavigate }) {
             </span>
             <span className="stat-lbl">Relevant Exp</span>
           </div>
+
+               <div className="stat" onClick={() => onNavigate("skills")}>
+            <span className="stat-icon-emoji">🎯</span>
+            <span className="stat-val">{profile.skills?.length || 0}</span>
+            <span className="stat-lbl">Skills</span>
+          </div>
+
+          <div className="stat" onClick={() => onNavigate("certs")}>
+            <span className="stat-icon-emoji">🏆</span>
+            <span className="stat-val">
+              {profile.certifications?.length || 0}
+            </span>
+            <span className="stat-lbl">Certificates</span>
+          </div>
+
         </div>
       </div>
 
@@ -552,7 +554,11 @@ export default function ProfilePage({ onNavigate }) {
           <h3 className="skill-title">Skill Overview</h3>
 
           {profile.skills?.length > 0 ? (
-            profile.skills.map((skill) => (
+            [...profile.skills].sort((a, b) => {
+              if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
+              if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
+              return 0;
+            }).map((skill) => (
               <div className="skill-row" key={skill.id || skill.name}>
                 <div className="skill-info">
                   <span className="skill-name">{skill.name}</span>
@@ -578,7 +584,7 @@ export default function ProfilePage({ onNavigate }) {
        
       </div>
 
-      <div  id="resume-section" className="card resume-section-card">
+      {/* <div  id="resume-section" className="card resume-section-card">
         <input
           id="resume-input"
           type="file"
@@ -670,7 +676,7 @@ export default function ProfilePage({ onNavigate }) {
           onConfirm={deleteResume}
           onCancel={() => setShowDeleteResume(false)}
         />
-      )}
+      )} */}
 
       {savingProfile && <LoaderDialog message="Saving profile..." />}
       {/* {uploadingAvatar && <LoaderDialog message="Uploading profile picture..." />}

@@ -24,6 +24,7 @@ export default function SkillsPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState("");
   const [durationError, setDurationError] = useState("");
   const [toast, setToast] = useState("");
@@ -56,9 +57,9 @@ export default function SkillsPage() {
     });
   }, []);
 
-  const save = async (skillId) => {
+  const save = async () => {
     await callUpdate(async () => {
-      const data = await api.updateSkill(token, skillId, {
+      const data = await api.updateSkill(token, editId, {
         ...editForm,
         yearsUsed: Number(editForm.yearsUsed) || 0,
         monthsUsed: Number(editForm.monthsUsed) || 0,
@@ -66,6 +67,7 @@ export default function SkillsPage() {
       setSkills(data.skills);
       setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setEditId(null);
+      setShowEditModal(false);
       showToast("Skill updated successfully!");
     });
   };
@@ -152,6 +154,46 @@ export default function SkillsPage() {
       >
         + Add Skill
       </button>
+
+      {showEditModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-btn" onClick={() => { setShowEditModal(false); setEditId(null); }}>✕</button>
+            <div className="card form-card">
+              <h3>Edit Skill</h3>
+              <div className="inline-form">
+                <div className="form-group" style={{ width: "100%" }}>
+                  <label>Skill Type</label>
+                  <select value={editForm.skillType} onChange={(e) => setEditForm({ ...editForm, skillType: e.target.value })}>
+                    {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="form-group" style={{ width: "100%" }}>
+                  <label>Skill Name</label>
+                  <input value={editForm.name} readOnly style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
+                </div>
+                <div className="form-group">
+                  <label>Proficiency</label>
+                  <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
+                    {LEVELS.map((l) => <option key={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Years Used</label>
+                  <input type="number" min="0" placeholder="0" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(0–11)</span></label>
+                  <input type="number" min="0" max="11" placeholder="0" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
+                </div>
+                <button className="btn-primary" style={{ display: "block", margin: "12px auto 0", width: "100%" }} onClick={save} disabled={updatingSkill}>
+                  {updatingSkill ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <div className="modal-overlay">
@@ -271,28 +313,7 @@ export default function SkillsPage() {
               const globalIdx = (currentPage - 1) * PAGE_SIZE + idx;
               return (
                 <div key={s.id} className={`skills-table-row ${s.skillType === "Primary Skill" ? "skill-card--primary" : "skill-card--secondary"}`}>
-                  {editId === s.id ? (
-                    <div className="skill-edit-inline">
-                      <div className="form-group" style={{ flex: 2 }}>
-                        <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Skill Name" />
-                      </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
-                          {LEVELS.map((l) => <option key={l}>{l}</option>)}
-                        </select>
-                      </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <input type="number" min="0" placeholder="Yrs" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
-                      </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <input type="number" min="0" max="11" placeholder="Mo" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
-                      </div>
-                      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                        <button className="btn-primary btn-sm" onClick={() => save(s.id)} disabled={updatingSkill}>{updatingSkill ? "Saving..." : "Save"}</button>
-                        <button className="btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
+                  {(
                     <>
                       <div className="st-col st-col-num"><span className="st-num">{globalIdx + 1}</span></div>
                       <div className="st-col st-col-name"><span className="skill-name">{s.name}</span></div>
@@ -304,11 +325,12 @@ export default function SkillsPage() {
                       <div className="st-col st-col-proficiency"><span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span></div>
                       <div className="st-col st-col-duration"><span className="skill-years">{formatDuration(s) || "—"}</span></div>
                       <div className="st-col st-col-actions">
-                        <button className="skill-btn-edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); }}>Edit</button>
+                        <button className="skill-btn-edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}>Edit</button>
                         <button className="skill-btn-delete" onClick={() => setDeleteTargetId(s.id)}>Delete</button>
                       </div>
                     </>
-                  )}
+                  )
+                  }
                 </div>
               );
             })}

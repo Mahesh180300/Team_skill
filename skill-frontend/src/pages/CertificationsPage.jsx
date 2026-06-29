@@ -269,7 +269,7 @@ export default function CertificationsPage() {
               <div className="modern-cert-content">
                 <h3>{c.name}</h3>
                 {c.issuer && (
-                  <div className="cert-issuer">Issued by : {c.issuer}</div>
+                  <div className="cert-issuer">🏢 Issued by : {c.issuer}</div>
                 )}
                {c.issuedOn && (
   <div className="cert-year">

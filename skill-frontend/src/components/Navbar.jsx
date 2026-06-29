@@ -232,6 +232,7 @@ export default function Sidebar({ page, onNavigate }) {
                   </div>
                 </div>
 
+                {user?.role !== "admin" && (
                 <div className="profile-completion">
                   {(() => {
                     const { percent, missing } = calcCompletion(profile);
@@ -269,16 +270,12 @@ export default function Sidebar({ page, onNavigate }) {
                                   key={m}
                                   className="missing-tag"
                                   onClick={() => onNavigate(target)}
-                                  style={{
-                                    cursor: "pointer",
-                                  }}
+                                  style={{ cursor: "pointer" }}
                                 >
                                   {m}
                                 </span>
                               ) : (
-                                <span key={m} className="missing-tag">
-                                  {m}
-                                </span>
+                                <span key={m} className="missing-tag">{m}</span>
                               );
                             })}
                           </div>
@@ -287,6 +284,7 @@ export default function Sidebar({ page, onNavigate }) {
                     );
                   })()}
                 </div>
+                )}
               </>
             )}
           </div>

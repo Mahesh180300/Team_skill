@@ -994,10 +994,18 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   padding-bottom: 0;
 }
 
-.skill-info {
+/* .skill-info {
   display: flex;
   justify-content: space-around;
-  align-items: center;
+  align-items: left;
+} */
+
+.skill-info {
+    display: grid;
+    grid-template-columns: 120px 120px 120px;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 22px;
 }
 
 .skill-name {
