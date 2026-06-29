@@ -517,7 +517,7 @@ export default function CertificationsPage() {
         <ConfirmDialog
           icon="🏅"
           title="Delete Certification"
-          message="Are you sure you want to delete this certification? This cannot be undone."
+          message="Are you sure want to delete this certification? This cannot be undone."
           confirmText="Yes, Delete"
           cancelText="Cancel"
           onConfirm={() => remove(deleteTargetId)}

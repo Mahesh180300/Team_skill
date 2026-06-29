@@ -367,7 +367,7 @@ export default function EmployeesPage() {
         <ConfirmDialog
           icon="👤"
           title="Remove Employee"
-          message="Are you sure you want to remove this employee? This cannot be undone."
+          message="Are you sure want to remove this employee? This cannot be undone."
           confirmText="Yes, Remove"
           cancelText="Cancel"
           onConfirm={() => remove(deleteTargetId)}

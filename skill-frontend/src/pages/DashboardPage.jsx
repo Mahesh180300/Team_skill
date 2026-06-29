@@ -22,7 +22,7 @@ export default function DashboardPage() {
 
   return (
     <div className="page">
-      <div className="page-header"><h2>Admin Dashboard</h2></div>
+      <div className="page-header"><h2>Dashboard</h2></div>
 
       <div className="stats-grid">
         <div className="stat-card stat-primary">

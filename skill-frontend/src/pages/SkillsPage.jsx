@@ -314,7 +314,7 @@ export default function SkillsPage() {
         <ConfirmDialog
           icon="🗑️"
           title="Delete Skill"
-          message="Are you sure you want to delete this skill? This cannot be undone."
+          message="Are you sure want to delete this skill? This cannot be undone."
           confirmText="Yes, Delete"
           cancelText="Cancel"
           onConfirm={() => remove(deleteTargetId)}

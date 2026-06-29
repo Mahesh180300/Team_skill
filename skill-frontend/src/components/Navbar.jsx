@@ -337,7 +337,7 @@ export default function Sidebar({ page, onNavigate }) {
         <ConfirmDialog
           icon="🚪"
           title="Logout"
-          message="Are you sure you want to logout?"
+          message="Are you sure want to logout?"
           confirmText="Yes, Logout"
           cancelText="Cancel"
           onConfirm={confirmLogout}

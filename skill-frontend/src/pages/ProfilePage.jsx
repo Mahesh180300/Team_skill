@@ -646,7 +646,7 @@ export default function ProfilePage({ onNavigate }) {
         <ConfirmDialog
           icon="🗑️"
           title="Delete Resume"
-          message="Are you sure you want to delete your resume? This cannot be undone."
+          message="Are you sure want to delete your resume? This cannot be undone."
           confirmText="Yes, Delete"
           cancelText="Cancel"
           onConfirm={deleteResume}

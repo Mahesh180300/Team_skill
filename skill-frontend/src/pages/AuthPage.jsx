@@ -108,9 +108,9 @@ export default function AuthPage({ mode, onNavigate }) {
             <>Already have an account? <button onClick={() => onNavigate("login")}>Sign In</button></>
           )}
         </div>
-        <div className="auth-hint">
+        {/* <div className="auth-hint">
           <small>Admin: sajiths@kyyba.com / admin123</small>
-        </div>
+        </div> */}
       </div>
     </div>
   );
