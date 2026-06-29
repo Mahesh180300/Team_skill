@@ -41,6 +41,8 @@ const api = {
   // Skills
   addSkill: (token, data) =>
     fetch(`${BASE}/profile/skills`, { method: "POST", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
+  bulkAddSkills: (token, skills) =>
+    fetch(`${BASE}/profile/skills/bulk`, { method: "POST", headers: headers(token), body: JSON.stringify({ skills }) }).then((r) => r.json()),
   updateSkill: (token, skillId, data) =>
     fetch(`${BASE}/profile/skills/${skillId}`, { method: "PUT", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   deleteSkill: (token, skillId) =>
@@ -52,6 +54,8 @@ const api = {
     fd.append("name", data.name);
     if (data.issuer) fd.append("issuer", data.issuer);
     if (data.year) fd.append("year", data.year);
+    if (data.issuedOn) fd.append("issuedOn", data.issuedOn);
+    if (data.expiryDate) fd.append("expiryDate", data.expiryDate);
     if (file) fd.append("file", file);
     return fetch(`${BASE}/profile/certifications`, {
       method: "POST",
@@ -64,6 +68,8 @@ const api = {
     fd.append("name", data.name);
     if (data.issuer) fd.append("issuer", data.issuer);
     if (data.year) fd.append("year", data.year);
+    if (data.issuedOn) fd.append("issuedOn", data.issuedOn);
+    if (data.expiryDate) fd.append("expiryDate", data.expiryDate);
     if (file) fd.append("file", file);
     return fetch(`${BASE}/profile/certifications/${certId}`, {
       method: "PATCH",
@@ -94,10 +100,30 @@ const api = {
     fetch(`${BASE}/admin/stats`, { headers: headers(token) }).then((r) => r.json()),
   getAdminEmployees: (token) =>
     fetch(`${BASE}/admin/employees`, { headers: headers(token) }).then((r) => r.json()),
+  updateEmployee: (token, id, data) =>
+    fetch(`${BASE}/admin/employees/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   deleteEmployee: (token, id) =>
     fetch(`${BASE}/admin/employees/${id}`, { method: "DELETE", headers: headers(token) }).then((r) => (r.status === 204 ? {} : r.json())),
   seedAdmin: () =>
     fetch(`${BASE}/admin/seed-admin`, { method: "POST", headers: headers() }).then((r) => r.json()),
+
+  // Lookup
+  getLookupValues: (type) =>
+    fetch(`${BASE}/lookup/values?type=${encodeURIComponent(type)}`).then((r) => r.json()),
+  getAllLookupTypes: (token) =>
+    fetch(`${BASE}/lookup/types`, { headers: headers(token) }).then((r) => r.json()),
+  createLookupType: (token, name) =>
+    fetch(`${BASE}/lookup/types`, { method: 'POST', headers: headers(token), body: JSON.stringify({ name }) }).then((r) => r.json()),
+  updateLookupType: (token, id, name) =>
+    fetch(`${BASE}/lookup/types/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ name }) }).then((r) => r.json()),
+  deleteLookupType: (token, id) =>
+    fetch(`${BASE}/lookup/types/${id}`, { method: 'DELETE', headers: headers(token) }).then((r) => (r.ok ? {} : r.json())),
+  createLookupValue: (token, typeId, value) =>
+    fetch(`${BASE}/lookup/types/${typeId}/values`, { method: 'POST', headers: headers(token), body: JSON.stringify({ value }) }).then((r) => r.json()),
+  updateLookupValue: (token, id, value) =>
+    fetch(`${BASE}/lookup/values/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ value }) }).then((r) => r.json()),
+  deleteLookupValue: (token, id) =>
+    fetch(`${BASE}/lookup/values/${id}`, { method: 'DELETE', headers: headers(token) }).then((r) => (r.ok ? {} : r.json())),
 };
 
 export default api;

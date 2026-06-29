@@ -18,8 +18,13 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, body: any) {
-    const { name, department, jobTitle, yearsOfExperience } = body;
-    await this.repo.update(userId, { name, department, jobTitle, yearsOfExperience });
+    const { firstName, lastName, department, jobTitle, currentProject, dateOfJoining, dateOfProjectAssigning, billable, manager } = body;
+    const name = firstName && lastName ? `${firstName} ${lastName}` : undefined;
+    const updates: any = { department, jobTitle, currentProject, dateOfJoining: dateOfJoining || null, dateOfProjectAssigning: dateOfProjectAssigning || null, billable, manager };
+    if (firstName) updates.firstName = firstName;
+    if (lastName) updates.lastName = lastName;
+    if (name) updates.name = name;
+    await this.repo.update(userId, updates);
     return this.getProfile(userId);
   }
 
@@ -57,7 +62,7 @@ export class UsersService {
 
     if (skill) qb.andWhere('skill.name ILIKE :skill', { skill: `%${skill}%` });
     if (department) qb.andWhere('user.department ILIKE :dept', { dept: `%${department}%` });
-    if (minExp) qb.andWhere('user.yearsOfExperience >= :minExp', { minExp: Number(minExp) });
+    if (minExp) qb.andWhere('user.dateOfJoining <= :maxDate', { maxDate: new Date(new Date().setFullYear(new Date().getFullYear() - Number(minExp))).toISOString().split('T')[0] });
     if (certification) qb.andWhere('cert.name ILIKE :cert', { cert: `%${certification}%` });
 
     const users = await qb.getMany();

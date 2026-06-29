@@ -12,12 +12,14 @@ export class CertificationsService {
   ) {}
 
   async addCertification(userId: string, body: any, file?: Express.Multer.File) {
-    const { name, issuer, year } = body;
+    const { name, issuer, year, issuedOn, expiryDate } = body;
     if (!name) throw new BadRequestException('Certification name required');
     const cert = this.certsRepo.create({
       name,
       issuer,
       year: year ? Number(year) : null,
+      issuedOn: issuedOn || null,
+      expiryDate: expiryDate || null,
       userId,
       ...(file && {
         fileName: file.originalname,
@@ -32,10 +34,12 @@ export class CertificationsService {
   async editCertification(userId: string, certId: string, body: any, file?: Express.Multer.File) {
     const cert = await this.certsRepo.findOne({ where: { id: certId, userId } });
     if (!cert) throw new BadRequestException('Certification not found');
-    const { name, issuer, year } = body;
+    const { name, issuer, year, issuedOn, expiryDate } = body;
     if (name) cert.name = name;
     if (issuer !== undefined) cert.issuer = issuer;
     if (year !== undefined) cert.year = year ? Number(year) : null;
+    if (issuedOn !== undefined) cert.issuedOn = issuedOn || null;
+    if (expiryDate !== undefined) cert.expiryDate = expiryDate || null;
     if (file) {
       cert.fileName = file.originalname;
       cert.fileType = file.mimetype;

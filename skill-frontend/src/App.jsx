@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Navbar from "./components/Navbar";
+import Sidebar from "./components/Navbar";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import SkillsPage from "./pages/SkillsPage";
 import CertificationsPage from "./pages/CertificationsPage";
 import DashboardPage from "./pages/DashboardPage";
 import EmployeesPage from "./pages/EmployeesPage";
+import LookupPage from "./pages/LookupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import DocumentsPage from "./pages/DocumentsPage";
 import api from "./api";
 
 function AppInner() {
@@ -34,16 +36,18 @@ function AppInner() {
   }
 
   return (
-    <>
-      <Navbar page={page} onNavigate={setPage} />
+    <div className="app-layout">
+      <Sidebar page={page} onNavigate={setPage} />
       <main className="main-content">
-        {page === "profile" && <ProfilePage />}
+        {page === "profile" && <ProfilePage onNavigate={setPage} />}
         {page === "skills" && <SkillsPage />}
         {page === "certs" && <CertificationsPage />}
         {page === "dashboard" && <DashboardPage />}
         {page === "employees" && <EmployeesPage />}
+        {page === "lookup" && <LookupPage />}
+        {page === "documents" && <DocumentsPage />}
       </main>
-    </>
+    </div>
   );
 }
 

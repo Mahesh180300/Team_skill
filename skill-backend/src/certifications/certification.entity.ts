@@ -15,6 +15,12 @@ export class Certification {
   @Column({ type: 'int', nullable: true })
   year: number;
 
+  @Column({ type: 'date', nullable: true })
+  issuedOn: string;
+
+  @Column({ type: 'date', nullable: true })
+  expiryDate: string;
+
   @ManyToOne(() => User, (user) => user.certifications, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;

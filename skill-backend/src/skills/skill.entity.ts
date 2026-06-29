@@ -22,6 +22,9 @@ export class Skill {
   @JoinColumn({ name: 'userId' })
   user: User;
 
+  @Column({ nullable: true })
+  skillType: string;
+
   @Column()
   userId: string;
 }

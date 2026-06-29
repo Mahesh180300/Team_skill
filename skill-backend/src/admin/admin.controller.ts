@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Post, Param, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Delete, Post, Patch, Param, Body, UseGuards, HttpCode } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { AdminGuard } from '../common/admin.guard';
@@ -17,6 +17,12 @@ export class AdminController {
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   getAllEmployees() {
     return this.adminService.getAllEmployees();
+  }
+
+  @Patch('employees/:id')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  updateEmployee(@Param('id') id: string, @Body() body: any) {
+    return this.adminService.updateEmployee(id, body);
   }
 
   @Delete('employees/:id')

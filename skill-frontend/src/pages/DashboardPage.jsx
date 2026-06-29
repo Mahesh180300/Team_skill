@@ -1,22 +1,28 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import Loader from "../components/Loader";
 
 export default function DashboardPage() {
   const { token } = useAuth();
   const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    api.getStats(token).then(setStats);
+    setLoadingStats(true);
+    api.getStats(token).then((data) => {
+      setStats(data);
+      setLoadingStats(false);
+    });
   }, []);
 
-  if (!stats) return <div className="loading">Loading dashboard...</div>;
+  if (loadingStats) return <Loader fullScreen message="Loading dashboard..." />;
 
   const maxSkillCount = stats.topSkills[0]?.count || 1;
 
   return (
     <div className="page">
-      <div className="page-header"><h2>Admin Dashboard</h2></div>
+      <div className="page-header"><h2>Dashboard</h2></div>
 
       <div className="stats-grid">
         <div className="stat-card stat-primary">

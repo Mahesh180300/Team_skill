@@ -4,16 +4,27 @@ import api from "../api";
 import { FaReact, FaJava, FaPython, FaNodeJs, FaAws } from "react-icons/fa";
 import { SiMongodb, SiJavascript, SiHtml5, SiCss } from "react-icons/si";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Loader from "../components/Loader";
+import LoaderDialog from "../components/LoaderDialog";
+import { useApi } from "../hooks/useApi";
 
 export default function CertificationsPage() {
-  const { token } = useAuth();
+  const { token, setProfile: setSharedProfile } = useAuth();
   const [certs, setCerts] = useState([]);
-  const [form, setForm] = useState({ name: "", issuer: "", year: "" });
+  const [form, setForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [loadingCerts, setLoadingCerts] = useState(true);
+  const [addingCert, setAddingCert] = useState(false);
+  const [updatingCert, setUpdatingCert] = useState(false);
+  const [deletingCert, setDeletingCert] = useState(false);
+
+  const callAdd = useApi(setAddingCert);
+  const callUpdate = useApi(setUpdatingCert);
+  const callDelete = useApi(setDeletingCert);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -22,42 +33,47 @@ export default function CertificationsPage() {
 
   // ── Edit state ──────────────────────────────────────────────────────────────
   const [editingCert, setEditingCert] = useState(null); // holds the cert being edited
-  const [editForm, setEditForm] = useState({ name: "", issuer: "", year: "" });
+  const [editForm, setEditForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [editFile, setEditFile] = useState(null);
   const [editError, setEditError] = useState("");
 
   useEffect(() => {
-    api.getProfile(token).then((d) => setCerts(d.certifications || []));
+    setLoadingCerts(true);
+    api.getProfile(token).then((d) => {
+      setCerts(d.certifications || []);
+      setLoadingCerts(false);
+    });
   }, []);
 
   const add = async (e) => {
     e.preventDefault();
     setError("");
-    const data = await api.addCert(
-      token,
-      { ...form, year: form.year ? Number(form.year) : undefined },
-      selectedFile,
-    );
-    if (data.error) return setError(data.error);
-    setCerts(data.certifications);
-    setForm({ name: "", issuer: "", year: "" });
-    setSelectedFile(null);
-    setShowModal(false);
-    showToast("Certification added successfully!");
+    await callAdd(async () => {
+      const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
+      if (data.error) { setError(data.error); return; }
+      setCerts(data.certifications);
+      setForm({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
+      setSelectedFile(null);
+      setShowModal(false);
+      showToast("Certification added successfully!");
+    });
   };
 
   const remove = async (certId) => {
-    const data = await api.deleteCert(token, certId);
-    setCerts(data.certifications);
-    setDeleteTargetId(null);
-    showToast("Certification deleted");
+    await callDelete(async () => {
+      const data = await api.deleteCert(token, certId);
+      setCerts(data.certifications);
+      setDeleteTargetId(null);
+      showToast("Certification deleted");
+    });
   };
   const openEdit = (cert) => {
     setEditingCert(cert);
     setEditForm({
       name: cert.name,
       issuer: cert.issuer || "",
-      year: cert.year || "",
+       issuedOn: cert.issuedOn || "",
+      expiryDate: cert.expiryDate || "",
     });
     setEditFile(null);
     setEditError("");
@@ -72,11 +88,13 @@ export default function CertificationsPage() {
   const saveEdit = async (e) => {
     e.preventDefault();
     setEditError("");
-    const data = await api.editCert(token, editingCert.id, editForm, editFile);
-    if (data.error) return setEditError(data.error);
-    setCerts(data.certifications);
-    closeEdit();
-    showToast("Certification updated successfully");
+    await callUpdate(async () => {
+      const data = await api.editCert(token, editingCert.id, { ...editForm,  issuedOn: editForm.issuedOn || undefined, expiryDate: editForm.expiryDate || undefined }, editFile);
+      if (data.error) { setEditError(data.error); return; }
+      setCerts(data.certifications);
+      closeEdit();
+      showToast("Certification updated successfully");
+    });
   };
 
   const techIcons = [
@@ -97,8 +115,14 @@ export default function CertificationsPage() {
     );
   };
 
+  if (loadingCerts) return <Loader message="Loading certifications..." />;
+
   return (
-    <div className="page">
+    <>
+      {addingCert && <LoaderDialog message="Adding certification..." />}
+      {updatingCert && <LoaderDialog message="Updating certification..." />}
+      {deletingCert && <LoaderDialog message="Deleting certification..." />}
+      <div className="page">
       <div className="page-header">
         <h2>My Certifications</h2>
       </div>
@@ -121,30 +145,43 @@ export default function CertificationsPage() {
             </button>
 
             <div className="card form-card">
-              <h3>Add Certification</h3>
-              <form onSubmit={add} className="inline-form">
-                <input
-                  placeholder="Certification name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  required
-                />
-                <input
-                  placeholder="Issuer (e.g. AWS, Google)"
-                  value={form.issuer}
-                  onChange={(e) => setForm({ ...form, issuer: e.target.value })}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Year"
-                  min="1990"
-                  max={new Date().getFullYear()}
-                  value={form.year}
-                  onChange={(e) => setForm({ ...form, year: e.target.value })}
-                  style={{ width: 90 }}
-                  required
-                />
+              <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div className="form-group">
+                  <label>Certification Name</label>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                  <div className="form-group">
+                    <label>Issued by</label>
+                    <input
+                      placeholder="(e.g. AWS, Google)"
+                      value={form.issuer}
+                      onChange={(e) => setForm({ ...form, issuer: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Issued On</label>
+                    <input
+                      type="date"
+                      value={form.issuedOn}
+                      onChange={(e) => setForm({ ...form, issuedOn: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Expiry Date</label>
+                    <input
+                      type="date"
+                      value={form.expiryDate}
+                      onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
+                    />
+                  </div>
+                </div>
                 <div style={{ marginTop: 16, width: "100%" }}>
                   <label
                     htmlFor="cert-file"
@@ -211,12 +248,8 @@ export default function CertificationsPage() {
                     </p>
                   )}
                 </div>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ display: "block", margin: "15px auto 0" }}
-                >
-                  Add
+                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }} disabled={addingCert}>
+                  {addingCert ? "Adding..." : "Add"}
                 </button>
               </form>
               {error && <p className="error">{error}</p>}
@@ -236,9 +269,15 @@ export default function CertificationsPage() {
               <div className="modern-cert-content">
                 <h3>{c.name}</h3>
                 {c.issuer && (
-                  <div className="cert-issuer">Issuer : {c.issuer}</div>
+                  <div className="cert-issuer">🏢 Issued by : {c.issuer}</div>
                 )}
-                {c.year && <div className="cert-year">📅 {c.year}</div>}
+               {c.issuedOn && (
+  <div className="cert-year">
+    📅 Issued On: {(c.issuedOn)}
+  </div>
+)}
+
+                {c.expiryDate && <div className="cert-year">🗓️ Expires on: {c.expiryDate}</div>}
               </div>
               {c.fileData && (
                 <button
@@ -269,6 +308,7 @@ export default function CertificationsPage() {
       )}
 
       {/* ── Edit Modal ───────────────────────────────────────────────────────── */}
+      {updatingCert && <LoaderDialog message="Updating certification..." />}
       {editingCert && (
         <div
           style={{
@@ -326,15 +366,15 @@ export default function CertificationsPage() {
                   setEditForm({ ...editForm, name: e.target.value })
                 }
               />
-              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Issuer</label>
+              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Issued by</label>
               <input
-                placeholder="Issuer (e.g. AWS, Google)"
+                placeholder="Issued by (e.g. AWS, Google)"
                 value={editForm.issuer}
                 onChange={(e) =>
                   setEditForm({ ...editForm, issuer: e.target.value })
                 }
               />
-              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Year</label>
+              {/* <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Year</label>
               <input
                 type="number"
                 placeholder="Year"
@@ -345,8 +385,48 @@ export default function CertificationsPage() {
                   setEditForm({ ...editForm, year: e.target.value })
                 }
                 style={{ width: 90 }}
-              />
+              /> */}
+              <label
+  style={{
+    fontWeight: "500",
+    fontSize: "14px",
+    color: "var(--text-muted)",
+  }}
+>
+  Issued On
+</label>
 
+<input
+  type="date"
+  value={editForm.issuedOn}
+  onChange={(e) =>
+    setEditForm({
+      ...editForm,
+      issuedOn: e.target.value,
+    })
+  }
+/>
+               <label
+  style={{
+    fontWeight: "500",
+    fontSize: "14px",
+    color: "var(--text-muted)",
+  }}
+>
+  Expiry Date
+</label>
+
+<input
+  type="date"
+  value={editForm.expiryDate}
+  onChange={(e) =>
+    setEditForm({
+      ...editForm,
+      expiryDate: e.target.value,
+    })
+  }
+  style={{ width: 180 }}
+/>
               <label
                 htmlFor="edit-cert-file"
                 onDragOver={(e) => e.preventDefault()}
@@ -412,12 +492,8 @@ export default function CertificationsPage() {
               {editError && <p className="error">{editError}</p>}
 
               <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ flex: 1 }}
-                >
-                  Save Changes
+                <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={updatingCert}>
+                  {updatingCert ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   type="button"
@@ -437,13 +513,14 @@ export default function CertificationsPage() {
         <ConfirmDialog
           icon="🏅"
           title="Delete Certification"
-          message="Are you sure you want to delete this certification? This cannot be undone."
+          message="Are you sure want to delete this certification? This cannot be undone."
           confirmText="Yes, Delete"
           cancelText="Cancel"
           onConfirm={() => remove(deleteTargetId)}
           onCancel={() => setDeleteTargetId(null)}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
