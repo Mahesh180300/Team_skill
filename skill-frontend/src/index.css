@@ -802,7 +802,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 
 .profile-stats .stat-val {
   display: block;
-  font-size: 40px;
+  font-size: 30px;
   font-weight: 700;
   color: #2563eb;
   line-height: 1;
@@ -880,9 +880,6 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   align-items: center;
   padding: 12px 0;
   border-bottom: 1px solid #eee;
-}
-.skill-row {
-  margin-bottom: 18px;
 }
 .skill-progress {
   width: 100%;
@@ -985,7 +982,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 }
 
 .skill-row {
-  padding: 10px 0;
+  padding: 0px 0;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -1005,7 +1002,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
     grid-template-columns: 120px 120px 120px;
     align-items: center;
     gap: 20px;
-    padding: 12px 22px;
+    padding: 10px 22px;
 }
 
 .skill-name {
@@ -1099,7 +1096,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   text-transform: uppercase;
 }
 .skill-stat-count {
-  font-size: 42px;
+  font-size: 35px;
   font-weight: 800;
   line-height: 1;
   margin-bottom: 6px;
