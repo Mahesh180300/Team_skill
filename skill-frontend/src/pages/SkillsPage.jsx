@@ -5,6 +5,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import SearchableSelect from "../components/SearchableSelect";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
@@ -230,12 +231,18 @@ export default function SkillsPage() {
                     {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
                   </select>
                 </div>
-                 <div className="form-group" style={{ width: "100%" }}>
+                <div className="form-group" style={{ width: "100%" }}>
                   <label>Skill Name</label>
-                  <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
-                    <option value="">-- Select Skill --</option>
-                    {skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s)).map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <SearchableSelect
+                    value={form.name}
+                    onChange={(val) => setForm({ ...form, name: val })}
+                    options={skillOptions.filter(
+                      (s) =>
+                        !skills.some((sk) => sk.name === s) &&
+                        !pendingSkills.some((sk) => sk.name === s)
+                    )}
+                    placeholder="-- Select Skill --"
+                  />
                 </div>
                 <div className="form-group">
                   <label>Proficiency</label>
