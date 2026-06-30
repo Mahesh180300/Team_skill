@@ -200,8 +200,11 @@ export default function SkillsPage() {
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="close-btn" onClick={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); }}>✕</button>
+           <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 ,fontSize: "16px",fontWeight: "500"}}>
+            <label>Add Skills</label>
+           </div>
             <div className="card form-card">
-              <h3>Add Skills</h3>
+              
 
               {pendingSkills.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
@@ -287,10 +290,7 @@ export default function SkillsPage() {
                 <span className="skill-stat-label" style={{ background: lightBg, color: accent }}>{label}</span>
               </div>
               <div className="skill-stat-count" style={{ color: accent }}>{counts[key]}</div>
-              {/* <div className="skill-stat-subtitle">{subtitle}</div> */}
-              <div className="skill-stat-bar-track">
-                <div className="skill-stat-bar-fill" style={{ width: `${barWidth}%`, background: accent }} />
-              </div>
+
               <hr className="skill-stat-divider" />
               {/* <div className="skill-stat-footer">
                 <span className="skill-stat-footer-label">{key === "total" ? "All categories" : `of ${counts.total} total`}</span>

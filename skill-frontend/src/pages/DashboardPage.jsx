@@ -25,24 +25,20 @@ export default function DashboardPage() {
       <div className="page-header"><h2>Dashboard</h2></div>
 
       <div className="stats-grid">
-        <div className="stat-card stat-primary">
-          <div className="stat-icon">👥</div>
+        <div className="stat-card stat-info">
           <div className="stat-val">{stats.totalEmployees}</div>
           <div className="stat-lbl">Total Employees</div>
         </div>
-        <div className="stat-card stat-warning">
-          <div className="stat-icon">🛠️</div>
-          <div className="stat-val">{stats.topSkills.length}</div>
+        <div className="stat-card stat-info">
+         <div className="stat-val">{stats.topSkills.length}</div>
           <div className="stat-lbl">Unique Skills</div>
         </div>
         <div className="stat-card stat-info">
-          <div className="stat-icon">🏢</div>
           <div className="stat-val">{stats.departmentDistribution.length}</div>
           <div className="stat-lbl">Departments</div>
         </div>
-        <div className="stat-card stat-danger">
-          <div className="stat-icon">⚠️</div>
-          <div className="stat-val">{stats.skillGapCount}</div>
+        <div className="stat-card stat-info">
+         <div className="stat-val">{stats.skillGapCount}</div>
           <div className="stat-lbl">Skill Gap (no skills)</div>
         </div>
       </div>

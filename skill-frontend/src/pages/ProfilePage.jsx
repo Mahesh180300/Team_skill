@@ -76,9 +76,9 @@ export default function ProfilePage({ onNavigate }) {
     if (months < 0) return "";
     const yrs = Math.floor(months / 12);
     const mo = months % 12;
-    if (yrs === 0) return `${mo}mo`;
-    if (mo === 0) return `${yrs}yr`;
-    return `${yrs}yr ${mo}mo`;
+    if (yrs === 0) return `${mo} month`;
+    if (mo === 0) return `${yrs} year`;
+    return `${yrs} year ${mo} month`;
   };
 
   const save = async (e) => {
@@ -183,7 +183,7 @@ export default function ProfilePage({ onNavigate }) {
               background: "var(--card-bg,#fff)",
               borderRadius: 14,
               width: "100%",
-              maxWidth: 560,
+              maxWidth: "640px",
               maxHeight: "calc(100vh - 32px)",
               display: "flex",
               flexDirection: "column",
@@ -226,7 +226,7 @@ export default function ProfilePage({ onNavigate }) {
                     fontSize: 13,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    color: "var(--primary)",
+                    color: "gray",
                     marginBottom: 10,
                   }}
                 >
@@ -237,7 +237,6 @@ export default function ProfilePage({ onNavigate }) {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gap: 12,
-                    background: "var(--bg)",
                     border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: 16,
@@ -290,7 +289,7 @@ export default function ProfilePage({ onNavigate }) {
                     fontSize: 13,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    color: "var(--primary)",
+                    color: "gray",
                     marginBottom: 10,
                   }}
                 >
@@ -301,7 +300,6 @@ export default function ProfilePage({ onNavigate }) {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gap: 12,
-                    background: "var(--bg)",
                     border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: 16,
@@ -443,36 +441,44 @@ export default function ProfilePage({ onNavigate }) {
       <div className="profile-header">
         <div className="profile-stats">
      
-          <div className="stat stat-exp">
+          {/* <div className="stat stat-exp"> */}
             {/* <span className="stat-icon-emoji">📅</span> */}
-            <span className="stat-val">
+            {/* <span className="stat-val">
               {calcDuration(profile.dateOfJoining) || "—"}
             </span>
-            <span className="stat-lbl">Years of Exp</span>
-          </div>
+            <span className="stat-lbl">Years of Experience</span>
+          </div> */}
 
-          <div className="stat stat-relevant">
-            <span className="stat-icon-emoji">💼</span>
-            <span className="stat-val stat-val-relevant">
+          {/* <div className="stat stat-relevant"> */}
+            {/* <span className="stat-icon-emoji">💼</span> */}
+            {/* <span className="stat-val stat-val-relevant">
               {calcDuration(profile.dateOfProjectAssigning) || "—"}
             </span>
-            <span className="stat-lbl">Relevant Exp</span>
-          </div>
+            <span className="stat-lbl">Relevant Experience</span>
+          </div> */}
 
                <div className="stat" onClick={() => onNavigate("skills")}>
-            <span className="stat-icon-emoji">🎯</span>
+            {/* <span className="stat-icon-emoji">🎯</span> */}
             <span className="stat-val">{profile.skills?.length || 0}</span>
             <span className="stat-lbl">Skills</span>
           </div>
 
           <div className="stat" onClick={() => onNavigate("certs")}>
-            <span className="stat-icon-emoji">🏆</span>
+            {/* <span className="stat-icon-emoji">🏆</span> */}
             <span className="stat-val">
               {profile.certifications?.length || 0}
             </span>
             <span className="stat-lbl">Certificates</span>
           </div>
 
+          <div className="stat" onClick={() => onNavigate("documents")}>
+            {/* <span className="stat-icon-emoji">🏆</span> */}
+            <span className="stat-val-text">
+              {profile.resumeData?.length > 0 ?'Uploaded' : 'Not Uploaded'}
+            </span>
+            <span className="stat-lbl">Resume</span>
+          </div>
+          
         </div>
       </div>
 
@@ -505,9 +511,23 @@ export default function ProfilePage({ onNavigate }) {
           </div>
 
           <div className="employment-row">
+            <span className="employment-label">📅 Years Of Experience</span>
+            <span className="employment-value">
+              {calcDuration(profile.dateOfJoining) || "-"}
+            </span>
+          </div>
+
+          <div className="employment-row">
             <span className="employment-label">💼 Current Project</span>
             <span className="employment-value">
               {profile.currentProject || "-"}
+            </span>
+          </div>
+
+          <div className="employment-row">
+            <span className="employment-label">📅 Relevant Experience</span>
+            <span className="employment-value">
+              {calcDuration(profile.dateOfProjectAssigning) || "-"}
             </span>
           </div>
 

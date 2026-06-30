@@ -145,7 +145,10 @@ export default function CertificationsPage() {
             <button className="close-btn" onClick={() => setShowModal(false)}>
               ✕
             </button>
-
+            <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <label style={{ fontWeight: "500", fontSize: "15px"}}>Add Certification </label>
+               
+            </div>
             <div className="card form-card">
               <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div className="form-group">

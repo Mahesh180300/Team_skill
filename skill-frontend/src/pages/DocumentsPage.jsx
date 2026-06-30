@@ -80,14 +80,14 @@ export default function DocumentsPage() {
             <span className="doc-file-icon">📎</span>
             <span className="doc-file-name">{profile.resumeFileName}</span>
             <div className="doc-file-actions">
-              <button className="resume-btn resume-btn-view" onClick={openResume}>View ↗</button>
-              <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>Replace</button>
+              <button className="resume-btn resume-btn-view" onClick={openResume}>View Certificate↗</button>
+              <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>Update</button>
               <button className="resume-btn resume-btn-delete" onClick={() => setShowDeleteConfirm(true)} disabled={deletingResume}>Delete</button>
             </div>
           </div>
         ) : (
           <div className="doc-empty-state">
-            <div className="doc-empty-icon">📭</div>
+            <div className="doc-empty-icon">📎</div>
             <div>
               <p className="doc-empty-title">No resume uploaded yet</p>
               <p className="doc-empty-sub">PDF, DOC or DOCX supported</p>
