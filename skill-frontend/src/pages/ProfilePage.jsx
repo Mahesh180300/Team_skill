@@ -75,9 +75,9 @@ export default function ProfilePage({ onNavigate }) {
     if (months < 0) return "";
     const yrs = Math.floor(months / 12);
     const mo = months % 12;
-    if (yrs === 0) return `${mo}mo`;
-    if (mo === 0) return `${yrs}yr`;
-    return `${yrs}yr ${mo}mo`;
+    if (yrs === 0) return `${mo} month`;
+    if (mo === 0) return `${yrs} year`;
+    return `${yrs} year ${mo} month`;
   };
 
   const save = async (e) => {
@@ -468,21 +468,21 @@ export default function ProfilePage({ onNavigate }) {
       <div className="profile-header">
         <div className="profile-stats">
      
-          <div className="stat stat-exp">
+          {/* <div className="stat stat-exp"> */}
             {/* <span className="stat-icon-emoji">📅</span> */}
-            <span className="stat-val">
+            {/* <span className="stat-val">
               {calcDuration(profile.dateOfJoining) || "—"}
             </span>
             <span className="stat-lbl">Years of Experience</span>
-          </div>
+          </div> */}
 
-          <div className="stat stat-relevant">
+          {/* <div className="stat stat-relevant"> */}
             {/* <span className="stat-icon-emoji">💼</span> */}
-            <span className="stat-val stat-val-relevant">
+            {/* <span className="stat-val stat-val-relevant">
               {calcDuration(profile.dateOfProjectAssigning) || "—"}
             </span>
             <span className="stat-lbl">Relevant Experience</span>
-          </div>
+          </div> */}
 
                <div className="stat" onClick={() => onNavigate("skills")}>
             {/* <span className="stat-icon-emoji">🎯</span> */}
@@ -498,6 +498,14 @@ export default function ProfilePage({ onNavigate }) {
             <span className="stat-lbl">Certificates</span>
           </div>
 
+          <div className="stat" onClick={() => onNavigate("documents")}>
+            {/* <span className="stat-icon-emoji">🏆</span> */}
+            <span className="stat-val-text">
+              {profile.resumeData?.length > 0 ?'Uploaded' : 'Not Uploaded'}
+            </span>
+            <span className="stat-lbl">Resume</span>
+          </div>
+          
         </div>
       </div>
 
@@ -530,9 +538,23 @@ export default function ProfilePage({ onNavigate }) {
           </div>
 
           <div className="employment-row">
+            <span className="employment-label">📅 Years Of Experience</span>
+            <span className="employment-value">
+              {calcDuration(profile.dateOfJoining) || "-"}
+            </span>
+          </div>
+
+          <div className="employment-row">
             <span className="employment-label">💼 Current Project</span>
             <span className="employment-value">
               {profile.currentProject || "-"}
+            </span>
+          </div>
+
+          <div className="employment-row">
+            <span className="employment-label">📅 Relevant Experience</span>
+            <span className="employment-value">
+              {calcDuration(profile.dateOfProjectAssigning) || "-"}
             </span>
           </div>
 
