@@ -199,8 +199,11 @@ export default function SkillsPage() {
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="close-btn" onClick={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); }}>✕</button>
+           <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 ,fontSize: "16px",fontWeight: "500"}}>
+            <label>Add Skills</label>
+           </div>
             <div className="card form-card">
-              <h3>Add Skills</h3>
+              
 
               {pendingSkills.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
