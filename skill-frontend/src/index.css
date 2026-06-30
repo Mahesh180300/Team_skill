@@ -533,7 +533,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 .profile-meta { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-stats { display: flex; gap: 24px; }
 .stat { text-align: center; }
-.stat-val { display: block; font-size: 28px; font-weight: 700; color: var(--primary); }
+.stat-val { display: block; font-size: 40px !important; font-weight: 700; color: var(--primary); }
 .stat-lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
 /* â”€â”€ Profile Completion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
