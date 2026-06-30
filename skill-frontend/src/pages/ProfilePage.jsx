@@ -182,7 +182,7 @@ export default function ProfilePage({ onNavigate }) {
               background: "var(--card-bg,#fff)",
               borderRadius: 14,
               width: "100%",
-              maxWidth: 560,
+              maxWidth: "640px",
               maxHeight: "calc(100vh - 32px)",
               display: "flex",
               flexDirection: "column",
@@ -225,7 +225,7 @@ export default function ProfilePage({ onNavigate }) {
                     fontSize: 13,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    color: "var(--primary)",
+                    color: "gray",
                     marginBottom: 10,
                   }}
                 >
@@ -236,7 +236,6 @@ export default function ProfilePage({ onNavigate }) {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gap: 12,
-                    background: "var(--bg)",
                     border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: 16,
@@ -303,7 +302,7 @@ export default function ProfilePage({ onNavigate }) {
                     fontSize: 13,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    color: "var(--primary)",
+                    color: "gray",
                     marginBottom: 10,
                   }}
                 >
@@ -314,7 +313,6 @@ export default function ProfilePage({ onNavigate }) {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gap: 12,
-                    background: "var(--bg)",
                     border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: 16,
@@ -471,29 +469,29 @@ export default function ProfilePage({ onNavigate }) {
         <div className="profile-stats">
      
           <div className="stat stat-exp">
-            <span className="stat-icon-emoji">📅</span>
+            {/* <span className="stat-icon-emoji">📅</span> */}
             <span className="stat-val">
               {calcDuration(profile.dateOfJoining) || "—"}
             </span>
-            <span className="stat-lbl">Years of Exp</span>
+            <span className="stat-lbl">Years of Experience</span>
           </div>
 
           <div className="stat stat-relevant">
-            <span className="stat-icon-emoji">💼</span>
+            {/* <span className="stat-icon-emoji">💼</span> */}
             <span className="stat-val stat-val-relevant">
               {calcDuration(profile.dateOfProjectAssigning) || "—"}
             </span>
-            <span className="stat-lbl">Relevant Exp</span>
+            <span className="stat-lbl">Relevant Experience</span>
           </div>
 
                <div className="stat" onClick={() => onNavigate("skills")}>
-            <span className="stat-icon-emoji">🎯</span>
+            {/* <span className="stat-icon-emoji">🎯</span> */}
             <span className="stat-val">{profile.skills?.length || 0}</span>
             <span className="stat-lbl">Skills</span>
           </div>
 
           <div className="stat" onClick={() => onNavigate("certs")}>
-            <span className="stat-icon-emoji">🏆</span>
+            {/* <span className="stat-icon-emoji">🏆</span> */}
             <span className="stat-val">
               {profile.certifications?.length || 0}
             </span>

@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --primary: #6366f1;
   --primary-dark: #4f46e5;
   --secondary: #64748b;
@@ -787,7 +787,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
-  padding: 20px 12px;
+  padding: 25px 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -802,7 +802,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 
 .profile-stats .stat-val {
   display: block;
-  font-size: 22px;
+  font-size: 40px;
   font-weight: 700;
   color: #2563eb;
   line-height: 1;
