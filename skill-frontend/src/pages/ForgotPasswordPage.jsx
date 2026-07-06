@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import { ROUTES } from "../router/routes";
 
-export default function ForgotPasswordPage({ onNavigate }) {
+export default function ForgotPasswordPage() {
+  const navigate = useNavigate();
   const [step, setStep] = useState("email"); // "email" | "otp" | "reset"
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -104,7 +107,7 @@ export default function ForgotPasswordPage({ onNavigate }) {
           <p style={{ color: "green" }}>{successMsg}</p>
         </div>
         <div className="auth-switch">
-          <button onClick={() => onNavigate("login")}>Go to Sign In</button>
+          <button onClick={() => navigate(ROUTES.LOGIN)}>Go to Sign In</button>
         </div>
       </div>
     </div>
@@ -190,7 +193,7 @@ export default function ForgotPasswordPage({ onNavigate }) {
         )}
 
         <div className="auth-switch">
-          <button onClick={() => onNavigate("login")}>Back to Sign In</button>
+          <button onClick={() => navigate(ROUTES.LOGIN)}>Back to Sign In</button>
         </div>
       </div>
     </div>

@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useApi } from "../hooks/useApi";
 import LoaderDialog from "../components/LoaderDialog";
 import api from "../api";
+import { ROUTES } from "../router/routes";
 
-export default function AuthPage({ mode, onNavigate }) {
+export default function AuthPage({ mode }) {
   const { login, register } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", department: "", jobTitle: "", role: "employee" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,10 +34,10 @@ export default function AuthPage({ mode, onNavigate }) {
       try {
         if (mode === "login") {
           const user = await login(form.email, form.password);
-          onNavigate(user.role === "admin" ? "dashboard" : "profile");
+          navigate(user.role === "admin" ? ROUTES.DASHBOARD : ROUTES.PROFILE, { replace: true });
         } else {
           const user = await register({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password, department: form.department, jobTitle: form.jobTitle });
-          onNavigate(user.role === "admin" ? "dashboard" : "profile");
+          navigate(user.role === "admin" ? ROUTES.DASHBOARD : ROUTES.PROFILE, { replace: true });
         }
       } catch (err) {
         setError(err.message);
@@ -95,7 +98,7 @@ export default function AuthPage({ mode, onNavigate }) {
           </button>
           {mode === "login" && (
             <div style={{ textAlign: "right", marginTop: "4px" }}>
-              <button type="button" style={{ background: "none", border: "none", color: "#6366f1", cursor: "pointer", fontSize: "0.85rem" }} onClick={() => onNavigate("forgot-password")}>
+              <button type="button" style={{ background: "none", border: "none", color: "#6366f1", cursor: "pointer", fontSize: "0.85rem" }} onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}>
                 Forgot password?
               </button>
             </div>
@@ -103,9 +106,9 @@ export default function AuthPage({ mode, onNavigate }) {
         </form>
         <div className="auth-switch">
           {mode === "login" ? (
-            <>Don't have an account? <button onClick={() => onNavigate("register")}>Register</button></>
+            <>Don't have an account? <button onClick={() => navigate(ROUTES.REGISTER)}>Register</button></>
           ) : (
-            <>Already have an account? <button onClick={() => onNavigate("login")}>Sign In</button></>
+            <>Already have an account? <button onClick={() => navigate(ROUTES.LOGIN)}>Sign In</button></>
           )}
         </div>
         {/* <div className="auth-hint">

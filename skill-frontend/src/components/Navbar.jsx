@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ConfirmDialog from "./ConfirmDialog";
 import api from "../api";
+import { ROUTES } from "../router/routes";
 
-export default function Sidebar({ page, onNavigate }) {
+export default function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, token, logout, profile, setProfile } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -73,20 +77,20 @@ export default function Sidebar({ page, onNavigate }) {
   };
   const confirmLogout = () => {
     logout();
-    onNavigate("login");
+    navigate(ROUTES.LOGIN);
   };
 
   const adminLinks = [
-    { key: "dashboard", icon: "📊", label: "Dashboard" },
-    { key: "employees", icon: "👥", label: "Employees" },
-    { key: "lookup", icon: "🗂️", label: "Master Data" },
+    { key: ROUTES.DASHBOARD,      icon: "📊", label: "Dashboard" },
+    { key: ROUTES.EMPLOYEES,      icon: "👥", label: "Employees" },
+    { key: ROUTES.LOOKUP,         icon: "🗂️", label: "Master Data" },
   ];
 
   const employeeLinks = [
-    { key: "profile", icon: "👤", label: "My Profile" },
-    { key: "skills", icon: "📚", label: "My Skills" },
-    { key: "certs", icon: "🏆", label: "Certifications" },
-    { key: "documents", icon: "📁", label: "Documents" },
+    { key: ROUTES.PROFILE,        icon: "👤", label: "My Profile" },
+    { key: ROUTES.SKILLS,         icon: "📚", label: "My Skills" },
+    { key: ROUTES.CERTIFICATIONS, icon: "🏆", label: "Certifications" },
+    { key: ROUTES.DOCUMENTS,      icon: "📁", label: "Documents" },
   ];
 
   const links = user?.role === "admin" ? adminLinks : employeeLinks;
@@ -261,15 +265,15 @@ export default function Sidebar({ page, onNavigate }) {
                             <small>Missing:</small>
                             {missing.map((m) => {
                               const navMap = {
-                                Skills: "skills",
-                                Certifications: "certs",
+                                Skills: ROUTES.SKILLS,
+                                Certifications: ROUTES.CERTIFICATIONS,
                               };
                               const target = navMap[m];
                               return target ? (
                                 <span
                                   key={m}
                                   className="missing-tag"
-                                  onClick={() => onNavigate(target)}
+                                  onClick={() => navigate(target)}
                                   style={{ cursor: "pointer" }}
                                 >
                                   {m}
@@ -298,8 +302,8 @@ export default function Sidebar({ page, onNavigate }) {
           {links.map(({ key, icon, label }) => (
             <button
               key={key}
-              className={`sidebar-link${page === key ? " active" : ""}`}
-              onClick={() => onNavigate(key)}
+              className={`sidebar-link${location.pathname === key ? " active" : ""}`}
+              onClick={() => navigate(key)}
               title={collapsed ? label : undefined}
             >
               <span className="sidebar-link-icon">{icon}</span>
