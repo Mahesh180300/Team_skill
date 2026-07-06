@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import Loader from "../components/Loader";
+import { ROUTES } from "../router/routes";
 
-export default function ResetPasswordPage({ onNavigate }) {
+export default function ResetPasswordPage() {
+  const navigate = useNavigate();
   const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -39,7 +42,7 @@ export default function ResetPasswordPage({ onNavigate }) {
       <div className="auth-page">
       <div className="auth-card">
         <p className="error" style={{ textAlign: "center" }}>Invalid or missing reset token.</p>
-        <div className="auth-switch"><button onClick={() => onNavigate("login")}>Back to Sign In</button></div>
+        <div className="auth-switch"><button onClick={() => navigate(ROUTES.LOGIN)}>Back to Sign In</button></div>
       </div>
     </div>
     </>
@@ -58,7 +61,7 @@ export default function ResetPasswordPage({ onNavigate }) {
         {msg ? (
           <>
             <p style={{ color: "green", textAlign: "center" }}>{msg}</p>
-            <div className="auth-switch"><button onClick={() => onNavigate("login")}>Go to Sign In</button></div>
+            <div className="auth-switch"><button onClick={() => navigate(ROUTES.LOGIN)}>Go to Sign In</button></div>
           </>
         ) : (
           <form onSubmit={submit} className="auth-form">

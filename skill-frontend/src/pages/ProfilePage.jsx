@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import { ROUTES } from "../router/routes";
 
-export default function ProfilePage({ onNavigate }) {
+export default function ProfilePage() {
+  const navigate = useNavigate();
   const { user, token, setProfile: setSharedProfile } = useAuth();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -484,13 +487,13 @@ export default function ProfilePage({ onNavigate }) {
             <span className="stat-lbl">Relevant Experience</span>
           </div> */}
 
-               <div className="stat" onClick={() => onNavigate("skills")}>
+               <div className="stat" onClick={() => navigate(ROUTES.SKILLS)}>
             {/* <span className="stat-icon-emoji">🎯</span> */}
             <span className="stat-val">{profile.skills?.length || 0}</span>
             <span className="stat-lbl">Skills</span>
           </div>
 
-          <div className="stat" onClick={() => onNavigate("certs")}>
+          <div className="stat" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
             {/* <span className="stat-icon-emoji">🏆</span> */}
             <span className="stat-val">
               {profile.certifications?.length || 0}
@@ -498,7 +501,7 @@ export default function ProfilePage({ onNavigate }) {
             <span className="stat-lbl">Certificates</span>
           </div>
 
-          <div className="stat" onClick={() => onNavigate("documents")}>
+          <div className="stat" onClick={() => navigate(ROUTES.DOCUMENTS)}>
             {/* <span className="stat-icon-emoji">🏆</span> */}
             <span className="stat-val-text">
               {profile.resumeData?.length > 0 ?'Uploaded' : 'Not Uploaded'}
