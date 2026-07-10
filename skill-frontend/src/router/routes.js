@@ -10,4 +10,5 @@ export const ROUTES = {
   DASHBOARD:       "/dashboard",
   EMPLOYEES:       "/employees",
   LOOKUP:          "/lookup",
+  CHAT:            "/chat",
 };

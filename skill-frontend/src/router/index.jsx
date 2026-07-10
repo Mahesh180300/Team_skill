@@ -13,6 +13,7 @@ import DocumentsPage from "../pages/DocumentsPage";
 import DashboardPage from "../pages/DashboardPage";
 import EmployeesPage from "../pages/EmployeesPage";
 import LookupPage from "../pages/LookupPage";
+import ChatPage from "../pages/ChatPage";
 
 function AppLayout() {
   return (
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.DASHBOARD,      element: <PrivateRoute adminOnly><DashboardPage /></PrivateRoute> },
       { path: ROUTES.EMPLOYEES,      element: <PrivateRoute adminOnly><EmployeesPage /></PrivateRoute> },
       { path: ROUTES.LOOKUP,         element: <PrivateRoute adminOnly><LookupPage /></PrivateRoute> },
+      { path: ROUTES.CHAT,           element: <PrivateRoute><ChatPage /></PrivateRoute> },
     ],
   },
   { path: "/", element: <Navigate to={ROUTES.LOGIN} replace /> },

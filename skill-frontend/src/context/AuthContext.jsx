@@ -8,13 +8,24 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem("skill_token"));
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!token) { setLoading(false); return; }
     api.me(token)
       .then((data) => { if (data.error) logout(); else setUser(data); })
       .finally(() => setLoading(false));
-  }, []);
+
+    const loadUnread = async () => {
+      try {
+        const data = await api.getChatUnreadCount(token);
+        setChatUnreadCount(data?.unreadCount || 0);
+      } catch {}
+    };
+    loadUnread();
+    const id = setInterval(loadUnread, 10000);
+    return () => clearInterval(id);
+  }, [token]);
 
   useEffect(() => {
     if (token && user) {
@@ -55,7 +66,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, profile, setProfile, refreshProfile }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, profile, setProfile, refreshProfile, chatUnreadCount, setChatUnreadCount }}>
       {children}
     </AuthContext.Provider>
   );
