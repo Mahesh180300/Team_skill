@@ -60,7 +60,7 @@ export class AuthService {
         html: `<p>Hello ${user.name},</p><p>Your OTP to reset your password is:</p><h2 style="letter-spacing:8px">${otp}</h2><p>This OTP is valid for <strong>2 minutes</strong>.</p>`,
       });
     } catch (err) {
-      throw new BadRequestException('Failed to send OTP Email. Please Try Again.');
+      throw new BadRequestException('Failed to send OTP email. Please try Again.');
     }
 
     return { message: 'OTP sent to your email.' };
