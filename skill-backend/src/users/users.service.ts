@@ -13,6 +13,7 @@ export class UsersService {
   async getProfile(userId: string) {
     if (!isUuid(userId)) throw new UnauthorizedException('Invalid session, please log in again');
     const user = await this.repo.findOne({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
     const { password, ...rest } = user;
     return rest;
   }

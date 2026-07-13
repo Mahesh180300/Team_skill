@@ -70,7 +70,7 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
     if (!user || user.resetToken !== otp)
       throw new BadRequestException('Invalid OTP');
-    if (!user.resetTokenExpiry || user.resetTokenExpiry < Date.now())
+    if (!user.resetTokenExpiry || Number(user.resetTokenExpiry) < Date.now())
       throw new BadRequestException('OTP has expired');
     return { message: 'OTP verified' };
   }
@@ -79,7 +79,7 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
     if (!user || user.resetToken !== otp)
       throw new BadRequestException('Invalid OTP');
-    if (!user.resetTokenExpiry || user.resetTokenExpiry < Date.now())
+    if (!user.resetTokenExpiry || Number(user.resetTokenExpiry) < Date.now())
       throw new BadRequestException('OTP has expired');
 
     user.password = await bcrypt.hash(newPassword, 10);

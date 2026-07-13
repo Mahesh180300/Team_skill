@@ -71,7 +71,7 @@ export class User {
   @Column({ type: 'bigint', nullable: true, default: null })
   resetTokenExpiry: number;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   lastSeen: Date;
 
   @CreateDateColumn()
