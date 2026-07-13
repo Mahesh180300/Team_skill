@@ -20,7 +20,11 @@ export default function ChatPage() {
     setLoadingContacts(true);
     api.getChatContacts(token).then((data) => {
       if (!alive) return;
-      setContacts(data || []);
+      setContacts(Array.isArray(data) ? data : []);
+      setLoadingContacts(false);
+    }).catch(() => {
+      if (!alive) return;
+      setContacts([]);
       setLoadingContacts(false);
     });
     return () => { alive = false; };
@@ -32,7 +36,7 @@ export default function ChatPage() {
     setLoadingMessages(true);
     api.getChatMessages(token, activeContact.id).then((data) => {
       if (!alive) return;
-      setMessages(data || []);
+      setMessages(Array.isArray(data) ? data : []);
       setLoadingMessages(false);
       api.markChatRead(token, activeContact.id);
       setContacts((prev) =>

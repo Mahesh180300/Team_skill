@@ -1,5 +1,7 @@
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:5009/api";
 
+const safeJson = (r) => r.json().then((data) => { if (!r.ok) throw new Error(data?.message || r.statusText); return data; });
+
 const headers = (token) => ({
   "Content-Type": "application/json",
   ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -111,20 +113,20 @@ const api = {
 
   // Chat
   getChatContacts: (token) =>
-    fetch(`${BASE}/chat/contacts`, { headers: headers(token) }).then((r) => r.json()),
+    fetch(`${BASE}/chat/contacts`, { headers: headers(token) }).then(safeJson),
   getChatMessages: (token, otherUserId) =>
-    fetch(`${BASE}/chat/messages/${encodeURIComponent(otherUserId)}`, { headers: headers(token) }).then((r) => r.json()),
+    fetch(`${BASE}/chat/messages/${encodeURIComponent(otherUserId)}`, { headers: headers(token) }).then(safeJson),
   sendChatMessage: (token, data) =>
-    fetch(`${BASE}/chat/messages`, { method: 'POST', headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
+    fetch(`${BASE}/chat/messages`, { method: 'POST', headers: headers(token), body: JSON.stringify(data) }).then(safeJson),
   markChatRead: (token, otherUserId) =>
-    fetch(`${BASE}/chat/read/${encodeURIComponent(otherUserId)}`, { method: 'PATCH', headers: headers(token) }).then((r) => r.json()),
+    fetch(`${BASE}/chat/read/${encodeURIComponent(otherUserId)}`, { method: 'PATCH', headers: headers(token) }).then(safeJson),
   updateChatMessage: (token, messageId, content) =>
-    fetch(`${BASE}/chat/messages/${encodeURIComponent(messageId)}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ content }) }).then((r) => r.json()),
+    fetch(`${BASE}/chat/messages/${encodeURIComponent(messageId)}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ content }) }).then(safeJson),
   deleteChatMessage: (token, messageId) =>
-    fetch(`${BASE}/chat/messages/${encodeURIComponent(messageId)}`, { method: 'DELETE', headers: headers(token) }).then((r) => (r.ok ? r.json() : r.json())),
+    fetch(`${BASE}/chat/messages/${encodeURIComponent(messageId)}`, { method: 'DELETE', headers: headers(token) }).then(safeJson),
 
   getChatUnreadCount: (token) =>
-    fetch(`${BASE}/chat/unread`, { headers: headers(token) }).then((r) => r.json()),
+    fetch(`${BASE}/chat/unread`, { headers: headers(token) }).then(safeJson),
 
 
   // Lookup
