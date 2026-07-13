@@ -42,12 +42,19 @@ export default function EmployeesPage() {
   const [managers, setManagers] = useState([]);
   const [filteringEmployees, setFilteringEmployees] = useState(false);
   const [deletingEmployee, setDeletingEmployee] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailDialogEmp, setEmailDialogEmp] = useState(null);
+  const [emailForm, setEmailForm] = useState({ subject: "", projectName: "", message: "" });
+  const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
   const PAGE_SIZE = 4;
 
   const callDelete = useApi(setDeletingEmployee);
   const callFilter = useApi(setFilteringEmployees);
   const callEdit = useApi(setEditSaving);
+  const callEmail = useApi(setSendingEmail);
 
   useEffect(() => {
     api.getAdminEmployees(token).then((data) => {
@@ -114,6 +121,24 @@ export default function EmployeesPage() {
     });
   };
 
+  const openEmailDialog = (emp) => {
+    setEmailDialogEmp(emp);
+    setEmailForm({
+      subject: "Welcome to Your New Project – Onboarding Information",
+      projectName: emp.currentProject || "",
+      message: `Welcome! You have been onboarded to your assigned project.`,
+    });
+  };
+
+  const sendOnboardingEmail = async (e) => {
+    e.preventDefault();
+    await callEmail(async () => {
+      const res = await api.sendOnboardingEmail(token, emailDialogEmp.id, emailForm);
+      setEmailDialogEmp(null);
+      showToast(res.message || "Email sent successfully!");
+    });
+  };
+
   if (loading) return <LoaderDialog message="Loading employees..." />;
 
   return (
@@ -121,7 +146,9 @@ export default function EmployeesPage() {
       {filteringEmployees && <LoaderDialog message="Applying filters..." />}
       {deletingEmployee && <LoaderDialog message="Deleting employee..." />}
       {editSaving && <LoaderDialog message="Saving employee..." />}
+      {sendingEmail && <LoaderDialog message="Sending onboarding email..." />}
       <div className="page">
+      {toast && <div className="toast success">{toast}</div>}
       <div className="page-header">
         <h2>Employee Management</h2>
         {filtered
@@ -195,6 +222,7 @@ export default function EmployeesPage() {
                   {emp.billable === "yes" && <span style={{ color: "#22c55e" }}>Billable</span>}
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
+                  <button className="btn-icon" onClick={() => openEmailDialog(emp)} title="Send Onboarding Email">📧</button>
                   <button className="btn-icon" onClick={() => openEdit(emp)} title="Edit">✏️</button>
                   <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(emp.id)}>🗑️</button>
                 </div>
@@ -359,6 +387,42 @@ export default function EmployeesPage() {
               <button type="button" className="btn-secondary" onClick={() => setEditEmp(null)}>Cancel</button>
               <button type="submit" form="edit-emp-form" className="btn-primary" disabled={editSaving}>{editSaving ? "Saving..." : "Save Changes"}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onboarding Email Modal */}
+      {emailDialogEmp && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 16 }} onClick={() => setEmailDialogEmp(null)}>
+          <div style={{ background: "var(--card-bg,#fff)", borderRadius: 14, width: "100%", maxWidth: 500, display: "flex", flexDirection: "column", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px 16px", borderBottom: "1px solid var(--border)" }}>
+              <h3 style={{ margin: 0 }}>📧 Send Onboarding Email</h3>
+              <button type="button" onClick={() => setEmailDialogEmp(null)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "var(--text-muted)" }}>✕</button>
+            </div>
+            <form id="email-form" onSubmit={sendOnboardingEmail}>
+              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)" }}>Sending to: <strong>{emailDialogEmp.email}</strong></p>
+                <div className="form-group">
+                  <label>Subject</label>
+                  <input value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })} required />
+                </div>
+                <div className="form-group">
+                  <label>Project Name</label>
+                  <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
+                    <option value="">Select Project</option>
+                    {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Message</label>
+                  <textarea value={emailForm.message} onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })} rows={6} required style={{ resize: "vertical" }} />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid var(--border)", justifyContent: "flex-end" }}>
+                <button type="button" className="btn-secondary" onClick={() => setEmailDialogEmp(null)}>Cancel</button>
+                <button type="submit" form="email-form" className="btn-primary" disabled={sendingEmail}>{sendingEmail ? "Sending..." : "Send Email"}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

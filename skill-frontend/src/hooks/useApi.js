@@ -13,6 +13,8 @@ export function useApi(setLoading, minMs = 1000) {
       try {
         const [result] = await Promise.all([fn(), delay(minMs)]);
         return result;
+      } catch (err) {
+        throw err;
       } finally {
         setLoading(false);
         busy.current = false;

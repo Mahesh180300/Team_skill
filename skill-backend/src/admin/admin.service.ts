@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import * as bcrypt from 'bcryptjs';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AdminService {
@@ -66,6 +67,38 @@ export class AdminService {
 
   async deleteEmployee(id: string) {
     await this.usersRepo.delete(id);
+  }
+
+  async sendOnboardingEmail(id: string, body: { subject: string; projectName: string; message: string }) {
+    const user = await this.usersRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Employee not found');
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      tls: { rejectUnauthorized: false },
+    });
+
+    try {
+      await transporter.sendMail({
+        from: `"Kyyba Skill Tracker" <${process.env.SMTP_USER}>`,
+        to: user.email,
+        subject: body.subject,
+        html: `
+          <p>Hi ${user.name},</p>
+          <p>${body.message.replace(/\n/g, '<br/>')}</p>
+          <p><strong>Project:</strong> ${body.projectName}</p>
+          <br/>
+          <p>Best regards,<br/>Kyyba Admin Team</p>
+        `,
+      });
+    } catch (err) {
+      throw new Error(`Failed to send email: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    return { message: 'Onboarding email sent successfully.' };
   }
 
   async seedAdmin() {

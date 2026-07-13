@@ -104,6 +104,8 @@ const api = {
     fetch(`${BASE}/admin/employees/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   deleteEmployee: (token, id) =>
     fetch(`${BASE}/admin/employees/${id}`, { method: "DELETE", headers: headers(token) }).then((r) => (r.status === 204 ? {} : r.json())),
+  sendOnboardingEmail: (token, id, data) =>
+    fetch(`${BASE}/admin/employees/${id}/send-onboarding-email`, { method: "POST", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   seedAdmin: () =>
     fetch(`${BASE}/admin/seed-admin`, { method: "POST", headers: headers() }).then((r) => r.json()),
 
