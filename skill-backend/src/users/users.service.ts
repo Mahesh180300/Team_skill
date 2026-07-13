@@ -53,6 +53,11 @@ export class UsersService {
     return this.getProfile(userId);
   }
 
+  async updateLastSeen(userId: string) {
+    await this.repo.update(userId, { lastSeen: new Date() });
+    return { success: true };
+  }
+
   async searchEmployees(query: any) {
     const { skill, department, minExp, certification } = query;
     const qb = this.repo.createQueryBuilder('user')

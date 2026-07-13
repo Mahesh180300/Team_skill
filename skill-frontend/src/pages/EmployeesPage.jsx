@@ -67,7 +67,29 @@ export default function EmployeesPage() {
     api.getLookupValues("Job Title").then((v) => setJobTitles(Array.isArray(v) ? v : []));
     api.getLookupValues("Project").then((v) => setProjects(Array.isArray(v) ? v : []));
     api.getLookupValues("Manager").then((v) => setManagers(Array.isArray(v) ? v : []));
-  }, []);
+
+    const interval = setInterval(() => {
+      api.getAdminEmployees(token).then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setAllEmployees(list);
+        setEmployees(list);
+      }).catch(() => {});
+    }, 30000);
+
+    const handler = () => {
+      api.getAdminEmployees(token).then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setAllEmployees(list);
+        setEmployees(list);
+      }).catch(() => {});
+    };
+    window.addEventListener('profile-updated', handler);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('profile-updated', handler);
+    };
+  }, [token]);
 
   const remove = async (id) => {
     await callDelete(async () => {

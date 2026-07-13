@@ -31,7 +31,19 @@ export function AuthProvider({ children }) {
     if (token && user) {
       api.getProfile(token).then(setProfile);
     }
+    const profileInterval = setInterval(() => {
+      if (token) api.getProfile(token).then(setProfile).catch(() => {});
+    }, 30000);
+    return () => clearInterval(profileInterval);
   }, [token, user]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (token) api.getProfile(token).then(setProfile).catch(() => {});
+    };
+    window.addEventListener('profile-updated', handler);
+    return () => window.removeEventListener('profile-updated', handler);
+  }, [token]);
 
   const refreshProfile = useCallback(() => {
     if (token) api.getProfile(token).then(setProfile);

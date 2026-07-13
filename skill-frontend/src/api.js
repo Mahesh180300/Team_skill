@@ -128,6 +128,9 @@ const api = {
   getChatUnreadCount: (token) =>
     fetch(`${BASE}/chat/unread`, { headers: headers(token) }).then(safeJson),
 
+  updateLastSeen: (token) =>
+    fetch(`${BASE}/profile/last-seen`, { method: 'PATCH', headers: headers(token) }).then((r) => r.json()),
+
 
   // Lookup
   getLookupValues: (type) =>
