@@ -95,6 +95,7 @@ export class AdminService {
         `,
       });
     } catch (err) {
+      console.error('SMTP Error:', err);
       throw new Error(`Failed to send email: ${err instanceof Error ? err.message : String(err)}`);
     }
 
