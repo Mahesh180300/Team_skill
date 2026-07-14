@@ -32,6 +32,12 @@ export class AdminController {
     return this.adminService.deleteEmployee(id);
   }
 
+  @Post('employees/:id/send-onboarding-email')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  sendOnboardingEmail(@Param('id') id: string, @Body() body: any) {
+    return this.adminService.sendOnboardingEmail(id, body);
+  }
+
   @Post('seed-admin')
   seedAdmin() {
     return this.adminService.seedAdmin();

@@ -104,8 +104,28 @@ const api = {
     fetch(`${BASE}/admin/employees/${id}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   deleteEmployee: (token, id) =>
     fetch(`${BASE}/admin/employees/${id}`, { method: "DELETE", headers: headers(token) }).then((r) => (r.status === 204 ? {} : r.json())),
+  sendOnboardingEmail: (token, id, data) =>
+    fetch(`${BASE}/admin/employees/${id}/send-onboarding-email`, { method: "POST", headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
   seedAdmin: () =>
     fetch(`${BASE}/admin/seed-admin`, { method: "POST", headers: headers() }).then((r) => r.json()),
+
+  // Chat
+  getChatContacts: (token) =>
+    fetch(`${BASE}/chat/contacts`, { headers: headers(token) }).then((r) => r.json()),
+  getChatMessages: (token, otherUserId) =>
+    fetch(`${BASE}/chat/messages/${encodeURIComponent(otherUserId)}`, { headers: headers(token) }).then((r) => r.json()),
+  sendChatMessage: (token, data) =>
+    fetch(`${BASE}/chat/messages`, { method: 'POST', headers: headers(token), body: JSON.stringify(data) }).then((r) => r.json()),
+  markChatRead: (token, otherUserId) =>
+    fetch(`${BASE}/chat/read/${encodeURIComponent(otherUserId)}`, { method: 'PATCH', headers: headers(token) }).then((r) => r.json()),
+  updateChatMessage: (token, messageId, content) =>
+    fetch(`${BASE}/chat/messages/${encodeURIComponent(messageId)}`, { method: 'PATCH', headers: headers(token), body: JSON.stringify({ content }) }).then((r) => r.json()),
+  deleteChatMessage: (token, messageId) =>
+    fetch(`${BASE}/chat/messages/${encodeURIComponent(messageId)}`, { method: 'DELETE', headers: headers(token) }).then((r) => (r.ok ? r.json() : r.json())),
+
+  getChatUnreadCount: (token) =>
+    fetch(`${BASE}/chat/unread`, { headers: headers(token) }).then((r) => r.json()),
+
 
   // Lookup
   getLookupValues: (type) =>

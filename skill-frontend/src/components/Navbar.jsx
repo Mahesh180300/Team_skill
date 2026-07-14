@@ -8,7 +8,7 @@ import { ROUTES } from "../router/routes";
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, token, logout, profile, setProfile } = useAuth();
+  const { user, token, logout, profile, setProfile, chatUnreadCount } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -84,6 +84,7 @@ export default function Sidebar() {
     { key: ROUTES.DASHBOARD,      icon: "📊", label: "Dashboard" },
     { key: ROUTES.EMPLOYEES,      icon: "👥", label: "Employees" },
     { key: ROUTES.LOOKUP,         icon: "🗂️", label: "Master Data" },
+    { key: ROUTES.CHAT,           icon: "💬", label: "Chat" },
   ];
 
   const employeeLinks = [
@@ -91,6 +92,7 @@ export default function Sidebar() {
     { key: ROUTES.SKILLS,         icon: "📚", label: "My Skills" },
     { key: ROUTES.CERTIFICATIONS, icon: "🏆", label: "Certifications" },
     { key: ROUTES.DOCUMENTS,      icon: "📁", label: "Documents" },
+    { key: ROUTES.CHAT,           icon: "💬", label: "Chat" },
   ];
 
   const links = user?.role === "admin" ? adminLinks : employeeLinks;
@@ -306,7 +308,16 @@ export default function Sidebar() {
               onClick={() => navigate(key)}
               title={collapsed ? label : undefined}
             >
-              <span className="sidebar-link-icon">{icon}</span>
+              {key === ROUTES.CHAT ? (
+            <span className="sidebar-link-icon" style={{ position: 'relative' }}>
+              {icon}
+              {chatUnreadCount > 0 && (
+                <span className="chat-unread-badge">{chatUnreadCount}</span>
+              )}
+            </span>
+          ) : (
+            <span className="sidebar-link-icon">{icon}</span>
+          )}
               {!collapsed && (
                 <span className="sidebar-link-label">{label}</span>
               )}

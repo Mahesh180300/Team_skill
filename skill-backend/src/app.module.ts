@@ -7,6 +7,7 @@ import { SkillsModule } from './skills/skills.module';
 import { CertificationsModule } from './certifications/certifications.module';
 import { AdminModule } from './admin/admin.module';
 import { LookupModule } from './lookup/lookup.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LookupModule } from './lookup/lookup.module';
     CertificationsModule,
     AdminModule,
     LookupModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

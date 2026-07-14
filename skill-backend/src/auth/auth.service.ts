@@ -37,7 +37,9 @@ export class AuthService {
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
+      secure: false,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      tls: { rejectUnauthorized: false },
     });
   }
 
@@ -45,17 +47,21 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
     if (!user) return { message: 'If that email exists, an OTP has been sent.' };
 
-    const otp = String(Math.floor(1000 + Math.random() * 9000)); 
+    const otp = String(Math.floor(1000 + Math.random() * 9000));
     user.resetToken = otp;
-    user.resetTokenExpiry = Date.now() + 1 * 60 * 1000; 
+    user.resetTokenExpiry = Date.now() + 2 * 60 * 1000;
     await this.usersRepo.save(user);
 
-    await this.getTransporter().sendMail({
-      from: `"Kyyba Skill Tracker" <${process.env.SMTP_USER}>`,
-      to: user.email,
-      subject: 'Your Password Reset OTP',
-      html: `<p>Hello ${user.name},</p><p>Your OTP to reset your password is:</p><h2 style="letter-spacing:8px">${otp}</h2><p>This OTP is valid for <strong>2 minutes</strong>.</p>`,
-    });
+    try {
+      await this.getTransporter().sendMail({
+        from: `"Kyyba Skill Tracker" <${process.env.SMTP_USER}>`,
+        to: user.email,
+        subject: 'Your Password Reset OTP',
+        html: `<p>Hello ${user.name},</p><p>Your OTP to reset your password is:</p><h2 style="letter-spacing:8px">${otp}</h2><p>This OTP is valid for <strong>2 minutes</strong>.</p>`,
+      });
+    } catch (err) {
+      throw new BadRequestException('Failed to send OTP email. Please try Again.');
+    }
 
     return { message: 'OTP sent to your email.' };
   }

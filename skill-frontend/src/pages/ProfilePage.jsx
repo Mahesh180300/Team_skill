@@ -487,6 +487,7 @@ export default function ProfilePage() {
 
       <div className="details-container">
         
+        <div className="details-top-row">
         <div className="employment-card">
           <h3 className="employment-title">Personal Information</h3>
 
@@ -578,102 +579,51 @@ export default function ProfilePage() {
           )}
           </div>
         </div>
-       
-      </div>
+       </div>
+          <div className="cert-overview-card">
+          <div className="cert-overview-header">
+            <h3 className="skill-title" style={{ margin: 0, borderBottom: "none", paddingBottom: 0 }}>Certification Overview</h3>
+            {profile.certifications?.length > 0 && (
+              <button className="cert-view-all-btn" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
+                View All ↗
+              </button>
+            )}
+          </div>
 
-      {/* <div  id="resume-section" className="card resume-section-card">
-        <input
-          id="resume-input"
-          type="file"
-          accept=".pdf,.doc,.docx"
-          style={{ display: "none" }}
-          onChange={(e) => {
-            if (e.target.files[0]) uploadResume(e.target.files[0]);
-            e.target.value = "";
-          }}
-        />
-        <div className="resume-section-header">
-          <div className="resume-section-title">
-            <div className="resume-section-icon-wrap">📄</div>
-            <div>
-              <h3>Resume</h3>
-              <p>Your professional resume for recruiters &amp; managers</p>
-            </div>
+          <div className="cert-overview-grid">
+            {profile.certifications?.length > 0 ? (
+              profile.certifications.slice(0, 4).map((cert) => {
+                const isExpired = cert.expiryDate && new Date(cert.expiryDate) < new Date();
+                const expiringSoon =
+                  cert.expiryDate &&
+                  !isExpired &&
+                  new Date(cert.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                return (
+                  <div className="cert-detail-card" key={cert.id}>
+                    <div className="cert-detail-icon">&#127942;</div>
+                    <div className="cert-detail-body">
+                      <span className="cert-detail-name">{cert.name}</span>
+                      {cert.issuer && <span className="cert-detail-meta">&#127970; {cert.issuer}</span>}
+                      {/* {cert.issuedOn && <span className="cert-detail-meta">&#128197; Issued: {cert.issuedOn}</span>}
+                      {cert.expiryDate && <span className="cert-detail-meta">&#128197; Expires: {cert.expiryDate}</span>} */}
+                    </div>
+                    <div className="cert-detail-status">
+                      {isExpired && <span className="cert-status-badge cert-status-expired">Expired</span>}
+                      {expiringSoon && <span className="cert-status-badge cert-status-expiring">Expiring Soon</span>}
+                      {!isExpired && !expiringSoon && cert.expiryDate && <span className="cert-status-badge cert-status-valid">Valid</span>}
+                      {!cert.expiryDate && <span className="cert-status-badge cert-status-noexpiry">No Expiry</span>}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="no-skills">No certifications added yet.</p>
+            )}
           </div>
         </div>
 
-        {profile.resumeData ? (
-          <div className="resume-file-card">
-            <div className="resume-file-thumb">📎</div>
-            <div className="resume-file-meta">
-              <span
-                className="resume-file-name"
-                style={{ textDecoration: "underline" }}
-              >
-                {profile.resumeFileName}
-              </span>
-            </div>
-            <div className="resume-file-actions">
-              <button
-                className="resume-btn resume-btn-view"
-                onClick={() => {
-                  const bytes = Uint8Array.from(
-                    atob(profile.resumeData),
-                    (ch) => ch.charCodeAt(0),
-                  );
-                  const url = URL.createObjectURL(
-                    new Blob([bytes], { type: profile.resumeFileType }),
-                  );
-                  window.open(url, "_blank");
-                }}
-              >
-                View Resume ↗
-              </button>
-              <button
-                className="resume-btn resume-btn-edit"
-                onClick={() => document.getElementById("resume-input").click()}
-                disabled={resumeUploading}
-              >
-                Edit
-              </button>
-              <button
-                className="resume-btn resume-btn-delete"
-                onClick={() => setShowDeleteResume(true)}
-                disabled={resumeUploading}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="resume-empty-state">
-            <div className="resume-empty-illustration">📎</div>
-            <div>
-              <p className="resume-empty-title">No resume uploaded yet</p>
-              <p className="resume-empty-sub">PDF, DOC or DOCX supported</p>
-            </div>
-            <button
-              className="resume-btn resume-btn-upload-main"
-              onClick={() => document.getElementById("resume-input").click()}
-              disabled={resumeUploading}
-            >
-              {resumeUploading ? "Uploading..." : "Upload"}
-            </button>
-          </div>
-        )}
       </div>
 
-      {showDeleteResume && (
-        <ConfirmDialog
-          icon="🗑️"
-          title="Delete Resume"
-          message="Are you sure want to delete your resume? This cannot be undone."
-          confirmText="Yes, Delete"
-          cancelText="Cancel"
-          onConfirm={deleteResume}
-          onCancel={() => setShowDeleteResume(false)}
-        />
-      )} */}
 
       {savingProfile && <LoaderDialog message="Saving profile..." />}
       {/* {uploadingAvatar && <LoaderDialog message="Uploading profile picture..." />}
