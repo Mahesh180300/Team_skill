@@ -1,14 +1,16 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatMessage } from './chat.entity';
 import { User } from '../users/user.entity';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectRepository(ChatMessage) private chatRepo: Repository<ChatMessage>,
     @InjectRepository(User) private usersRepo: Repository<User>,
+    @Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
   ) {}
 
   async getContacts(currentUser: any) {
@@ -142,7 +144,7 @@ export class ChatService {
     });
 
     await this.chatRepo.save(message);
-    return {
+    const payload = {
       id: message.id,
       senderId: message.senderId,
       receiverId: message.receiverId,
@@ -150,6 +152,11 @@ export class ChatService {
       isRead: message.isRead,
       createdAt: message.createdAt,
     };
+
+    // Notify receiver in real-time
+    this.chatGateway.emitToUser(otherUserId, 'new_message', payload);
+
+    return payload;
   }
 
   async markAsRead(currentUser: any, otherUserId: string) {
@@ -175,7 +182,13 @@ export class ChatService {
 
     message.content = content.trim();
     await this.chatRepo.save(message);
-    return { id: message.id, senderId: message.senderId, receiverId: message.receiverId, content: message.content, isRead: message.isRead, createdAt: message.createdAt };
+
+    const payload = { id: message.id, senderId: message.senderId, receiverId: message.receiverId, content: message.content, isRead: message.isRead, createdAt: message.createdAt };
+
+    // Notify receiver in real-time
+    this.chatGateway.emitToUser(message.receiverId, 'message_updated', payload);
+
+    return payload;
   }
 
   async deleteMessage(currentUser: any, messageId: string) {
@@ -185,17 +198,14 @@ export class ChatService {
       throw new ForbiddenException('You can only delete messages in your conversation');
     }
 
-    if (message.senderId === currentUser.id) {
-      message.deletedBySender = true;
-    } else if (message.receiverId === currentUser.id) {
-      message.deletedByReceiver = true;
-    }
+    const { senderId, receiverId } = message;
 
-    if (message.deletedBySender && message.deletedByReceiver) {
-      await this.chatRepo.remove(message);
-    } else {
-      await this.chatRepo.save(message);
-    }
+    // Hard delete — remove for both users
+    await this.chatRepo.remove(message);
+
+    // Notify both users in real-time
+    this.chatGateway.emitToUser(senderId, 'message_deleted', { messageId, senderId, receiverId });
+    this.chatGateway.emitToUser(receiverId, 'message_deleted', { messageId, senderId, receiverId });
 
     return { success: true };
   }

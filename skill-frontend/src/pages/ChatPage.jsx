@@ -3,9 +3,11 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Loader from "../components/Loader";
 import { ROUTES } from "../router/routes";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { io } from "socket.io-client";
 
 export default function ChatPage() {
-  const { user, token, chatUnreadCount, setChatUnreadCount } = useAuth();
+  const { user, token, profile, chatUnreadCount, setChatUnreadCount } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [activeContact, setActiveContact] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -18,8 +20,14 @@ export default function ChatPage() {
   const [editText, setEditText] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingMsgId, setDeletingMsgId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const messagesEndRef = useRef(null);
   const searchInputRef = useRef(null);
+  const socketRef = useRef(null);
+  const activeContactRef = useRef(null);
+
+  // keep ref in sync with state
+  useEffect(() => { activeContactRef.current = activeContact; }, [activeContact]);
 
   const loadContacts = useCallback(async () => {
     try {
@@ -37,6 +45,52 @@ export default function ChatPage() {
     setLoadingContacts(true);
     loadContacts();
   }, [loadContacts]);
+
+  // Socket.IO connection
+  useEffect(() => {
+    if (!token) return;
+    const socket = io("http://localhost:5009", { auth: { token } });
+    socketRef.current = socket;
+
+    socket.on("message_deleted", ({ messageId, senderId, receiverId }) => {
+      setMessages((prev) => {
+        const updated = prev.filter((m) => m.id !== messageId);
+        // update sidebar last message
+        const otherId = senderId === user.id ? receiverId : senderId;
+        setContacts((contacts) =>
+          contacts.map((c) => {
+            if (c.id !== otherId) return c;
+            const newLast = updated.length > 0 ? updated[updated.length - 1] : null;
+            return {
+              ...c,
+              lastMessage: newLast?.content ?? null,
+              lastMessageAt: newLast?.createdAt ?? null,
+              lastMessageSenderId: newLast?.senderId ?? null,
+            };
+          })
+        );
+        return updated;
+      });
+    });
+
+    socket.on("message_updated", (updatedMsg) => {
+      setMessages((prev) => prev.map((m) => m.id === updatedMsg.id ? updatedMsg : m));
+    });
+
+    socket.on("new_message", (msg) => {
+      setMessages((prev) => {
+        // only add if this conversation is open
+        const activeId = activeContactRef.current?.id;
+        if (activeId && (msg.senderId === activeId || msg.receiverId === activeId)) {
+          return [...prev, msg];
+        }
+        return prev;
+      });
+      loadContacts();
+    });
+
+    return () => { socket.disconnect(); };
+  }, [token]);
 
   useEffect(() => {
     if (!activeContact) return;
@@ -226,15 +280,30 @@ export default function ChatPage() {
   };
 
   const deleteMessage = async (msgId) => {
-    if (!window.confirm("Delete this message?")) return;
     setDeletingMsgId(msgId);
+    setConfirmDeleteId(null);
     try {
       await api.deleteChatMessage(token, msgId);
-      setMessages((prev) => prev.filter((m) => m.id !== msgId));
-      setContacts((prev) => {
-        const contact = activeContact;
-        if (!contact) return prev;
-        return prev.map((c) => c.id === contact.id ? { ...c, unreadCount: Math.max((c.unreadCount || 0) - 1, 0) } : c);
+      setMessages((prev) => {
+        const updated = prev.filter((m) => m.id !== msgId);
+        // update sidebar last message immediately
+        if (activeContact) {
+          const newLast = updated.length > 0 ? updated[updated.length - 1] : null;
+          setContacts((contacts) =>
+            contacts.map((c) =>
+              c.id === activeContact.id
+                ? {
+                    ...c,
+                    lastMessage: newLast?.content ?? null,
+                    lastMessageAt: newLast?.createdAt ?? null,
+                    lastMessageSenderId: newLast?.senderId ?? null,
+                    unreadCount: Math.max((c.unreadCount || 0) - 1, 0),
+                  }
+                : c
+            )
+          );
+        }
+        return updated;
       });
     } catch {
       // ignore
@@ -369,8 +438,17 @@ export default function ChatPage() {
                 const m = item.message;
                 const isMe = m.senderId === user.id;
                 const isEditing = editingMsgId === m.id;
+                const senderAvatar = isMe ? profile?.avatar : activeContact?.avatar;
+                const senderInitials = isMe ? getInitials({ firstName: user.name }) : getInitials(activeContact);
                 return (
                   <div key={`msg-${idx}`} className={`chat-bubble-wrap ${isMe ? "me" : "them"}`}>
+                    {/* {!isMe && (
+                      <div className="chat-msg-avatar">
+                        {senderAvatar
+                          ? <img src={senderAvatar} alt="avatar" />
+                          : <span>{senderInitials}</span>}
+                      </div>
+                    )} */}
                     <div className={`chat-bubble ${isMe ? "me" : "them"}`}>
                       {isEditing ? (
                         <div className="chat-edit-form">
@@ -396,18 +474,43 @@ export default function ChatPage() {
                           </div>
                           {isMe && (
                             <div className="chat-bubble-actions">
-                              <button type="button" className="chat-action-btn" onClick={() => startEdit(m)} title="Edit">✏️</button>
-                              <button type="button" className="chat-action-btn chat-action-delete" onClick={() => deleteMessage(m.id)} title="Delete">🗑️</button>
+                              <button type="button" className="chat-action-btn" onClick={() => startEdit(m)} title="Edit">
+                                <i className="fas fa-pencil-alt" />
+                              </button>
+                              <button type="button" className="chat-action-btn delete" onClick={() => setConfirmDeleteId(m.id)} title="Delete" disabled={deletingMsgId === m.id}>
+                                {deletingMsgId === m.id ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-trash" />}
+                              </button>
                             </div>
                           )}
                         </>
                       )}
                     </div>
+                    {/* {isMe && (
+                      <div className="chat-msg-avatar">
+                        {senderAvatar
+                          ? <img src={senderAvatar} alt="avatar" />
+                          : <span>{senderInitials}</span>}
+                      </div>
+                    )} */}
                   </div>
                 );
               })}
               <div ref={messagesEndRef} />
             </div>
+
+            {confirmDeleteId && (
+              <div className="chat-delete-overlay" onClick={() => setConfirmDeleteId(null)}>
+                <div className="chat-delete-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="chat-delete-modal-icon"><i className="fas fa-trash" /></div>
+                  <h4>Delete Message</h4>
+                  <p>This message will be permanently deleted.</p>
+                  <div className="chat-delete-modal-actions">
+                    <button className="chat-delete-cancel-btn" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                    <button className="chat-delete-confirm-btn" onClick={() => deleteMessage(confirmDeleteId)}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <form className="chat-input-bar" onSubmit={handleSend}>
               <input
