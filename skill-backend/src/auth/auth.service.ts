@@ -61,8 +61,7 @@ export class AuthService {
         html: `<p>Hello ${user.name},</p><p>Your OTP to reset your password is:</p><h2 style="letter-spacing:8px">${otp}</h2><p>This OTP is valid for <strong>2 minutes</strong>.</p>`,
       });
     } catch (err) {
-      console.error('SMTP Error:', err);
-      throw new BadRequestException('Failed to send OTP email. Please try Again.');
+      throw new BadRequestException('Failed to send OTP email. Please try again.');
     }
 
     return { message: 'OTP sent to your email.' };
@@ -72,7 +71,7 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
     if (!user || user.resetToken !== otp)
       throw new BadRequestException('Invalid OTP');
-    if (!user.resetTokenExpiry || user.resetTokenExpiry < Date.now())
+    if (!user.resetTokenExpiry || Number(user.resetTokenExpiry) < Date.now())
       throw new BadRequestException('OTP has expired');
     return { message: 'OTP verified' };
   }
@@ -81,7 +80,7 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
     if (!user || user.resetToken !== otp)
       throw new BadRequestException('Invalid OTP');
-    if (!user.resetTokenExpiry || user.resetTokenExpiry < Date.now())
+    if (!user.resetTokenExpiry || Number(user.resetTokenExpiry) < Date.now())
       throw new BadRequestException('OTP has expired');
 
     user.password = await bcrypt.hash(newPassword, 10);

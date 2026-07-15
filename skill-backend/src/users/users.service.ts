@@ -13,6 +13,7 @@ export class UsersService {
   async getProfile(userId: string) {
     if (!isUuid(userId)) throw new UnauthorizedException('Invalid session, please log in again');
     const user = await this.repo.findOne({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
     const { password, ...rest } = user;
     return rest;
   }
@@ -51,6 +52,11 @@ export class UsersService {
   async deleteAvatar(userId: string) {
     await this.repo.update(userId, { avatar: null });
     return this.getProfile(userId);
+  }
+
+  async updateLastSeen(userId: string) {
+    await this.repo.update(userId, { lastSeen: new Date() });
+    return { success: true };
   }
 
   async searchEmployees(query: any) {

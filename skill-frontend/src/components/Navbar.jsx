@@ -34,13 +34,11 @@ export default function Sidebar() {
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     try {
       setUploadingAvatar(true);
-
       const updated = await api.uploadAvatar(token, file);
-
       setProfile(updated);
+      window.dispatchEvent(new Event('profile-updated'));
     } catch (err) {
       console.error(err);
     } finally {
@@ -51,11 +49,10 @@ export default function Sidebar() {
   const handleDeleteAvatar = async () => {
     try {
       setDeletingAvatar(true);
-
       const updated = await api.deleteAvatar(token);
-
       setProfile(updated);
       setViewAvatar(false);
+      window.dispatchEvent(new Event('profile-updated'));
     } catch (err) {
       console.error(err);
     } finally {

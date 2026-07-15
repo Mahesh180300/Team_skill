@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Delete, Body, Query, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Put, Post, Delete, Body, Query, UseGuards, UseInterceptors, UploadedFile, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
@@ -47,6 +47,11 @@ export class UsersController {
   @Delete('profile/avatar')
   deleteAvatar(@CurrentUser() user: any) {
     return this.usersService.deleteAvatar(user.id);
+  }
+
+  @Patch('profile/last-seen')
+  updateLastSeen(@CurrentUser() user: any) {
+    return this.usersService.updateLastSeen(user.id);
   }
 
 

@@ -92,6 +92,7 @@ export default function ProfilePage() {
       setSharedProfile(updated);
       setEditing(false);
       showToast("Profile updated");
+      window.dispatchEvent(new Event('profile-updated'));
     });
   };
 
@@ -113,6 +114,7 @@ export default function ProfilePage() {
           resumeFileType: data.resumeFileType,
         }));
         showToast("Resume uploaded");
+        window.dispatchEvent(new Event('profile-updated'));
       }
     });
   };
