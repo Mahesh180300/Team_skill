@@ -2,7 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { useState } from "react";
 import LoaderDialog from "../components/LoaderDialog";
-import ConfirmDialog from "../components/ConfirmDialog";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useApi } from "../hooks/useApi";
 
 export default function DocumentsPage() {

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import Button from "../components/common/Button";
 import { FaReact, FaJava, FaPython, FaNodeJs, FaAws } from "react-icons/fa";
 import { SiMongodb, SiJavascript, SiHtml5, SiCss } from "react-icons/si";
-import ConfirmDialog from "../components/ConfirmDialog";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
@@ -128,13 +129,13 @@ export default function CertificationsPage() {
       </div>
       {toast && <div className="toast success">{toast}</div>}
 
-      <button
-        className="btn-primary"
+      <Button
+        variant="primary"
         style={{ width: "20%", marginLeft: "80%" }}
         onClick={() => setShowModal(true)}
       >
-        + Add Certification
-      </button>
+        Add Certification
+      </Button>
 
       {/* ── Add Form ─────────────────────────────────────────────────────────── */}
       {showModal && (
@@ -147,6 +148,7 @@ export default function CertificationsPage() {
               <label style={{ fontWeight: "500", fontSize: "15px"}}>Add Certification </label>
                
             </div>
+            
             <div className="card form-card">
               <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div className="form-group">
@@ -251,9 +253,9 @@ export default function CertificationsPage() {
                     </p>
                   )}
                 </div>
-                <button type="submit" className="btn-primary" style={{ display: "block", margin: "15px auto 0" }} disabled={addingCert}>
+                <Button variant="primary" type="submit" style={{ display: "block", margin: "15px auto 0" }} loading={addingCert}>
                   {addingCert ? "Adding..." : "Add"}
-                </button>
+                </Button>
               </form>
               {error && <p className="error">{error}</p>}
             </div>
@@ -299,13 +301,9 @@ export default function CertificationsPage() {
                   <div>View Certificate ↗</div>
                 </button>
               )}
-              <button className="edit-icon" onClick={() => openEdit(c)}>
-                Edit
-              </button>
-              <button className="delete-btn" onClick={() => setDeleteTargetId(c.id)}>
-                Delete
-              </button>
-            </div>
+              <Button variant="edit" onClick={() => openEdit(c)}>Edit</Button>
+              <Button variant="delete" onClick={() => setDeleteTargetId(c.id)}>Delete</Button>
+           </div>
           ))}
         </div>
       )}
@@ -428,7 +426,6 @@ export default function CertificationsPage() {
       expiryDate: e.target.value,
     })
   }
-  style={{ width: 180 }}
 />
               <label
                 htmlFor="edit-cert-file"
@@ -495,15 +492,10 @@ export default function CertificationsPage() {
               {editError && <p className="error">{editError}</p>}
 
               <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={updatingCert}>
+                <Button variant="primary" type="submit" style={{ flex: 1 }} loading={updatingCert}>
                   {updatingCert ? "Saving..." : "Save Changes"}
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ flex: 1 }}
-                  onClick={closeEdit}
-                >
+                </Button>
+                <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={closeEdit}>
                   Cancel
                 </button>
               </div>
@@ -514,7 +506,7 @@ export default function CertificationsPage() {
 
       {deleteTargetId && (
         <ConfirmDialog
-          icon="🏅"
+          icon="🗑️"
           title="Delete Certification"
           message="Are you sure want to delete this certification? This cannot be undone."
           confirmText="Yes, Delete"

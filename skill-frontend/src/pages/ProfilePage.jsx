@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
-import ConfirmDialog from "../components/ConfirmDialog";
+import Button from "../components/common/Button";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
@@ -156,319 +158,102 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
+      <h2>My Profile</h2>
       <div className="page-header">
-        <h2>My Profile</h2>
-        <button
-          className="btn-secondary"
+
+        <Button
+          variant="primary"
           onClick={() => setEditing(true)}
-          style={{ backgroundColor: "var(--primary)", color: "white" }}
+          style={{ marginLeft: "auto", whiteSpace: "nowrap",width: "20%" }}
         >
           Edit Profile
-        </button>
+        </Button>
       </div>
       {msg && <div className="toast success">{msg}</div>}
 
-      {editing && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.55)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
-            padding: "16px",
-          }}
-          onClick={() => setEditing(false)}
-        >
-          <div
-            style={{
-              background: "var(--card-bg,#fff)",
-              borderRadius: 14,
-              width: "100%",
-              maxWidth: "640px",
-              maxHeight: "calc(100vh - 32px)",
-              display: "flex",
-              flexDirection: "column",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.25)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* fixed header */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "20px 24px 16px",
-                borderBottom: "1px solid var(--border)",
-              }}
-            >
-              <h3 style={{ margin: 0 }}>Edit Profile</h3>
-              <button
-                type="button"
-                onClick={() => setEditing(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 22,
-                  cursor: "pointer",
-                  lineHeight: 1,
-                  color: "var(--text-muted)",
-                }}
-              >
-                ✕
-              </button>
+      <DialogBox
+        isOpen={editing}
+        onClose={() => setEditing(false)}
+        title="Edit Profile"
+        width={640}
+        footer={
+          <>
+            <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+            <Button variant="primary" type="submit" form="edit-profile-form" loading={savingProfile}>{savingProfile ? "Saving..." : "Save Changes"}</Button>
+          </>
+        }
+      >
+        <form id="edit-profile-form" onSubmit={save} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 16 }}>
+          <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "gray", marginBottom: 10 }}>Personal Info</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, borderRadius: 10, padding: 16, marginBottom: 20 }}>
+            <div className="form-group">
+              <label>First Name</label>
+              <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
             </div>
-            {/* scrollable body */}
-            <div style={{ overflowY: "auto", flex: 1, padding: "20px 24px" }}>
-              <form id="edit-profile-form" onSubmit={save}>
-                <p
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 13,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "gray",
-                    marginBottom: 10,
-                  }}
-                >
-                  Personal Info
-                </p>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 12,
-                    border: "1px solid var(--border)",
-                    borderRadius: 10,
-                    padding: 16,
-                    marginBottom: 20,
-                  }}
-                >
-                  <div className="form-group">
-                    <label>First Name</label>
-                    <input
-                      value={form.firstName}
-                      onChange={(e) =>
-                        setForm({ ...form, firstName: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Last Name</label>
-                    <input
-                      value={form.lastName}
-                      onChange={(e) =>
-                        setForm({ ...form, lastName: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Department</label>
-                    <select
-                      value={form.department}
-                      onChange={(e) =>
-                        setForm({ ...form, department: e.target.value })
-                      }
-                    >
-                      <option value="">Select Department</option>
-                      {departments.map((d) => (
-                        <option key={d.id} value={d.value}>
-                          {d.value}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Job Title</label>
-                    <select
-                      value={form.jobTitle}
-                      onChange={(e) =>
-                        setForm({ ...form, jobTitle: e.target.value })
-                      }
-                    >
-                      <option value="">Select Job Title</option>
-                      {jobTitles.map((j) => (
-                        <option key={j.id} value={j.value}>
-                          {j.value}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <p
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 13,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "gray",
-                    marginBottom: 10,
-                  }}
-                >
-                  Experience &amp; Project
-                </p>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 12,
-                    border: "1px solid var(--border)",
-                    borderRadius: 10,
-                    padding: 16,
-                    marginBottom: 8,
-                  }}
-                >
-                  <div className="form-group">
-                    <label>Date of Joining</label>
-                    <input
-                      type="date"
-                      value={form.dateOfJoining}
-                      onChange={(e) =>
-                        setForm({ ...form, dateOfJoining: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Years of Experience</label>
-                    <input
-                      value={calcDuration(form.dateOfJoining)}
-                      readOnly
-                      placeholder="Auto-calculated"
-                      style={{
-                        background: "var(--bg)",
-                        color: "var(--text-muted)",
-                        cursor: "not-allowed",
-                      }}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Current Project</label>
-                    <select
-                      value={form.currentProject}
-                      onChange={(e) =>
-                        setForm({ ...form, currentProject: e.target.value })
-                      }
-                    >
-                      <option value="">Select Project</option>
-                      {projects.map((p) => (
-                        <option key={p.id} value={p.value}>
-                          {p.value}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Date of Project Assigning</label>
-                    <input
-                      type="date"
-                      value={form.dateOfProjectAssigning}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          dateOfProjectAssigning: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Relevant Date</label>
-                    <input
-                      value={calcDuration(form.dateOfProjectAssigning)}
-                      readOnly
-                      placeholder="Auto-calculated"
-                      style={{
-                        background: "var(--bg)",
-                        color: "var(--text-muted)",
-                        cursor: "not-allowed",
-                      }}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Manager</label>
-                    <select
-                      value={form.manager}
-                      onChange={(e) =>
-                        setForm({ ...form, manager: e.target.value })
-                      }
-                    >
-                      <option value="">Select Manager</option>
-                      {managers.map((m) => (
-                        <option key={m.id} value={m.value}>
-                          {m.value}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
-                    <label>Billable</label>
-                    <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
-                      {["yes", "no"].map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setForm({ ...form, billable: opt })}
-                          style={{
-                            flex: 1,
-                            padding: "9px 0",
-                            borderRadius: 8,
-                            border: `2px solid ${form.billable === opt ? "var(--primary)" : "var(--border)"}`,
-                            background:
-                              form.billable === opt
-                                ? "var(--primary)"
-                                : "var(--card-bg)",
-                            color:
-                              form.billable === opt
-                                ? "#fff"
-                                : "var(--text-muted)",
-                            fontWeight: 600,
-                            fontSize: 14,
-                            cursor: "pointer",
-                            transition: "all 0.15s",
-                          }}
-                        >
-                          {opt === "yes" ? "✓ Yes" : "✗ No"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </form>
+            <div className="form-group">
+              <label>Last Name</label>
+              <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </div>
-            {/* fixed footer */}
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                padding: "16px 24px",
-                borderTop: "1px solid var(--border)",
-                justifyContent: "flex-end",
-              }}
-            >
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setEditing(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                form="edit-profile-form"
-                className="btn-primary"
-                disabled={savingProfile}
-              >
-                {savingProfile ? "Saving..." : "Save Changes"}
-              </button>
+            <div className="form-group">
+              <label>Department</label>
+              <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}>
+                <option value="">Select Department</option>
+                {departments.map((d) => <option key={d.id} value={d.value}>{d.value}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Job Title</label>
+              <select value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}>
+                <option value="">Select Job Title</option>
+                {jobTitles.map((j) => <option key={j.id} value={j.value}>{j.value}</option>)}
+              </select>
             </div>
           </div>
-        </div>
-      )}
+          <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "gray", marginBottom: 10 }}>Experience &amp; Project</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, borderRadius: 10, padding: 16, marginBottom: 8 }}>
+            <div className="form-group">
+              <label>Date of Joining</label>
+              <input type="date" value={form.dateOfJoining} onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Years of Experience</label>
+              <input value={calcDuration(form.dateOfJoining)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
+            </div>
+            <div className="form-group">
+              <label>Current Project</label>
+              <select value={form.currentProject} onChange={(e) => setForm({ ...form, currentProject: e.target.value })}>
+                <option value="">Select Project</option>
+                {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Date of Project Assigning</label>
+              <input type="date" value={form.dateOfProjectAssigning} onChange={(e) => setForm({ ...form, dateOfProjectAssigning: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Relevant Date</label>
+              <input value={calcDuration(form.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
+            </div>
+            <div className="form-group">
+              <label>Manager</label>
+              <select value={form.manager} onChange={(e) => setForm({ ...form, manager: e.target.value })}>
+                <option value="">Select Manager</option>
+                {managers.map((m) => <option key={m.id} value={m.value}>{m.value}</option>)}
+              </select>
+            </div>
+            <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+              <label>Billable</label>
+              <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+                {["yes", "no"].map((opt) => (
+                  <button key={opt} type="button" onClick={() => setForm({ ...form, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${form.billable === opt ? "var(--primary)" : "var(--border)"}`, background: form.billable === opt ? "var(--primary)" : "var(--card-bg)", color: form.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
+                    {opt === "yes" ? "✓ Yes" : "✗ No"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </form>
+      </DialogBox>
 
       <div className="profile-header">
         <div className="profile-stats">

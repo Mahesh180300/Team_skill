@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import Button from "../components/common/Button";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 
@@ -51,7 +52,7 @@ export default function SearchPage() {
               <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={set} disabled={loading} />
             </div>
           </div>
-          <button type="submit" className="btn-primary" disabled={loading}>{loading ? "Searching..." : "Search Employees"}</button>
+          <Button variant="primary" type="submit" loading={loading}>{loading ? "Searching..." : "Search Employees"}</Button>
         </form>
       </div>
 

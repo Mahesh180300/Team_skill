@@ -3,6 +3,7 @@ import { ROUTES } from "./routes";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import Sidebar from "../components/Navbar";
+import StickyChatWidget from "../components/StickyChatWidget";
 import AuthPage from "../pages/AuthPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
@@ -13,7 +14,6 @@ import DocumentsPage from "../pages/DocumentsPage";
 import DashboardPage from "../pages/DashboardPage";
 import EmployeesPage from "../pages/EmployeesPage";
 import LookupPage from "../pages/LookupPage";
-import ChatPage from "../pages/ChatPage";
 
 function AppLayout() {
   return (
@@ -22,6 +22,7 @@ function AppLayout() {
       <main className="main-content">
         <Outlet />
       </main>
+      <StickyChatWidget />
     </div>
   );
 }
@@ -41,7 +42,6 @@ export const router = createBrowserRouter([
       { path: ROUTES.DASHBOARD,      element: <PrivateRoute adminOnly><DashboardPage /></PrivateRoute> },
       { path: ROUTES.EMPLOYEES,      element: <PrivateRoute adminOnly><EmployeesPage /></PrivateRoute> },
       { path: ROUTES.LOOKUP,         element: <PrivateRoute adminOnly><LookupPage /></PrivateRoute> },
-      { path: ROUTES.CHAT,           element: <PrivateRoute><ChatPage /></PrivateRoute> },
     ],
   },
   { path: "/", element: <Navigate to={ROUTES.LOGIN} replace /> },

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
-import ConfirmDialog from "../components/ConfirmDialog";
+import Button from "../components/common/Button";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
@@ -146,130 +148,124 @@ export default function SkillsPage() {
       <div className="page-header"><h2>My Skills</h2></div>
       {toast && <div className="toast success">{toast}</div>}
 
-      <button
-        className="btn-primary"
+      <Button
+        variant="primary"
         style={{ width: "20%", marginLeft: "80%" }}
         onClick={() => setShowAddModal(true)}
         disabled={addingSkill || updatingSkill || deletingSkill}
       >
-        + Add Skill
-      </button>
+        Add Skill
+      </Button>
 
-      {showEditModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="close-btn" onClick={() => { setShowEditModal(false); setEditId(null); }}>✕</button>
-            <div className="card form-card">
-              <h3>Edit Skill</h3>
-              <div className="inline-form">
-                <div className="form-group" style={{ width: "100%" }}>
-                  <label>Skill Type</label>
-                  <select value={editForm.skillType} onChange={(e) => setEditForm({ ...editForm, skillType: e.target.value })}>
-                    {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="form-group" style={{ width: "100%" }}>
-                  <label>Skill Name</label>
-                  <input value={editForm.name} readOnly style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-                </div>
-                <div className="form-group">
-                  <label>Proficiency</label>
-                  <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
-                    {LEVELS.map((l) => <option key={l}>{l}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Years Used</label>
-                  <input type="number" min="0" placeholder="0" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
-                </div>
-                <div className="form-group">
-                  <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(0–11)</span></label>
-                  <input type="number" min="0" max="11" placeholder="0" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
-                </div>
-                <button className="btn-primary" style={{ display: "block", margin: "12px auto 0", width: "100%" }} onClick={save} disabled={updatingSkill}>
-                  {updatingSkill ? "Saving..." : "Save Changes"}
-                </button>
+      <DialogBox
+        isOpen={showEditModal}
+        onClose={() => { setShowEditModal(false); setEditId(null); }}
+        title="Edit Skill"
+        width={500}
+        footer={
+          <Button variant="primary" style={{ width: "100%" }} onClick={save} loading={updatingSkill}>
+            {updatingSkill ? "Saving..." : "Save Changes"}
+          </Button>
+        }
+      >
+        <div className="card form-card">
+          <div className="inline-form">
+            <div className="form-group" style={{ width: "100%" }}>
+              <label>Skill Type</label>
+              <select value={editForm.skillType} onChange={(e) => setEditForm({ ...editForm, skillType: e.target.value })}>
+                {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="form-group" style={{ width: "100%" }}>
+              <label>Skill Name</label>
+              <input value={editForm.name} readOnly style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
+            </div>
+            <div className="form-group">
+              <label>Proficiency</label>
+              <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
+                {LEVELS.map((l) => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Years Used</label>
+              <input type="number" min="0" placeholder="0" value={editForm.yearsUsed} onChange={(e) => setEditForm({ ...editForm, yearsUsed: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(0–11)</span></label>
+              <input type="number" min="0" max="11" placeholder="0" value={editForm.monthsUsed} onChange={(e) => setEditForm({ ...editForm, monthsUsed: e.target.value })} />
+            </div>
+          </div>
+        </div>
+      </DialogBox>
+
+      <DialogBox
+        isOpen={showAddModal}
+        onClose={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); }}
+        title="Add Skills"
+        width={550}
+        footer={
+          pendingSkills.length > 0 ? (
+            <Button variant="primary" style={{ width: "100%" }} onClick={bulkSave} loading={addingSkill}>
+              {addingSkill ? "Saving..." : "Save"}
+            </Button>
+          ) : null
+        }
+      >
+        <div className="card form-card">
+          {pendingSkills.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              <div className="form-group" style={{ width: "100%" }}>
+                <label>Selected Skills ({pendingSkills.length})</label>
               </div>
+              {pendingSkills.map((s, i) => {
+                const isPrimary = s.skillType === "Primary Skill";
+                const clr = isPrimary ? "#10b981" : "#854d0e";
+                const bg  = isPrimary ? "#d1fae5" : "#fef3c7";
+                return (
+                  <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: bg, color: clr, borderRadius: 20, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>
+                    {s.name} <span style={{ fontSize: 10, opacity: 0.7 }}>({s.skillType})</span>
+                    <button type="button" onClick={() => removePending(i)} style={{ background: "none", border: "none", cursor: "pointer", color: clr, fontWeight: 700, lineHeight: 1, padding: "0 2px" }}>✕</button>
+                  </span>
+                );
+              })}
             </div>
-          </div>
-        </div>
-      )}
-
-      {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="close-btn" onClick={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); }}>✕</button>
-           <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 ,fontSize: "16px",fontWeight: "500"}}>
-            <label>Add Skills</label>
-           </div>
-            <div className="card form-card">
-              
-
-              {pendingSkills.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-                    <div className="form-group" style={{ width: "100%" }}>
-                  <label>Selected Skills ({pendingSkills.length})</label>
-                  </div>
-
-                  {pendingSkills.map((s, i) => {
-                    const isPrimary = s.skillType === "Primary Skill";
-                    const clr = isPrimary ? "#10b981" : "#854d0e";
-                    const bg  = isPrimary ? "#d1fae5" : "#fef3c7";
-                    return (
-                      <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: bg, color: clr, borderRadius: 20, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>
-                        {s.name} <span style={{ fontSize: 10, opacity: 0.7 }}>({s.skillType})</span>
-                        <button type="button" onClick={() => removePending(i)} style={{ background: "none", border: "none", cursor: "pointer", color: clr, fontWeight: 700, lineHeight: 1, padding: "0 2px" }}>✕</button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-
-              <form onSubmit={addToPending} className="inline-form">
-               
-                <div className="form-group" style={{ width: "100%" }}>
-                  <label>Skill Type</label>
-                  <select value={form.skillType} onChange={(e) => setForm({ ...form, skillType: e.target.value })}>
-                    {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-                 <div className="form-group" style={{ width: "100%" }}>
-                  <label>Skill Name</label>
-                  <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
-                    <option value="">-- Select Skill --</option>
-                    {skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s)).map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Proficiency</label>
-                  <select value={form.proficiency} onChange={(e) => setForm({ ...form, proficiency: e.target.value })}>
-                    {LEVELS.map((l) => <option key={l}>{l}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Years Used</label>
-                  <input type="number" min="0" placeholder="0" value={form.yearsUsed} onChange={(e) => setForm({ ...form, yearsUsed: e.target.value })} />
-                </div>
-                <div className="form-group">
-                  <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(0–11)</span></label>
-                  <input type="number" min="0" max="11" placeholder="0" value={form.monthsUsed} onChange={(e) => setForm({ ...form, monthsUsed: e.target.value })} />
-                </div>
-                {durationError && <p className="error" style={{ width: "100%" }}>{durationError}</p>}
-                {error && <p className="error" style={{ width: "100%" }}>{error}</p>}
-                <button type="submit" className="btn-secondary" style={{ display: "block", margin: "15px auto 0" }}>
-                  + Add
-                </button>
-              </form>
-
-              {pendingSkills.length > 0 && (
-                <button className="btn-primary" style={{ display: "block", margin: "12px auto 0", width: "100%" }} onClick={bulkSave} disabled={addingSkill}>
-                  {addingSkill ? "Saving..." : "Save"}
-                </button>
-              )}
+          )}
+          <form onSubmit={addToPending} className="inline-form">
+            <div className="form-group" style={{ width: "100%" }}>
+              <label>Skill Type</label>
+              <select value={form.skillType} onChange={(e) => setForm({ ...form, skillType: e.target.value })}>
+                {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
+              </select>
             </div>
-          </div>
+            <div className="form-group" style={{ width: "100%" }}>
+              <label>Skill Name</label>
+              <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
+                <option value="">-- Select Skill --</option>
+                {skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s)).map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Proficiency</label>
+              <select value={form.proficiency} onChange={(e) => setForm({ ...form, proficiency: e.target.value })}>
+                {LEVELS.map((l) => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Years Used</label>
+              <input type="number" min="0" placeholder="0" value={form.yearsUsed} onChange={(e) => setForm({ ...form, yearsUsed: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(0–11)</span></label>
+              <input type="number" min="0" max="11" placeholder="0" value={form.monthsUsed} onChange={(e) => setForm({ ...form, monthsUsed: e.target.value })} />
+            </div>
+            {durationError && <p className="error" style={{ width: "100%" }}>{durationError}</p>}
+            {error && <p className="error" style={{ width: "100%" }}>{error}</p>}
+            <Button type="submit" variant="primary" style={{ display: "block", margin: "15px auto 0" }}>
+              Add
+            </Button>
+          </form>
         </div>
-      )}
+      </DialogBox>
 
       {/* ── Stat Cards ── */}
       <div className="skill-stats-grid">
@@ -325,8 +321,8 @@ export default function SkillsPage() {
                       <div className="st-col st-col-proficiency"><span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span></div>
                       <div className="st-col st-col-duration"><span className="skill-years">{formatDuration(s) || "—"}</span></div>
                       <div className="st-col st-col-actions">
-                        <button className="skill-btn-edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}>Edit</button>
-                        <button className="skill-btn-delete" onClick={() => setDeleteTargetId(s.id)}>Delete</button>
+                        <Button variant="edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}>Edit</Button>
+                        <Button variant="delete" onClick={() => setDeleteTargetId(s.id)}>Delete</Button>
                       </div>
                     </>
                   )

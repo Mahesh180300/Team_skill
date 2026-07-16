@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import Button from "../components/common/Button";
 import LoaderDialog from "../components/LoaderDialog";
-import ConfirmDialog from "../components/ConfirmDialog";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useApi } from "../hooks/useApi";
 
 export default function MastersPage() {
@@ -141,7 +142,7 @@ export default function MastersPage() {
             style={{ flex: 1 }}
             disabled={anyLoading}
           />
-          <button className="btn-primary" onClick={addType} disabled={anyLoading} style={{ whiteSpace: "nowrap" }}>+ Add Type</button>
+          <Button variant="primary" onClick={addType} disabled={anyLoading} style={{ whiteSpace: "nowrap" }}> Add Type</Button>
         </div>
       </div>
 
@@ -180,13 +181,13 @@ export default function MastersPage() {
                 <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                   {isEditingType ? (
                     <>
-                      <button className="btn-primary btn-sm" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</button>
+                      <Button variant="primary" size="sm" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</Button>
                       <button className="btn-secondary btn-sm" onClick={() => setEditingTypeId(null)}>Cancel</button>
                     </>
                   ) : (
                     <>
-                      <button className="btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); startEditType(type, e); }} style={{ color: "var(--primary)", borderColor: "var(--primary)" }} disabled={anyLoading}>Edit</button>
-                      <button className="btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ kind: 'type', id: type.id, name: type.name }); }} style={{ color: "var(--danger)", borderColor: "var(--danger)" }} disabled={anyLoading}>Delete</button>
+                      <Button variant="edit" size="sm" onClick={(e) => { e.stopPropagation(); startEditType(type, e); }} disabled={anyLoading}>Edit</Button>
+                      <Button variant="delete" size="sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ kind: 'type', id: type.id, name: type.name }); }} disabled={anyLoading}>Delete</Button>
                     </>
                   )}
                 </div>
@@ -210,14 +211,14 @@ export default function MastersPage() {
                                 onKeyDown={(e) => { if (e.key === "Enter") saveValue(v.id); if (e.key === "Escape") setEditingValueId(null); }}
                                 style={{ flex: 1, fontSize: 14 }}
                               />
-                              <button className="btn-primary btn-sm" onClick={() => saveValue(v.id)} disabled={anyLoading}>Save</button>
+                              <Button variant="primary" size="sm" onClick={() => saveValue(v.id)} disabled={anyLoading}>Save</Button>
                               <button className="btn-secondary btn-sm" onClick={() => setEditingValueId(null)}>Cancel</button>
                             </>
                           ) : (
                             <>
                               <span style={{ flex: 1, fontSize: 14, color: "var(--text)" }}>{v.value}</span>
-                              <button className="btn-secondary btn-sm" onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }} style={{ color: "var(--primary)", borderColor: "var(--primary)" }} disabled={anyLoading}>Edit</button>
-                              <button className="btn-secondary btn-sm" onClick={() => setConfirmDelete({ kind: 'value', id: v.id, name: v.value })} style={{ color: "var(--danger)", borderColor: "var(--danger)" }} disabled={anyLoading}>Delete</button>
+                              <Button variant="edit" size="sm" onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }} disabled={anyLoading}>Edit</Button>
+                              <Button variant="delete" size="sm" onClick={() => setConfirmDelete({ kind: 'value', id: v.id, name: v.value })} disabled={anyLoading}>Delete</Button>
                             </>
                           )}
                         </div>
@@ -235,7 +236,7 @@ export default function MastersPage() {
                       style={{ flex: 1 }}
                       disabled={anyLoading}
                     />
-                    <button className="btn-primary btn-sm" onClick={() => addValue(type.id)} disabled={anyLoading}>+ Add</button>
+                    <Button variant="primary" size="sm" onClick={() => addValue(type.id)} disabled={anyLoading}>+ Add</Button>
                   </div>
                 </div>
               </div>
