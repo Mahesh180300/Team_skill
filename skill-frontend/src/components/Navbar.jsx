@@ -34,6 +34,11 @@ export default function Sidebar() {
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Profile picture must not exceed 2 MB");
+      e.target.value = "";
+      return;
+    }
     try {
       setUploadingAvatar(true);
       const updated = await api.uploadAvatar(token, file);
@@ -147,15 +152,18 @@ export default function Sidebar() {
               </div>
 
               {!collapsed && (
-                <button
-                  className="sidebar-avatar-edit-btn"
-                  onClick={() =>
-                    document.getElementById("sidebar-avatar-input").click()
-                  }
-                  title="Change Profile Picture"
-                >
-                  ✏️
-                </button>
+                
+                  <button
+                    className="sidebar-avatar-edit-btn"
+                    onClick={() =>
+                      document.getElementById("sidebar-avatar-input").click()
+                    }
+                    title="Change Profile Picture"
+                  >
+                    ✏️
+                  </button>
+
+                
               )}
 
               <input
@@ -166,6 +174,7 @@ export default function Sidebar() {
                 onChange={handleAvatarChange}
               />
             </div>
+             <span style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>Max 2 MB</span>
             {viewAvatar && (
               <div
                 className="modal-overlay"
@@ -212,6 +221,7 @@ export default function Sidebar() {
                       Close
                     </button>
                   </div>
+                  <div style={{ textAlign: "center", fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>Max file size: 2 MB</div>
                 </div>
               </div>
             )}

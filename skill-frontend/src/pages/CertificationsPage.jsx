@@ -15,6 +15,7 @@ export default function CertificationsPage() {
   const [form, setForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
   const [toast, setToast] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
@@ -49,6 +50,13 @@ export default function CertificationsPage() {
   const add = async (e) => {
     e.preventDefault();
     setError("");
+    const errs = {};
+    if (!form.name.trim()) errs.name = "Certification name is required";
+    if (!form.issuer.trim()) errs.issuer = "Issued by is required";
+    if (!selectedFile) errs.file = "Please upload a certificate";
+    else if (selectedFile.size > 5 * 1024 * 1024) errs.file = "File size must not exceed 5 MB";
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     await callAdd(async () => {
       const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
       if (data.error) { setError(data.error); return; }
@@ -141,7 +149,7 @@ export default function CertificationsPage() {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <button className="close-btn" onClick={() => setShowModal(false)}>
+            <button className="close-btn" onClick={() => { setShowModal(false); setFormErrors({}); setError(""); }}>
               ✕
             </button>
             <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
@@ -152,22 +160,22 @@ export default function CertificationsPage() {
             <div className="card form-card">
               <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div className="form-group">
-                  <label>Certification Name</label>
+                  <label>Certification Name <span style={{ color: "red" }}>*</span></label>
                   <input
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    required
+                    onChange={(e) => { setForm({ ...form, name: e.target.value }); setFormErrors((p) => ({ ...p, name: "" })); }}
                   />
+                  {formErrors.name && <span style={{ color: "red", fontSize: 12 }}>{formErrors.name}</span>}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                   <div className="form-group">
-                    <label>Issued by</label>
+                    <label>Issued by <span style={{ color: "red" }}>*</span></label>
                     <input
                       placeholder="(e.g. AWS, Google)"
                       value={form.issuer}
-                      onChange={(e) => setForm({ ...form, issuer: e.target.value })}
-                      required
+                      onChange={(e) => { setForm({ ...form, issuer: e.target.value }); setFormErrors((p) => ({ ...p, issuer: "" })); }}
                     />
+                    {formErrors.issuer && <span style={{ color: "red", fontSize: 12 }}>{formErrors.issuer}</span>}
                   </div>
                   <div className="form-group">
                     <label>Issued On</label>
@@ -175,7 +183,6 @@ export default function CertificationsPage() {
                       type="date"
                       value={form.issuedOn}
                       onChange={(e) => setForm({ ...form, issuedOn: e.target.value })}
-                      required
                     />
                   </div>
                   <div className="form-group">
@@ -188,13 +195,21 @@ export default function CertificationsPage() {
                   </div>
                 </div>
                 <div style={{ marginTop: 16, width: "100%" }}>
+                  <div className="form-group" style={{ marginBottom: 4 }}>
+                    <label>Upload Certificate <span style={{ color: "red" }}>*</span></label>
+                  </div>
                   <label
                     htmlFor="cert-file"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => {
                       e.preventDefault();
                       const f = e.dataTransfer.files[0];
-                      if (f) setSelectedFile(f);
+                      if (f && f.size > 5 * 1024 * 1024) {
+                        setFormErrors((p) => ({ ...p, file: "File size must not exceed 5 MB" }));
+                      } else if (f) {
+                        setSelectedFile(f);
+                        setFormErrors((p) => ({ ...p, file: "" }));
+                      }
                     }}
                     style={{
                       display: "flex",
@@ -224,20 +239,28 @@ export default function CertificationsPage() {
                         textAlign: "center",
                       }}
                     >
-                      Click to upload or drag and drop your certificate (PDF,
-                      JPG, PNG)
+                      Click to upload or drag and drop your certificate (PDF, JPG, PNG)
                     </span>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Max file size: 5 MB</span>
                     <input
                       id="cert-file"
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       style={{ display: "none" }}
-                      onChange={(e) =>
-                        setSelectedFile(e.target.files[0] || null)
-                      }
-                      required
+                      onChange={(e) => {
+                        const f = e.target.files[0] || null;
+                        if (f && f.size > 5 * 1024 * 1024) {
+                          setFormErrors((p) => ({ ...p, file: "File size must not exceed 5 MB" }));
+                          setSelectedFile(null);
+                          e.target.value = "";
+                        } else {
+                          setSelectedFile(f);
+                          setFormErrors((p) => ({ ...p, file: "" }));
+                        }
+                      }}
                     />
                   </label>
+                  {formErrors.file && <span style={{ color: "red", fontSize: 12 }}>{formErrors.file}</span>}
                   {selectedFile && (
                     <p
                       style={{
@@ -433,7 +456,12 @@ export default function CertificationsPage() {
                 onDrop={(e) => {
                   e.preventDefault();
                   const f = e.dataTransfer.files[0];
-                  if (f) setEditFile(f);
+                  if (f && f.size > 5 * 1024 * 1024) {
+                    setEditError("File size must not exceed 5 MB");
+                  } else if (f) {
+                    setEditFile(f);
+                    setEditError("");
+                  }
                 }}
                 style={{
                   display: "flex",
@@ -467,12 +495,23 @@ export default function CertificationsPage() {
                     ? `Current: ${editingCert.fileName} — click to replace`
                     : "Click to upload a certificate (PDF, JPG, PNG)"}
                 </span>
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Max file size: 5 MB</span>
                 <input
                   id="edit-cert-file"
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   style={{ display: "none" }}
-                  onChange={(e) => setEditFile(e.target.files[0] || null)}
+                  onChange={(e) => {
+                    const f = e.target.files[0] || null;
+                    if (f && f.size > 5 * 1024 * 1024) {
+                      setEditError("File size must not exceed 5 MB");
+                      setEditFile(null);
+                      e.target.value = "";
+                    } else {
+                      setEditFile(f);
+                      setEditError("");
+                    }
+                  }}
                 />
               </label>
               {editFile && (

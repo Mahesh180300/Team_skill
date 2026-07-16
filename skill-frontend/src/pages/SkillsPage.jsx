@@ -28,7 +28,7 @@ export default function SkillsPage() {
   const [editForm, setEditForm] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState("");
-  const [durationError, setDurationError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [toast, setToast] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
@@ -95,17 +95,16 @@ export default function SkillsPage() {
   const addToPending = (e) => {
     e.preventDefault();
     setError("");
-    setDurationError("");
-    if (!form.name) { setError("Please select a skill."); return; }
+    const errs = {};
+    if (!form.skillType) errs.skillType = "Skill Type is required.";
+    if (!form.name) errs.name = "Skill Name is required.";
+    if (!form.proficiency) errs.proficiency = "Proficiency is required.";
+    if (Object.keys(errs).length) { setFieldErrors(errs); return; }
+    setFieldErrors({});
     const alreadyExists = skills.some((s) => s.name === form.name) || pendingSkills.some((s) => s.name === form.name);
     if (alreadyExists) { setError(`"${form.name}" is already added.`); return; }
-    if (!Number(form.yearsUsed) && !Number(form.monthsUsed)) {
-      setDurationError("Please enter at least Years or Months used.");
-      return;
-    }
     setPendingSkills((prev) => [...prev, { ...form, yearsUsed: Number(form.yearsUsed) || 0, monthsUsed: Number(form.monthsUsed) || 0 }]);
     setForm(EMPTY_FORM);
-    setDurationError("");
   };
 
   const removePending = (idx) => setPendingSkills((prev) => prev.filter((_, i) => i !== idx));
@@ -200,7 +199,7 @@ export default function SkillsPage() {
 
       <DialogBox
         isOpen={showAddModal}
-        onClose={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); }}
+        onClose={() => { setShowAddModal(false); setPendingSkills([]); setForm(EMPTY_FORM); setFieldErrors({}); setError(""); }}
         title="Add Skills"
         width={550}
         footer={
@@ -232,33 +231,35 @@ export default function SkillsPage() {
           )}
           <form onSubmit={addToPending} className="inline-form">
             <div className="form-group" style={{ width: "100%" }}>
-              <label>Skill Type</label>
-              <select value={form.skillType} onChange={(e) => setForm({ ...form, skillType: e.target.value })}>
+              <label>Skill Type <span style={{ color: "red" }}>*</span></label>
+              <select value={form.skillType} onChange={(e) => { setForm({ ...form, skillType: e.target.value }); setFieldErrors((p) => ({ ...p, skillType: "" })); }}>
                 {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
               </select>
+              {fieldErrors.skillType && <span style={{ color: "red", fontSize: 12 }}>{fieldErrors.skillType}</span>}
             </div>
             <div className="form-group" style={{ width: "100%" }}>
-              <label>Skill Name</label>
-              <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required>
+              <label>Skill Name <span style={{ color: "red" }}>*</span></label>
+              <select value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); setFieldErrors((p) => ({ ...p, name: "" })); }}>
                 <option value="">-- Select Skill --</option>
                 {skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s)).map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
+              {fieldErrors.name && <span style={{ color: "red", fontSize: 12 }}>{fieldErrors.name}</span>}
             </div>
             <div className="form-group">
-              <label>Proficiency</label>
-              <select value={form.proficiency} onChange={(e) => setForm({ ...form, proficiency: e.target.value })}>
+              <label>Proficiency <span style={{ color: "red" }}>*</span></label>
+              <select value={form.proficiency} onChange={(e) => { setForm({ ...form, proficiency: e.target.value }); setFieldErrors((p) => ({ ...p, proficiency: "" })); }}>
                 {LEVELS.map((l) => <option key={l}>{l}</option>)}
               </select>
+              {fieldErrors.proficiency && <span style={{ color: "red", fontSize: 12 }}>{fieldErrors.proficiency}</span>}
             </div>
             <div className="form-group">
-              <label>Years Used</label>
+              <label>Years Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(Optional)</span></label>
               <input type="number" min="0" placeholder="0" value={form.yearsUsed} onChange={(e) => setForm({ ...form, yearsUsed: e.target.value })} />
             </div>
             <div className="form-group">
-              <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(0–11)</span></label>
+              <label>Months Used <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(Optional, 0–11)</span></label>
               <input type="number" min="0" max="11" placeholder="0" value={form.monthsUsed} onChange={(e) => setForm({ ...form, monthsUsed: e.target.value })} />
             </div>
-            {durationError && <p className="error" style={{ width: "100%" }}>{durationError}</p>}
             {error && <p className="error" style={{ width: "100%" }}>{error}</p>}
             <Button type="submit" variant="primary" style={{ display: "block", margin: "15px auto 0" }}>
               Add
@@ -298,9 +299,8 @@ export default function SkillsPage() {
         <div>
           <div className="skills-table">
             <div className="skills-table-header">
-              <div className="st-col st-col-num">#</div>
+              <div className="st-col st-col-num">S.No</div>
               <div className="st-col st-col-name">Skill Name</div>
-              <div className="st-col st-col-type">Type</div>
               <div className="st-col st-col-proficiency">Proficiency</div>
               <div className="st-col st-col-duration">Experience</div>
               <div className="st-col st-col-actions">Actions</div>
@@ -312,9 +312,9 @@ export default function SkillsPage() {
                   {(
                     <>
                       <div className="st-col st-col-num"><span className="st-num">{globalIdx + 1}</span></div>
-                      <div className="st-col st-col-name"><span className="skill-name">{s.name}</span></div>
-                      <div className="st-col st-col-type">
-                        <span className={`skill-type-badge ${s.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"}`}>
+                      <div className="st-col st-col-name" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        <span className="skill-name">{s.name}</span>
+                        <span className={`skill-type-badge ${s.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"}`} style={{ fontSize: 9, }}>
                           {s.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
                         </span>
                       </div>
