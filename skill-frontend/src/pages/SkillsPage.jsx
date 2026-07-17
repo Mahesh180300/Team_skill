@@ -10,13 +10,13 @@ import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
-const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
+// const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 const SKILL_TYPES = ["Primary Skill", "Secondary Skill"];
 
 const STAT_META = [
-  { key: "total",          label: "Total Skills",     icon: " 🗂️", iconBg: "#dbeafe", iconColor: "#1d4ed8", accent: "#1d4ed8", lightBg: "#eff6ff", subtitle: "All skills added" },
-  { key: "primarySkill",   label: "Primary Skills",   icon: " ⭐", iconBg: "#dcfce7", iconColor: "#16a34a", accent: "#16a34a", lightBg: "#f0fdf4", subtitle: "Core expertise" },
-  { key: "secondarySkill", label: "Secondary Skills", icon: "🔶", iconBg: "#fef3c7", iconColor: "#d97706", accent: "#d97706", lightBg: "#fffbeb", subtitle: "Supporting skills" },
+  { key: "total",          label: "Total Skills",     icon: " 🗂️", iconBg: "#c1d0e5", iconColor: "#1d4ed8", accent: "#1d3986", lightBg: "#eff6ff", subtitle: "All skills added" },
+  { key: "primarySkill",   label: "Primary Skills",   icon: " ⭐", iconBg: "#b4e5c5", iconColor: "#16a34a", accent: "#1c793e", lightBg: "#f0fdf4", subtitle: "Core expertise" },
+  { key: "secondarySkill", label: "Secondary Skills", icon: "🔶", iconBg: "#ffc395", iconColor: "#d97706", accent: "#cd7510", lightBg: "#fffbeb", subtitle: "Supporting skills" },
 ];
 
 const EMPTY_FORM = { name: "", skillType: "Primary Skill", proficiency: "Beginner", yearsUsed: "", monthsUsed: "" };
@@ -305,10 +305,10 @@ export default function SkillsPage() {
                       <div className="st-col st-col-name" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         <span className="skill-name">{s.name}</span>
                         <span className={`skill-type-badge ${s.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"}`} style={{ fontSize: 9, }}>
-                          {s.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
+                          {s.skillType === "Primary Skill" ? "● Primary" : "● Secondary"}
                         </span>
                       </div>
-                      <div className="st-col st-col-proficiency"><span className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.proficiency}</span></div>
+                      <div className="st-col st-col-proficiency"><span className={`badge ${[s.proficiency]}`}>{s.proficiency}</span></div>
                       <div className="st-col st-col-duration"><span className="skill-years">{formatDuration(s) || "—"}</span></div>
                       <div className="st-col st-col-actions">
                         <Button variant="edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}>Edit</Button>

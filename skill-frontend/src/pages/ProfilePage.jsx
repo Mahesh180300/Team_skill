@@ -12,6 +12,7 @@ import { useApi } from "../hooks/useApi";
 import { ROUTES } from "../router/routes";
 import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -289,60 +290,62 @@ export default function ProfilePage() {
           <h3 className="employment-title">Personal Information</h3>
 
           <div className="employment-row">
-            <span className="employment-label">📧 Email</span>
+            <span className="employment-label"><i className="fa-solid fa-envelope employment-icon"></i>
+             Email</span>
             <span className="employment-value">{profile.email || "-"}</span>
           </div>
              
               <div className="employment-row">
-            <span className="employment-label">👔 Job Title</span>
+            <span className="employment-label"><i className="fa-solid fa-briefcase employment-icon"></i> Job Title</span>
             <span className="employment-value">{profile.jobTitle || "-"}</span>
           </div>
           <div className="employment-row">
-            <span className="employment-label">🏢 Department</span>
+            <span className="employment-label"><i className="fa-solid fa-building employment-icon"></i> Department</span>
             <span className="employment-value">
               {profile.department || "-"}
             </span>
           </div>
 
           <div className="employment-row">
-            <span className="employment-label">📅 Date of Joining</span>
+            <span className="employment-label"><i className="fa-solid fa-calendar-days employment-icon"></i> Date of Joining</span>
             <span className="employment-value">
               {profile.dateOfJoining || "-"}
             </span>
           </div>
 
           <div className="employment-row">
-            <span className="employment-label">📅 Years Of Experience</span>
+            <span className="employment-label"><i className="fa-solid fa-hourglass-half  employment-icon"></i> Years Of Experience</span>
             <span className="employment-value">
               {calcDuration(profile.dateOfJoining) || "-"}
             </span>
           </div>
 
           <div className="employment-row">
-            <span className="employment-label">💼 Current Project</span>
+            <span className="employment-label"><i className="fa-solid  fa-diagram-project employment-icon"></i> Current Project</span>
             <span className="employment-value">
               {profile.currentProject || "-"}
             </span>
           </div>
 
           <div className="employment-row">
-            <span className="employment-label">📅 Relevant Experience</span>
+            <span className="employment-label"><i className="fa-solid fa-business-time employment-icon"></i> Relevant Experience</span>
             <span className="employment-value">
               {calcDuration(profile.dateOfProjectAssigning) || "-"}
             </span>
           </div>
 
           <div className="employment-row">
-            <span className="employment-label">💰 Billable</span>
+            <span className="employment-label"><i className="fa-solid fa-money-bill-wave  employment-icon"></i> Billable</span>
             <span className="employment-value">{profile.billable || "-"}</span>
           </div>
 
           <div className="employment-row">
-            <span className="employment-label">👨‍💼 Manager</span>
+            <span className="employment-label"><i className="fa-solid fa-user-tie employment-icon"></i> Manager</span>
             <span className="employment-value">{profile.manager || "-"}</span>
           </div>
       
         </div>
+
       
         <div className="skill-card">
           <h3 className="skill-title">Skill Overview</h3>
@@ -359,7 +362,7 @@ export default function ProfilePage() {
                   <span className={`skill-type-badge ${
                     skill.skillType === "Primary Skill" ? "skill-type-primary" : "skill-type-secondary"
                   }`}>
-                    {skill.skillType === "Primary Skill" ? "● Primary" : "○ Secondary"}
+                    {skill.skillType === "Primary Skill" ? "● Primary" : "● Secondary"}
                   </span>
                   <span className={`badge ${
                     skill.proficiency === "Advanced" ? "badge-advanced"

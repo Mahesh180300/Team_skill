@@ -236,7 +236,7 @@ export default function MastersPage() {
                       style={{ flex: 1 }}
                       disabled={anyLoading}
                     />
-                    <Button variant="primary" size="sm" onClick={() => addValue(type.id)} disabled={anyLoading}>+ Add</Button>
+                    <Button variant="primary" size="sm" onClick={() => addValue(type.id)} disabled={anyLoading}> Add</Button>
                   </div>
                 </div>
               </div>

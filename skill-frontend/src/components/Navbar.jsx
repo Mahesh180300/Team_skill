@@ -83,17 +83,29 @@ export default function Sidebar() {
     navigate(ROUTES.LOGIN);
   };
 
-  const adminLinks = [
-    { key: ROUTES.DASHBOARD,      icon: "📊", label: "Dashboard" },
-    { key: ROUTES.EMPLOYEES,      icon: "👥", label: "Employees" },
-    { key: ROUTES.LOOKUP,         icon: "🗂️", label: "Master Data" },
-  ];
+ const adminLinks = [
+  {
+    key: ROUTES.DASHBOARD,
+    icon: <i className="fa-solid fa-gauge-high"></i>,
+    label: "Dashboard",
+  },
+  {
+    key: ROUTES.EMPLOYEES,
+    icon: <i className="fa-solid fa-users"></i>,
+    label: "Employees",
+  },
+  {
+    key: ROUTES.LOOKUP,
+    icon: <i className="fa-solid fa-database"></i>,
+    label: "Master Data",
+  },
+];
 
   const employeeLinks = [
-    { key: ROUTES.PROFILE,        icon: "👤", label: "My Profile" },
-    { key: ROUTES.SKILLS,         icon: "📚", label: "My Skills" },
-    { key: ROUTES.CERTIFICATIONS, icon: "🏆", label: "Certifications" },
-    { key: ROUTES.DOCUMENTS,      icon: "📁", label: "Documents" },
+    { key: ROUTES.PROFILE,        icon: <i className="fa-solid fa-user"></i>, label: "My Profile" },
+    { key: ROUTES.SKILLS,         icon: <i className="fa-solid fa-book"></i>, label: "My Skills" },
+    { key: ROUTES.CERTIFICATIONS, icon: <i className="fa-solid fa-award"></i>, label: "Certifications" },
+    { key: ROUTES.DOCUMENTS,      icon: <i className="fa-solid fa-folder"></i>, label: "Documents" },
   ];
 
   const links = user?.role === "admin" ? adminLinks : employeeLinks;
