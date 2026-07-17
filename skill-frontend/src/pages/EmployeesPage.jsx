@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
-import Button from "../components/common/Button";
 import ConfirmDialog from "../components/common/ConfirmDialog";
-import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import InputField from "../components/common/InputField";
+import DatePicker from "../components/common/DatePicker";
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "" };
@@ -209,9 +209,9 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <Button variant="primary" size="sm" type="submit" disabled={filteringEmployees}>
+              <button type="submit" className="btn-primary btn-sm" disabled={filteringEmployees}>
                 {filteringEmployees ? "Filtering..." : "Apply Filters"}
-              </Button>
+              </button>
               {filtered && <button type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>Clear</button>}
             </div>
           </form>
@@ -247,8 +247,8 @@ export default function EmployeesPage() {
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn-icon" onClick={() => openEmailDialog(emp)} title="Send Onboarding Email">📧</button>
-                  <Button variant="edit" size="icon" onClick={() => openEdit(emp)} title="Edit">✏️</Button>
-                  <Button variant="delete" size="icon" onClick={() => setDeleteTargetId(emp.id)}>🗑️</Button>
+                  <button className="btn-icon" onClick={() => openEdit(emp)} title="Edit">✏️</button>
+                  <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(emp.id)}>🗑️</button>
                 </div>
                 <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
               </div>
@@ -318,123 +318,117 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* Edit Employee Dialog */}
-      <DialogBox
-        isOpen={!!editEmp}
-        onClose={() => setEditEmp(null)}
-        title="Edit Employee"
-        width={560}
-        footer={
-          <>
-            <button type="button" className="btn-secondary" onClick={() => setEditEmp(null)}>Cancel</button>
-            <Button variant="primary" type="submit" form="edit-emp-form" loading={editSaving}>{editSaving ? "Saving..." : "Save Changes"}</Button>
-          </>
-        }
-      >
-        <form id="edit-emp-form" onSubmit={saveEdit}>
-          <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Personal Info</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 20 }}>
-            <div className="form-group">
-              <label>First Name</label>
-              <input value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} required />
+      {/* Edit Employee Modal */}
+      {editEmp && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 16 }} onClick={() => setEditEmp(null)}>
+          <div style={{ background: "var(--card-bg,#fff)", borderRadius: 14, width: "100%", maxWidth: 560, maxHeight: "calc(100vh - 32px)", display: "flex", flexDirection: "column", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }} onClick={(e) => e.stopPropagation()}>
+            {/* fixed header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px 16px", borderBottom: "1px solid var(--border)" }}>
+              <h3 style={{ margin: 0 }}>Edit Employee</h3>
+              <button type="button" onClick={() => setEditEmp(null)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "var(--text-muted)" }}>✕</button>
             </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label>Department</label>
-              <select value={editForm.department} onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}>
-                <option value="">Select Department</option>
-                {departments.map((d) => <option key={d.id} value={d.value}>{d.value}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Job Title</label>
-              <select value={editForm.jobTitle} onChange={(e) => setEditForm({ ...editForm, jobTitle: e.target.value })}>
-                <option value="">Select Job Title</option>
-                {jobTitles.map((j) => <option key={j.id} value={j.value}>{j.value}</option>)}
-              </select>
-            </div>
-          </div>
-          <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Experience &amp; Project</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 8 }}>
-            <div className="form-group">
-              <label>Date of Joining</label>
-              <input type="date" value={editForm.dateOfJoining} onChange={(e) => setEditForm({ ...editForm, dateOfJoining: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Years of Experience</label>
-              <input value={calcDuration(editForm.dateOfJoining)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-            </div>
-            <div className="form-group">
-              <label>Current Project</label>
-              <select value={editForm.currentProject} onChange={(e) => setEditForm({ ...editForm, currentProject: e.target.value })}>
-                <option value="">Select Project</option>
-                {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Date of Project Assigning</label>
-              <input type="date" value={editForm.dateOfProjectAssigning} onChange={(e) => setEditForm({ ...editForm, dateOfProjectAssigning: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Relevant Date</label>
-              <input value={calcDuration(editForm.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-            </div>
-            <div className="form-group">
-              <label>Manager</label>
-              <select value={editForm.manager} onChange={(e) => setEditForm({ ...editForm, manager: e.target.value })}>
-                <option value="">Select Manager</option>
-                {managers.map((m) => <option key={m.id} value={m.value}>{m.value}</option>)}
-              </select>
-            </div>
-            <div className="form-group" style={{ gridColumn: "1 / -1" }}>
-              <label>Billable</label>
-              <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
-                {["yes", "no"].map((opt) => (
-                  <button key={opt} type="button" onClick={() => setEditForm({ ...editForm, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${editForm.billable === opt ? "var(--primary)" : "var(--border)"}`, background: editForm.billable === opt ? "var(--primary)" : "var(--card-bg)", color: editForm.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
-                    {opt === "yes" ? "✓ Yes" : "✗ No"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </form>
-      </DialogBox>
+            {/* scrollable body */}
+            <div style={{ overflowY: "auto", flex: 1, padding: "20px 24px" }}>
+              <form id="edit-emp-form" onSubmit={saveEdit}>
+                <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Personal Info</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+                  <InputField label="First Name" value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} required />
+                  <InputField label="Last Name" value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} required />
+                  <div className="form-group">
+                    <label>Department</label>
+                    <select value={editForm.department} onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}>
+                      <option value="">Select Department</option>
+                      {departments.map((d) => <option key={d.id} value={d.value}>{d.value}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Job Title</label>
+                    <select value={editForm.jobTitle} onChange={(e) => setEditForm({ ...editForm, jobTitle: e.target.value })}>
+                      <option value="">Select Job Title</option>
+                      {jobTitles.map((j) => <option key={j.id} value={j.value}>{j.value}</option>)}
+                    </select>
+                  </div>
+                </div>
 
-      {/* Onboarding Email Dialog */}
-      <DialogBox
-        isOpen={!!emailDialogEmp}
-        onClose={() => setEmailDialogEmp(null)}
-        title="📧 Send Onboarding Email"
-        width={500}
-        footer={
-          <>
-            <button type="button" className="btn-secondary" onClick={() => setEmailDialogEmp(null)}>Cancel</button>
-            <Button variant="primary" type="submit" form="email-form" loading={sendingEmail}>{sendingEmail ? "Sending..." : "Send Email"}</Button>
-          </>
-        }
-      >
-        <form id="email-form" onSubmit={sendOnboardingEmail} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)" }}>Sending to: <strong>{emailDialogEmp?.email}</strong></p>
-          <div className="form-group">
-            <label>Subject</label>
-            <input value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })} required />
+                <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Experience &amp; Project</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 8 }}>
+                  <DatePicker label="Date of Joining" value={editForm.dateOfJoining} onChange={(e) => setEditForm({ ...editForm, dateOfJoining: e.target.value })} />
+                  <InputField label="Years of Experience" value={calcDuration(editForm.dateOfJoining)} readOnly placeholder="Auto-calculated" />
+                  <div className="form-group">
+                    <label>Current Project</label>
+                    <select value={editForm.currentProject} onChange={(e) => setEditForm({ ...editForm, currentProject: e.target.value })}>
+                      <option value="">Select Project</option>
+                      {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+                    </select>
+                  </div>
+                  <DatePicker label="Date of Project Assigning" value={editForm.dateOfProjectAssigning} onChange={(e) => setEditForm({ ...editForm, dateOfProjectAssigning: e.target.value })} />
+                  <InputField label="Relevant Date" value={calcDuration(editForm.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" />
+                  <div className="form-group">
+                    <label>Manager</label>
+                    <select value={editForm.manager} onChange={(e) => setEditForm({ ...editForm, manager: e.target.value })}>
+                      <option value="">Select Manager</option>
+                      {managers.map((m) => <option key={m.id} value={m.value}>{m.value}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label>Billable</label>
+                    <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+                      {["yes", "no"].map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setEditForm({ ...editForm, billable: opt })}
+                          style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${editForm.billable === opt ? "var(--primary)" : "var(--border)"}`, background: editForm.billable === opt ? "var(--primary)" : "var(--card-bg)", color: editForm.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}
+                        >
+                          {opt === "yes" ? "✓ Yes" : "✗ No"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            {/* fixed footer */}
+            <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid var(--border)", justifyContent: "flex-end" }}>
+              <button type="button" className="btn-secondary" onClick={() => setEditEmp(null)}>Cancel</button>
+              <button type="submit" form="edit-emp-form" className="btn-primary" disabled={editSaving}>{editSaving ? "Saving..." : "Save Changes"}</button>
+            </div>
           </div>
-          <div className="form-group">
-            <label>Project Name</label>
-            <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
-              <option value="">Select Project</option>
-              {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
-            </select>
+        </div>
+      )}
+
+      {/* Onboarding Email Modal */}
+      {emailDialogEmp && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 16 }} onClick={() => setEmailDialogEmp(null)}>
+          <div style={{ background: "var(--card-bg,#fff)", borderRadius: 14, width: "100%", maxWidth: 500, display: "flex", flexDirection: "column", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px 16px", borderBottom: "1px solid var(--border)" }}>
+              <h3 style={{ margin: 0 }}>📧 Send Onboarding Email</h3>
+              <button type="button" onClick={() => setEmailDialogEmp(null)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "var(--text-muted)" }}>✕</button>
+            </div>
+            <form id="email-form" onSubmit={sendOnboardingEmail}>
+              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)" }}>Sending to: <strong>{emailDialogEmp.email}</strong></p>
+                <InputField label="Subject" value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })} required />
+                <div className="form-group">
+                  <label>Project Name</label>
+                  <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
+                    <option value="">Select Project</option>
+                    {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Message</label>
+                  <textarea value={emailForm.message} onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })} rows={6} required style={{ resize: "vertical" }} />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid var(--border)", justifyContent: "flex-end" }}>
+                <button type="button" className="btn-secondary" onClick={() => setEmailDialogEmp(null)}>Cancel</button>
+                <button type="submit" form="email-form" className="btn-primary" disabled={sendingEmail}>{sendingEmail ? "Sending..." : "Send Email"}</button>
+              </div>
+            </form>
           </div>
-          <div className="form-group">
-            <label>Message</label>
-            <textarea value={emailForm.message} onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })} rows={6} required style={{ resize: "vertical" }} />
-          </div>
-        </form>
-      </DialogBox>
+        </div>
+      )}
 
       {deleteTargetId && (
         <ConfirmDialog

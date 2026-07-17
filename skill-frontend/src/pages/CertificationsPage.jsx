@@ -5,9 +5,12 @@ import Button from "../components/common/Button";
 import { FaReact, FaJava, FaPython, FaNodeJs, FaAws } from "react-icons/fa";
 import { SiMongodb, SiJavascript, SiHtml5, SiCss } from "react-icons/si";
 import ConfirmDialog from "../components/common/ConfirmDialog";
+import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import InputField from "../components/common/InputField";
+import DatePicker from "../components/common/DatePicker";
 
 export default function CertificationsPage() {
   const { token, setProfile: setSharedProfile } = useAuth();
@@ -320,228 +323,82 @@ export default function CertificationsPage() {
                     window.open(url, "_blank");
                   }}
                 >
-                  {/* <div style={{ fontSize: "34px" }}>📄</div> */}
+                  {/* <div style={{ fontSize: "34px" }}>🗑️</div> */}
                   <div>View Certificate ↗</div>
                 </button>
               )}
               <Button variant="edit" onClick={() => openEdit(c)}>Edit</Button>
-              <Button variant="delete" onClick={() => setDeleteTargetId(c.id)}>Delete</Button>
-           </div>
+              <Button variant="delete" onClick={() => setDeleteTargetId(c.id)}>Delete</Button>           </div>
           ))}
         </div>
       )}
 
       {/* ── Edit Modal ───────────────────────────────────────────────────────── */}
-      {updatingCert && <LoaderDialog message="Updating certification..." />}
-      {editingCert && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeEdit();
-          }}
-        >
-          <div
-            style={{
-              background: "var(--card-bg)",
-              borderRadius: "var(--radius)",
-              padding: 32,
-              width: "100%",
-              maxWidth: 480,
-              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+      <DialogBox
+        isOpen={!!editingCert}
+        onClose={closeEdit}
+        title="Edit Certification"
+        width={480}
+        footer={
+          <>
+            <button type="button" className="btn-secondary" onClick={closeEdit}>Cancel</button>
+            <Button variant="primary" type="submit" form="edit-cert-form" loading={updatingCert}>
+              {updatingCert ? "Saving..." : "Save Changes"}
+            </Button>
+          </>
+        }
+      >
+        <form id="edit-cert-form" onSubmit={saveEdit} className="card form-card">
+          <InputField label="Certification Name" placeholder="Certification name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+          <InputField label="Issued by" placeholder="Issued by (e.g. AWS, Google)" value={editForm.issuer} onChange={(e) => setEditForm({ ...editForm, issuer: e.target.value })} />
+          <DatePicker label="Issued On" value={editForm.issuedOn} onChange={(e) => setEditForm({ ...editForm, issuedOn: e.target.value })} />
+          <DatePicker label="Expiry Date" value={editForm.expiryDate} onChange={(e) => setEditForm({ ...editForm, expiryDate: e.target.value })} />
+          <label
+            htmlFor="edit-cert-file"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const f = e.dataTransfer.files[0];
+              if (f) setEditFile(f);
             }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              border: "2px dashed var(--border)",
+              borderRadius: "var(--radius)",
+              padding: "16px",
+              cursor: "pointer",
+              background: "var(--bg)",
+              transition: "border-color 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--primary)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 20,
-              }}
-            >
-              <h3 style={{ fontSize: 18, fontWeight: 700 }}>
-                Edit Certification
-              </h3>
-              <button
-                onClick={closeEdit}
-                className="btn-icon"
-                style={{ fontSize: 18 }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <form
-              onSubmit={saveEdit}
-              style={{ display: "flex", flexDirection: "column", gap: 12 }}
-            >
-              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Certification Name</label>
-              <input
-                placeholder="Certification name"
-                value={editForm.name}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, name: e.target.value })
-                }
-              />
-              <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Issued by</label>
-              <input
-                placeholder="Issued by (e.g. AWS, Google)"
-                value={editForm.issuer}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, issuer: e.target.value })
-                }
-              />
-              {/* <label style={{fontWeight:"500",fontSize:"14px", color: "var(--text-muted)"}}>Year</label>
-              <input
-                type="number"
-                placeholder="Year"
-                min="1990"
-                max={new Date().getFullYear()}
-                value={editForm.year}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, year: e.target.value })
-                }
-                style={{ width: 90 }}
-              /> */}
-              <label
-  style={{
-    fontWeight: "500",
-    fontSize: "14px",
-    color: "var(--text-muted)",
-  }}
->
-  Issued On
-</label>
-
-<input
-  type="date"
-  value={editForm.issuedOn}
-  onChange={(e) =>
-    setEditForm({
-      ...editForm,
-      issuedOn: e.target.value,
-    })
-  }
-/>
-               <label
-  style={{
-    fontWeight: "500",
-    fontSize: "14px",
-    color: "var(--text-muted)",
-  }}
->
-  Expiry Date
-</label>
-
-<input
-  type="date"
-  value={editForm.expiryDate}
-  onChange={(e) =>
-    setEditForm({
-      ...editForm,
-      expiryDate: e.target.value,
-    })
-  }
-/>
-              <label
-                htmlFor="edit-cert-file"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const f = e.dataTransfer.files[0];
-                  if (f && f.size > 5 * 1024 * 1024) {
-                    setEditError("File size must not exceed 5 MB");
-                  } else if (f) {
-                    setEditFile(f);
-                    setEditError("");
-                  }
-                }}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  border: "2px dashed var(--border)",
-                  borderRadius: "var(--radius)",
-                  padding: "16px",
-                  cursor: "pointer",
-                  background: "var(--bg)",
-                  transition: "border-color 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.borderColor = "var(--primary)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.borderColor = "var(--border)")
-                }
-              >
-                <span style={{ fontSize: 22 }}>📎</span>
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: "var(--text-muted)",
-                    textAlign: "center",
-                  }}
-                >
-                  {editingCert.fileName
-                    ? `Current: ${editingCert.fileName} — click to replace`
-                    : "Click to upload a certificate (PDF, JPG, PNG)"}
-                </span>
-                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Max file size: 5 MB</span>
-                <input
-                  id="edit-cert-file"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  style={{ display: "none" }}
-                  onChange={(e) => {
-                    const f = e.target.files[0] || null;
-                    if (f && f.size > 5 * 1024 * 1024) {
-                      setEditError("File size must not exceed 5 MB");
-                      setEditFile(null);
-                      e.target.value = "";
-                    } else {
-                      setEditFile(f);
-                      setEditError("");
-                    }
-                  }}
-                />
-              </label>
-              {editFile && (
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "var(--primary)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  📄 {editFile.name}
-                </p>
-              )}
-
-              {editError && <p className="error">{editError}</p>}
-
-              <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                <Button variant="primary" type="submit" style={{ flex: 1 }} loading={updatingCert}>
-                  {updatingCert ? "Saving..." : "Save Changes"}
-                </Button>
-                <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={closeEdit}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <span style={{ fontSize: 22 }}>📎</span>
+            <span style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>
+              {editingCert?.fileName
+                ? `Current: ${editingCert.fileName} — click to replace`
+                : "Click to upload a certificate (PDF, JPG, PNG)"}
+            </span>
+            <input
+              id="edit-cert-file"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              style={{ display: "none" }}
+              onChange={(e) => setEditFile(e.target.files[0] || null)}
+            />
+          </label>
+          {editFile && (
+            <p style={{ fontSize: 13, color: "var(--primary)", display: "flex", alignItems: "center", gap: 4 }}>
+              📄 {editFile.name}
+            </p>
+          )}
+          {editError && <p className="error">{editError}</p>}
+        </form>
+      </DialogBox>
 
       {deleteTargetId && (
         <ConfirmDialog

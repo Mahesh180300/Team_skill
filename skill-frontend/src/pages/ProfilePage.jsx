@@ -9,6 +9,8 @@ import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 import { ROUTES } from "../router/routes";
+import InputField from "../components/common/InputField";
+import DatePicker from "../components/common/DatePicker";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -99,25 +101,35 @@ export default function ProfilePage() {
 
   const uploadResume = async (file) => {
     if (!file) return;
-    await callResume(async () => {
-      const data = await api.uploadResume(token, file);
-      if (data.resumeData) {
-        setProfile((p) => ({
-          ...p,
-          resumeData: data.resumeData,
-          resumeFileName: data.resumeFileName,
-          resumeFileType: data.resumeFileType,
-        }));
-        setSharedProfile((p) => ({
-          ...p,
-          resumeData: data.resumeData,
-          resumeFileName: data.resumeFileName,
-          resumeFileType: data.resumeFileType,
-        }));
-        showToast("Resume uploaded");
-        window.dispatchEvent(new Event('profile-updated'));
-      }
-    });
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Resume must be 2MB or less");
+      return;
+    }
+    try {
+      await callResume(async () => {
+        const data = await api.uploadResume(token, file);
+        if (data.resumeData) {
+          setProfile((p) => ({
+            ...p,
+            resumeData: data.resumeData,
+            resumeFileName: data.resumeFileName,
+            resumeFileType: data.resumeFileType,
+          }));
+          setSharedProfile((p) => ({
+            ...p,
+            resumeData: data.resumeData,
+            resumeFileName: data.resumeFileName,
+            resumeFileType: data.resumeFileType,
+          }));
+          showToast("Resume uploaded");
+          window.dispatchEvent(new Event('profile-updated'));
+        } else if (data.error) {
+          showToast(data.error);
+        }
+      });
+    } catch (err) {
+      showToast(err.message || "Resume upload failed");
+    }
   };
 
   const deleteResume = async () => {
@@ -186,14 +198,8 @@ export default function ProfilePage() {
         <form id="edit-profile-form" onSubmit={save} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 16 }}>
           <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "gray", marginBottom: 10 }}>Personal Info</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, borderRadius: 10, padding: 16, marginBottom: 20 }}>
-            <div className="form-group">
-              <label>First Name</label>
-              <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
-            </div>
+            <InputField label="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
+            <InputField label="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             <div className="form-group">
               <label>Department</label>
               <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}>
@@ -211,14 +217,8 @@ export default function ProfilePage() {
           </div>
           <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "gray", marginBottom: 10 }}>Experience &amp; Project</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, borderRadius: 10, padding: 16, marginBottom: 8 }}>
-            <div className="form-group">
-              <label>Date of Joining</label>
-              <input type="date" value={form.dateOfJoining} onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Years of Experience</label>
-              <input value={calcDuration(form.dateOfJoining)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-            </div>
+            <DatePicker label="Date of Joining" value={form.dateOfJoining} onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })} />
+            <InputField label="Years of Experience" value={calcDuration(form.dateOfJoining)} readOnly placeholder="Auto-calculated" />
             <div className="form-group">
               <label>Current Project</label>
               <select value={form.currentProject} onChange={(e) => setForm({ ...form, currentProject: e.target.value })}>
@@ -226,14 +226,8 @@ export default function ProfilePage() {
                 {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
               </select>
             </div>
-            <div className="form-group">
-              <label>Date of Project Assigning</label>
-              <input type="date" value={form.dateOfProjectAssigning} onChange={(e) => setForm({ ...form, dateOfProjectAssigning: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Relevant Date</label>
-              <input value={calcDuration(form.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-            </div>
+            <DatePicker label="Date of Project Assigning" value={form.dateOfProjectAssigning} onChange={(e) => setForm({ ...form, dateOfProjectAssigning: e.target.value })} />
+            <InputField label="Relevant Date" value={calcDuration(form.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" />
             <div className="form-group">
               <label>Manager</label>
               <select value={form.manager} onChange={(e) => setForm({ ...form, manager: e.target.value })}>
