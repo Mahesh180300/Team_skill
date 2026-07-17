@@ -213,13 +213,13 @@ export default function ProfilePage() {
           <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "gray", marginBottom: 10 }}>Experience &amp; Project</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, borderRadius: 10, padding: 16, marginBottom: 8 }}>
             <DatePicker label="Date of Joining" value={form.dateOfJoining} onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })} />
-            <InputField label="Years of Experience" value={calcDuration(form.dateOfJoining)} readOnly placeholder="Auto-calculated" />
+            <InputField label="Years of Experience" value={calcDuration(form.dateOfJoining)} readOnly />
             <div className="form-group">
               <label>Current Project</label>
               <Dropdown value={form.currentProject} onChange={(e) => setForm({ ...form, currentProject: e.target.value })} options={projects.map((p) => ({ value: p.value, label: p.value }))} placeholder="--Select Project--" />
             </div>
             <DatePicker label="Date of Project Assigning" value={form.dateOfProjectAssigning} onChange={(e) => setForm({ ...form, dateOfProjectAssigning: e.target.value })} />
-            <InputField label="Relevant Date" value={calcDuration(form.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" />
+            <InputField label="Relevant Date" value={calcDuration(form.dateOfProjectAssigning)} readOnly />
             <div className="form-group">
               <label>Manager</label>
               <Dropdown value={form.manager} onChange={(e) => setForm({ ...form, manager: e.target.value })} options={managers.map((m) => ({ value: m.value, label: m.value }))} placeholder="--Select Manager--" />

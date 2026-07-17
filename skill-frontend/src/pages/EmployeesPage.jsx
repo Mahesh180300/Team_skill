@@ -250,7 +250,6 @@ export default function EmployeesPage() {
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn-icon" onClick={() => openEmailDialog(emp)} title="Send Onboarding Email">📧</button>
-                  <button className="btn-icon" onClick={() => openEdit(emp)} title="Edit">✏️</button>
                   <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(emp.id)}>🗑️</button>
                 </div>
                 <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
@@ -320,80 +319,7 @@ export default function EmployeesPage() {
           <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page === Math.ceil(employees.length / PAGE_SIZE)}>Next →</button>
         </div>
       )}
-
-      {/* Edit Employee Dialog */}
-      <DialogBox
-        isOpen={!!editEmp}
-        onClose={() => setEditEmp(null)}
-        title="Edit Employee"
-        width={560}
-        footer={
-          <>
-            <button type="button" className="btn-secondary" onClick={() => setEditEmp(null)}>Cancel</button>
-            <Button variant="primary" type="submit" form="edit-emp-form" loading={editSaving}>{editSaving ? "Saving..." : "Save Changes"}</Button>
-          </>
-        }
-      >
-        <form id="edit-emp-form" onSubmit={saveEdit}>
-          <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Personal Info</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 20 }}>
-            <div className="form-group">
-              <label>First Name</label>
-              <input value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label>Department</label>
-              <Dropdown value={editForm.department} onChange={(e) => setEditForm({ ...editForm, department: e.target.value })} options={departments.map((d) => ({ value: d.value, label: d.value }))} placeholder="Select Department" />
-            </div>
-            <div className="form-group">
-              <label>Job Title</label>
-              <Dropdown value={editForm.jobTitle} onChange={(e) => setEditForm({ ...editForm, jobTitle: e.target.value })} options={jobTitles.map((j) => ({ value: j.value, label: j.value }))} placeholder="Select Job Title" />
-            </div>
-          </div>
-          <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Experience &amp; Project</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: 16, marginBottom: 8 }}>
-            <div className="form-group">
-              <label>Date of Joining</label>
-              <input type="date" value={editForm.dateOfJoining} onChange={(e) => setEditForm({ ...editForm, dateOfJoining: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Years of Experience</label>
-              <input value={calcDuration(editForm.dateOfJoining)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-            </div>
-            <div className="form-group">
-              <label>Current Project</label>
-              <Dropdown value={editForm.currentProject} onChange={(e) => setEditForm({ ...editForm, currentProject: e.target.value })} options={projects.map((p) => ({ value: p.value, label: p.value }))} placeholder="Select Project" />
-            </div>
-            <div className="form-group">
-              <label>Date of Project Assigning</label>
-              <input type="date" value={editForm.dateOfProjectAssigning} onChange={(e) => setEditForm({ ...editForm, dateOfProjectAssigning: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Relevant Date</label>
-              <input value={calcDuration(editForm.dateOfProjectAssigning)} readOnly placeholder="Auto-calculated" style={{ background: "var(--bg)", color: "var(--text-muted)", cursor: "not-allowed" }} />
-            </div>
-            <div className="form-group">
-              <label>Manager</label>
-              <Dropdown value={editForm.manager} onChange={(e) => setEditForm({ ...editForm, manager: e.target.value })} options={managers.map((m) => ({ value: m.value, label: m.value }))} placeholder="Select Manager" />
-            </div>
-            <div className="form-group" style={{ gridColumn: "1 / -1" }}>
-              <label>Billable</label>
-              <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
-                {["yes", "no"].map((opt) => (
-                  <button key={opt} type="button" onClick={() => setEditForm({ ...editForm, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${editForm.billable === opt ? "var(--primary)" : "var(--border)"}`, background: editForm.billable === opt ? "var(--primary)" : "var(--card-bg)", color: editForm.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
-                    {opt === "yes" ? "✓ Yes" : "✗ No"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </form>
-      </DialogBox>
-
+      
       {/* Onboarding Email Dialog */}
     <DialogBox
         isOpen={!!emailDialogEmp}
