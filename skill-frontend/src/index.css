@@ -361,9 +361,33 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
 .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-block { width: 100%; display: block; }
 .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 6px; }
 .btn-icon:hover { background: var(--bg); }
 .btn-danger:hover { background: #fee2e2; }
+
+/* Shared button base + variants */
+.btn-common { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; line-height: 1; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s; border: 1px solid transparent; }
+.btn-common:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-icon-wrap { display: inline-flex; align-items: center; font-size: 1em; line-height: 1; }
+.btn-size-base { padding: 10px 20px; font-size: 14px; border-radius: 8px; }
+.btn-size-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+.btn-size-icon { padding: 8px; font-size: 16px; border-radius: 8px; }
+.btn-size-lg { padding: 12px 24px; font-size: 15px; border-radius: 10px; }
+
+.btn-variant-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-variant-primary:hover:not(:disabled) { background: var(--primary-dark); border-color: var(--primary-dark); }
+.btn-variant-secondary { background: var(--bg); color: var(--text); border-color: var(--border); }
+.btn-variant-secondary:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.btn-variant-edit { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+.btn-variant-edit:hover:not(:disabled) { background: #e0e7ff; border-color: #a5b4fc; }
+.btn-variant-delete { background: #fff1f1; color: #dc2626; border-color: #fecaca; }
+.btn-variant-delete:hover:not(:disabled) { background: #fee2e2; border-color: #f87171; }
+.btn-variant-view { background: var(--bg); color: var(--info); border-color: var(--border); }
+.btn-variant-view:hover:not(:disabled) { border-color: var(--info); color: var(--info); }
+
+.field-full { grid-column: 1 / -1; width: 100%; }
+.field-hint { font-size: 11px; color: var(--text-muted); margin-top: -2px; }
 
 /* â”€â”€ Forms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 input, select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text); background: var(--card-bg); transition: border-color 0.15s; }
@@ -376,11 +400,40 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
 .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 13px; font-weight: 500; color: var(--text-muted);margin-top: 15px; }
+.form-group label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+.input-error { border-color: var(--danger) !important; }
+.input-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important; }
 .form-actions { display: flex; gap: 10px; }
 .inline-form {  align-items: flex-end; }
 .inline-form input, .inline-form select { width: auto; flex: 1; min-width: 140px; }
 .error { color: var(--danger); font-size: 13px; margin-top: 4px; }
+
+/* ── Field variants (applied to .form-group) ── */
+.field--default input, .field--default select, .field--default textarea {
+  border: 1px solid var(--border); background: var(--card-bg); border-radius: 8px;
+}
+.field--outlined input, .field--outlined select, .field--outlined textarea {
+  border: 2px solid var(--border); background: var(--card-bg); border-radius: 8px;
+}
+.field--outlined input:focus, .field--outlined select:focus, .field--outlined textarea:focus {
+  border-color: var(--primary);
+}
+.field--filled input, .field--filled select, .field--filled textarea {
+  border: 1px solid transparent; background: var(--bg); border-radius: 8px;
+}
+.field--filled input:focus, .field--filled select:focus, .field--filled textarea:focus {
+  border-color: var(--primary); background: var(--card-bg);
+}
+.field--ghost input, .field--ghost select, .field--ghost textarea {
+  border: 1px solid transparent; background: transparent; border-radius: 8px;
+}
+.field--ghost input:focus, .field--ghost select:focus, .field--ghost textarea:focus {
+  border-color: var(--primary); background: var(--card-bg);
+}
+
+/* ── Field sizes ── */
+.field--sm input, .field--sm select, .field--sm textarea { padding: 6px 10px; font-size: 13px; }
+.field--lg input, .field--lg select, .field--lg textarea { padding: 12px 14px; font-size: 15px; }
 
 .auth-form .password-wrapper { position: relative; }
 .auth-form .password-wrapper input { padding-right: 44px; }

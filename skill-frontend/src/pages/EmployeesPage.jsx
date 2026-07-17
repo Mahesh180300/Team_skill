@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
-import Button from "../components/common/Button";
 import Dropdown from "../components/common/Dropdown";
 import ConfirmDialog from "../components/common/ConfirmDialog";
-import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import InputField from "../components/common/InputField";
+import DatePicker from "../components/common/DatePicker";
+import DialogBox from "../components/common/DialogBox";
+import Button from "../components/common/Button";
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "" };
@@ -210,9 +212,9 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <Button variant="primary" size="sm" type="submit" disabled={filteringEmployees}>
+              <button type="submit" className="btn-primary btn-sm" disabled={filteringEmployees}>
                 {filteringEmployees ? "Filtering..." : "Apply Filters"}
-              </Button>
+              </button>
               {filtered && <button type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>Clear</button>}
             </div>
           </form>
@@ -248,8 +250,8 @@ export default function EmployeesPage() {
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn-icon" onClick={() => openEmailDialog(emp)} title="Send Onboarding Email">📧</button>
-                  <Button variant="edit" size="icon" onClick={() => openEdit(emp)} title="Edit">✏️</Button>
-                  <Button variant="delete" size="icon" onClick={() => setDeleteTargetId(emp.id)}>🗑️</Button>
+                  <button className="btn-icon" onClick={() => openEdit(emp)} title="Edit">✏️</button>
+                  <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(emp.id)}>🗑️</button>
                 </div>
                 <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
               </div>
@@ -393,7 +395,7 @@ export default function EmployeesPage() {
       </DialogBox>
 
       {/* Onboarding Email Dialog */}
-      <DialogBox
+    <DialogBox
         isOpen={!!emailDialogEmp}
         onClose={() => setEmailDialogEmp(null)}
         title="📧 Send Onboarding Email"
@@ -413,7 +415,10 @@ export default function EmployeesPage() {
           </div>
           <div className="form-group">
             <label>Project Name</label>
-            <Dropdown value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} options={projects.map((p) => ({ value: p.value, label: p.value }))} placeholder="Select Project" required />
+            <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
+              <option value="">Select Project</option>
+              {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+            </select>
           </div>
           <div className="form-group">
             <label>Message</label>

@@ -18,14 +18,24 @@ export default function DocumentsPage() {
   const showToast = (text) => { setMsg(text); setTimeout(() => setMsg(""), 2500); };
 
   const uploadResume = async (file) => {
-    await callResume(async () => {
-      const data = await api.uploadResume(token, file);
-      if (data.resumeData) {
-        const updated = { ...profile, resumeData: data.resumeData, resumeFileName: data.resumeFileName, resumeFileType: data.resumeFileType };
-        setProfile(updated);
-        showToast("Resume uploaded");
-      }
-    });
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Resume must be 2MB or less");
+      return;
+    }
+    try {
+      await callResume(async () => {
+        const data = await api.uploadResume(token, file);
+        if (data.resumeData) {
+          const updated = { ...profile, resumeData: data.resumeData, resumeFileName: data.resumeFileName, resumeFileType: data.resumeFileType };
+          setProfile(updated);
+          showToast("Resume uploaded");
+        } else if (data.error) {
+          showToast(data.error);
+        }
+      });
+    } catch (err) {
+      showToast(err.message || "Resume upload failed");
+    }
   };
 
   const deleteResume = async () => {
@@ -90,7 +100,7 @@ export default function DocumentsPage() {
             <div className="doc-empty-icon">📎</div>
             <div>
               <p className="doc-empty-title">No resume uploaded yet</p>
-              <p className="doc-empty-sub">PDF, DOC or DOCX supported</p>
+              <p className="doc-empty-sub">PDF, DOC or DOCX · Max 2MB</p>
             </div>
             <button className="resume-btn resume-btn-upload-main" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
               {resumeUploading ? "Uploading..." : "Upload Resume"}
