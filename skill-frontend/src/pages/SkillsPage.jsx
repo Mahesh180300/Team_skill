@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
+import Dropdown from "../components/common/Dropdown";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
@@ -171,9 +172,7 @@ export default function SkillsPage() {
           <div className="inline-form">
             <div className="form-group" style={{ width: "100%" }}>
               <label>Skill Type</label>
-              <select value={editForm.skillType} onChange={(e) => setEditForm({ ...editForm, skillType: e.target.value })}>
-                {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
-              </select>
+              <Dropdown value={editForm.skillType} onChange={(e) => setEditForm({ ...editForm, skillType: e.target.value })} options={SKILL_TYPES} placeholder="--Select Skill Type--" />
             </div>
             <div className="form-group" style={{ width: "100%" }}>
               <label>Skill Name</label>
@@ -181,9 +180,7 @@ export default function SkillsPage() {
             </div>
             <div className="form-group">
               <label>Proficiency</label>
-              <select value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })}>
-                {LEVELS.map((l) => <option key={l}>{l}</option>)}
-              </select>
+              <Dropdown value={editForm.proficiency} onChange={(e) => setEditForm({ ...editForm, proficiency: e.target.value })} options={LEVELS} placeholder="--Select Proficiency--" />
             </div>
             <div className="form-group">
               <label>Years Used</label>
@@ -232,24 +229,17 @@ export default function SkillsPage() {
           <form onSubmit={addToPending} className="inline-form">
             <div className="form-group" style={{ width: "100%" }}>
               <label>Skill Type <span style={{ color: "red" }}>*</span></label>
-              <select value={form.skillType} onChange={(e) => { setForm({ ...form, skillType: e.target.value }); setFieldErrors((p) => ({ ...p, skillType: "" })); }}>
-                {SKILL_TYPES.map((t) => <option key={t}>{t}</option>)}
-              </select>
+              <Dropdown value={form.skillType} onChange={(e) => { setForm({ ...form, skillType: e.target.value }); setFieldErrors((p) => ({ ...p, skillType: "" })); }} options={SKILL_TYPES} placeholder="--Select Skill Type--" />
               {fieldErrors.skillType && <span style={{ color: "red", fontSize: 12 }}>{fieldErrors.skillType}</span>}
             </div>
             <div className="form-group" style={{ width: "100%" }}>
               <label>Skill Name <span style={{ color: "red" }}>*</span></label>
-              <select value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); setFieldErrors((p) => ({ ...p, name: "" })); }}>
-                <option value="">-- Select Skill --</option>
-                {skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s)).map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <Dropdown value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); setFieldErrors((p) => ({ ...p, name: "" })); }} options={skillOptions.filter((s) => !skills.some((sk) => sk.name === s) && !pendingSkills.some((sk) => sk.name === s))} placeholder="-- Select Skill --" />
               {fieldErrors.name && <span style={{ color: "red", fontSize: 12 }}>{fieldErrors.name}</span>}
             </div>
             <div className="form-group">
               <label>Proficiency <span style={{ color: "red" }}>*</span></label>
-              <select value={form.proficiency} onChange={(e) => { setForm({ ...form, proficiency: e.target.value }); setFieldErrors((p) => ({ ...p, proficiency: "" })); }}>
-                {LEVELS.map((l) => <option key={l}>{l}</option>)}
-              </select>
+              <Dropdown value={form.proficiency} onChange={(e) => { setForm({ ...form, proficiency: e.target.value }); setFieldErrors((p) => ({ ...p, proficiency: "" })); }} options={LEVELS} placeholder="--Select Proficiency--"  />
               {fieldErrors.proficiency && <span style={{ color: "red", fontSize: 12 }}>{fieldErrors.proficiency}</span>}
             </div>
             <div className="form-group">

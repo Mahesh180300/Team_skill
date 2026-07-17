@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
+import Dropdown from "../components/common/Dropdown";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
@@ -344,17 +345,11 @@ export default function EmployeesPage() {
             </div>
             <div className="form-group">
               <label>Department</label>
-              <select value={editForm.department} onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}>
-                <option value="">Select Department</option>
-                {departments.map((d) => <option key={d.id} value={d.value}>{d.value}</option>)}
-              </select>
+              <Dropdown value={editForm.department} onChange={(e) => setEditForm({ ...editForm, department: e.target.value })} options={departments.map((d) => ({ value: d.value, label: d.value }))} placeholder="Select Department" />
             </div>
             <div className="form-group">
               <label>Job Title</label>
-              <select value={editForm.jobTitle} onChange={(e) => setEditForm({ ...editForm, jobTitle: e.target.value })}>
-                <option value="">Select Job Title</option>
-                {jobTitles.map((j) => <option key={j.id} value={j.value}>{j.value}</option>)}
-              </select>
+              <Dropdown value={editForm.jobTitle} onChange={(e) => setEditForm({ ...editForm, jobTitle: e.target.value })} options={jobTitles.map((j) => ({ value: j.value, label: j.value }))} placeholder="Select Job Title" />
             </div>
           </div>
           <p style={{ fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", marginBottom: 10 }}>Experience &amp; Project</p>
@@ -369,10 +364,7 @@ export default function EmployeesPage() {
             </div>
             <div className="form-group">
               <label>Current Project</label>
-              <select value={editForm.currentProject} onChange={(e) => setEditForm({ ...editForm, currentProject: e.target.value })}>
-                <option value="">Select Project</option>
-                {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
-              </select>
+              <Dropdown value={editForm.currentProject} onChange={(e) => setEditForm({ ...editForm, currentProject: e.target.value })} options={projects.map((p) => ({ value: p.value, label: p.value }))} placeholder="Select Project" />
             </div>
             <div className="form-group">
               <label>Date of Project Assigning</label>
@@ -384,10 +376,7 @@ export default function EmployeesPage() {
             </div>
             <div className="form-group">
               <label>Manager</label>
-              <select value={editForm.manager} onChange={(e) => setEditForm({ ...editForm, manager: e.target.value })}>
-                <option value="">Select Manager</option>
-                {managers.map((m) => <option key={m.id} value={m.value}>{m.value}</option>)}
-              </select>
+              <Dropdown value={editForm.manager} onChange={(e) => setEditForm({ ...editForm, manager: e.target.value })} options={managers.map((m) => ({ value: m.value, label: m.value }))} placeholder="Select Manager" />
             </div>
             <div className="form-group" style={{ gridColumn: "1 / -1" }}>
               <label>Billable</label>
@@ -424,10 +413,7 @@ export default function EmployeesPage() {
           </div>
           <div className="form-group">
             <label>Project Name</label>
-            <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
-              <option value="">Select Project</option>
-              {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
-            </select>
+            <Dropdown value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} options={projects.map((p) => ({ value: p.value, label: p.value }))} placeholder="Select Project" required />
           </div>
           <div className="form-group">
             <label>Message</label>

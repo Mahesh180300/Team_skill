@@ -15,6 +15,7 @@ export default function Sidebar() {
   const [viewAvatar, setViewAvatar] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAvatar, setDeletingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   const calcDuration = (dateStr) => {
     if (!dateStr) return "";
@@ -35,7 +36,7 @@ export default function Sidebar() {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      alert("Profile picture must not exceed 2 MB");
+      setAvatarError(true);
       e.target.value = "";
       return;
     }
@@ -174,7 +175,7 @@ export default function Sidebar() {
                 onChange={handleAvatarChange}
               />
             </div>
-             <span style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>Max 2 MB</span>
+
             {viewAvatar && (
               <div
                 className="modal-overlay"
@@ -221,7 +222,7 @@ export default function Sidebar() {
                       Close
                     </button>
                   </div>
-                  <div style={{ textAlign: "center", fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>Max file size: 2 MB</div>
+
                 </div>
               </div>
             )}
@@ -345,6 +346,21 @@ export default function Sidebar() {
           onCancel={() => setShowLogoutConfirm(false)}
           danger={false}
         />
+      )}
+
+      {avatarError && (
+        <div className="confirm-overlay" onClick={() => setAvatarError(false)}>
+          <div className="confirm-box" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-icon-wrap confirm-icon-danger">⚠️</div>
+            <div className="confirm-title">File Too Large</div>
+            <div className="confirm-message">
+              The selected image exceeds the 2 MB limit.<br />Please choose a smaller file.
+            </div>
+            <div className="confirm-actions">
+              <button className="confirm-btn-ok confirm-btn-primary" onClick={() => setAvatarError(false)}>OK</button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
