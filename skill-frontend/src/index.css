@@ -1499,7 +1499,9 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
     background-color: #fff1f1; }
 .resume-btn-delete:hover { 
   box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2); }
-.resume-btn-upload-main { background: #2e2f41; color: #fff; margin-left: auto; }
+.resume-btn-upload-main { background:  #2e2f41; 
+  color:  #fff; 
+  margin-left:  auto; }
 .resume-btn-upload-main:hover { background:#44455e; }
 
 /* Dialog */
