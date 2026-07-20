@@ -2403,8 +2403,8 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 
 .btn-variant-primary.btn-size-base { background: #3d3f54 ; color: #fff; }
 .btn-variant-primary.btn-size-base:not(:disabled):hover { background:  #4b4d78; }
-.btn-variant-primary.btn-size-sm { background: #3d3f54; color: #fff; }
-.btn-variant-primary.btn-size-sm:not(:disabled):hover { background: var(--primary-dark); }
+.btn-variant-primary.btn-size-sm { background: #3d3f54; color: #fff; width: 10% }
+.btn-variant-primary.btn-size-sm:not(:disabled):hover { background: #4b4d78; }
 
 .btn-variant-edit.btn-size-base { color: #016195; }
 .btn-variant-edit.btn-size-base:not(:disabled):hover {  box-shadow: 0 4px 10px #c8f4fc; }
