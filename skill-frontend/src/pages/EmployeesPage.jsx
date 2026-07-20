@@ -101,6 +101,7 @@ export default function EmployeesPage() {
       await api.deleteEmployee(token, id);
       const updated = allEmployees.filter((e) => e.id !== id);
       setAllEmployees(updated);
+      showToast("Employee deleted successfully.");
       setEmployees(updated.filter(applyFilters));
       setDeleteTargetId(null);
     });
@@ -145,6 +146,7 @@ export default function EmployeesPage() {
       setAllEmployees((prev) => prev.map((e) => e.id === editEmp.id ? { ...e, ...updated } : e));
       setEmployees((prev) => prev.map((e) => e.id === editEmp.id ? { ...e, ...updated } : e));
       setEditEmp(null);
+      showToast("Employee updated successfully.");
     });
   };
 

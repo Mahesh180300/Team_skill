@@ -95,7 +95,7 @@ export default function CertificationsPage() {
       setForm({ name: "", customName: "", issuer: "", issuedOn: "", expiryDate: "" });
       setSelectedFile(null);
       setShowModal(false);
-      showToast("Certification added successfully!");
+      showToast("Certification added successfully.");
     });
   };
 
@@ -104,7 +104,7 @@ export default function CertificationsPage() {
       const data = await api.deleteCert(token, certId);
       setCerts(data.certifications);
       setDeleteTargetId(null);
-      showToast("Certification deleted");
+      showToast("Certification deleted successfully.");
     });
   };
   const openEdit = (cert) => {

@@ -43,7 +43,7 @@ export default function DocumentsPage() {
       await api.deleteResume(token);
       setProfile({ ...profile, resumeData: "", resumeFileName: "", resumeFileType: "" });
       setShowDeleteConfirm(false);
-      showToast("Resume deleted");
+      showToast("Resume deleted successfully.");
     });
   };
 

@@ -123,7 +123,7 @@ export default function ProfilePage() {
             resumeFileName: data.resumeFileName,
             resumeFileType: data.resumeFileType,
           }));
-          showToast("Resume uploaded");
+          showToast("Resume uploaded successfully");
           window.dispatchEvent(new Event('profile-updated'));
         } else if (data.error) {
           showToast(data.error);
@@ -150,7 +150,7 @@ export default function ProfilePage() {
         resumeFileType: "",
       }));
       setShowDeleteResume(false);
-      showToast("Resume deleted!");
+      showToast("Resume deleted successfully.");
     });
   };
 
