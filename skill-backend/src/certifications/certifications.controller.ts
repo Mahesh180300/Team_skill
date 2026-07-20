@@ -1,4 +1,4 @@
-import { Controller, Post, Patch, Delete, Param, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { CertificationsService } from './certifications.service';
@@ -8,6 +8,11 @@ import { CurrentUser } from '../common/current-user.decorator';
 @UseGuards(AuthGuard('jwt'))
 export class CertificationsController {
   constructor(private certsService: CertificationsService) {}
+
+  @Get('options')
+  getCertificationOptions() {
+    return this.certsService.getCertificationOptions();
+  }
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))

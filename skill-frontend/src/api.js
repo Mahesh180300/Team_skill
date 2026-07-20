@@ -135,6 +135,10 @@ const api = {
   // Lookup
   getLookupValues: (type) =>
     fetch(`${BASE}/lookup/values?type=${encodeURIComponent(type)}`).then((r) => r.json()),
+  getCertificationOptions: (token) =>
+  fetch(`${BASE}/profile/certifications/options`, {
+    headers: headers(token),
+  }).then(safeJson),
   getAllLookupTypes: (token) =>
     fetch(`${BASE}/lookup/types`, { headers: headers(token) }).then((r) => r.json()),
   createLookupType: (token, name) =>

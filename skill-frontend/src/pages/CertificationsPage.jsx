@@ -11,11 +11,12 @@ import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
+import Dropdown from "../components/common/Dropdown";
 
 export default function CertificationsPage() {
   const { token, setProfile: setSharedProfile } = useAuth();
   const [certs, setCerts] = useState([]);
-  const [form, setForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
+  const [form, setForm] = useState({ name: "", customName: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
   const [formErrors, setFormErrors] = useState({});
@@ -26,6 +27,8 @@ export default function CertificationsPage() {
   const [addingCert, setAddingCert] = useState(false);
   const [updatingCert, setUpdatingCert] = useState(false);
   const [deletingCert, setDeletingCert] = useState(false);
+
+  const [certOptions, setCertOptions] = useState([]);
 
   const callAdd = useApi(setAddingCert);
   const callUpdate = useApi(setUpdatingCert);
@@ -49,22 +52,47 @@ export default function CertificationsPage() {
       setLoadingCerts(false);
     });
   }, []);
+ useEffect(() => {
+  setLoadingCerts(true);
+
+  api.getProfile(token).then((d) => {
+    setCerts(d.certifications || []);
+    setLoadingCerts(false);
+  });
+
+  api.getCertificationOptions(token)
+    .then((v) => {
+      const list = Array.isArray(v)
+        ? v
+        : Array.isArray(v?.options)
+        ? v.options
+        : [];
+
+      setCertOptions(list);
+      console.log('Certification options fetched:', list);
+    })
+    .catch((err) => {
+      console.error('Failed to load certification options', err);
+    });
+
+}, [token]);
 
   const add = async (e) => {
     e.preventDefault();
     setError("");
     const errs = {};
-    if (!form.name.trim()) errs.name = "Certification name is required";
+    const certName = form.name === "__other__" ? (form.customName || "").trim() : (form.name || "").trim();
+    if (!certName) errs.name = "Certification name is required";
     if (!form.issuer.trim()) errs.issuer = "Issued by is required";
     if (!selectedFile) errs.file = "Please upload a certificate";
     else if (selectedFile.size > 5 * 1024 * 1024) errs.file = "File size must not exceed 5 MB";
     if (Object.keys(errs).length) { setFormErrors(errs); return; }
     setFormErrors({});
     await callAdd(async () => {
-      const data = await api.addCert(token, { ...form, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
+      const data = await api.addCert(token, { ...form, name: certName, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
       if (data.error) { setError(data.error); return; }
       setCerts(data.certifications);
-      setForm({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
+      setForm({ name: "", customName: "", issuer: "", issuedOn: "", expiryDate: "" });
       setSelectedFile(null);
       setShowModal(false);
       showToast("Certification added successfully!");
@@ -164,10 +192,28 @@ export default function CertificationsPage() {
               <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div className="form-group">
                   <label>Certification Name <span style={{ color: "red" }}>*</span></label>
-                  <input
-                    value={form.name}
-                    onChange={(e) => { setForm({ ...form, name: e.target.value }); setFormErrors((p) => ({ ...p, name: "" })); }}
+                  <Dropdown
+                    options={[...(certOptions || []), "Other"]}
+                    value={form.name === "__other__" ? "Other" : (form.name || "")}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "Other") {
+                        setForm({ ...form, name: "__other__", customName: "" });
+                      } else {
+                        setForm({ ...form, name: val, customName: "" });
+                      }
+                      setFormErrors((p) => ({ ...p, name: "" }));
+                    }}
+                    placeholder="--Select certification--"
                   />
+                  {form.name === "__other__" && (
+                    <input
+                      style={{ marginTop: 8 }}
+                      placeholder="Enter certification name"
+                      value={form.customName || ""}
+                      onChange={(e) => { setForm({ ...form, name: "__other__", customName: e.target.value }); setFormErrors((p) => ({ ...p, name: "" })); }}
+                    />
+                  )}
                   {formErrors.name && <span style={{ color: "red", fontSize: 12 }}>{formErrors.name}</span>}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>

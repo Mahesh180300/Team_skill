@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Certification } from './certification.entity';
 import { User } from '../users/user.entity';
+import { CERTIFICATION_OPTIONS } from '../common/constants/certification-options.constant';
 
 @Injectable()
 export class CertificationsService {
@@ -10,6 +11,10 @@ export class CertificationsService {
     @InjectRepository(Certification) private certsRepo: Repository<Certification>,
     @InjectRepository(User) private usersRepo: Repository<User>,
   ) {}
+
+  getCertificationOptions() {
+    return { options: CERTIFICATION_OPTIONS };
+  }
 
   async addCertification(userId: string, body: any, file?: Express.Multer.File) {
     const { name, issuer, year, issuedOn, expiryDate } = body;
