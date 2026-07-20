@@ -373,8 +373,8 @@ export default function CertificationsPage() {
                   <div>View Certificate ↗</div>
                 </button>
               )}
-              <Button variant="edit" onClick={() => openEdit(c)}>Edit</Button>
-              <Button variant="delete" onClick={() => setDeleteTargetId(c.id)}>Delete</Button>           </div>
+              <Button variant="edit" onClick={() => openEdit(c)}><i className="fas fa-edit"></i></Button>
+              <Button variant="delete" onClick={() => setDeleteTargetId(c.id)}><i className="fas fa-trash"></i></Button>           </div>
           ))}
         </div>
       )}

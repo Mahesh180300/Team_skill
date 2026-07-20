@@ -282,7 +282,7 @@ export default function EmployeesPage() {
                             </div>
                             {c.fileData && (
                               <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }}>
-                                📄 View Certificate
+                                View Certificate ↗
                               </button>
                             )}
                           </div>
@@ -297,7 +297,7 @@ export default function EmployeesPage() {
                       <h4>Resume</h4>
                       <div className="emp-resume-box">
                         <div className="emp-resume-info"><span className="emp-resume-icon">📎</span><span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span></div>
-                        <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}>📄 View Resume</button>
+                        <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>
                       </div>
                     </div>
                   ) : (
