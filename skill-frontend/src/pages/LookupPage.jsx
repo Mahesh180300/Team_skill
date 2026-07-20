@@ -186,8 +186,12 @@ export default function MastersPage() {
                     </>
                   ) : (
                     <>
-                      <Button variant="edit" size="sm" onClick={(e) => { e.stopPropagation(); startEditType(type, e); }} disabled={anyLoading}>Edit</Button>
-                      <Button variant="delete" size="sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ kind: 'type', id: type.id, name: type.name }); }} disabled={anyLoading}>Delete</Button>
+                      <Button variant="edit" size="sm" onClick={(e) => { e.stopPropagation(); startEditType(type, e); }} disabled={anyLoading}>
+                        <i className="fas fa-edit"></i>
+                      </Button>
+                      <Button variant="delete" size="sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ kind: 'type', id: type.id, name: type.name }); }} disabled={anyLoading}>
+                        <i className="fas fa-trash"></i>
+                      </Button>
                     </>
                   )}
                 </div>
@@ -217,8 +221,12 @@ export default function MastersPage() {
                           ) : (
                             <>
                               <span style={{ flex: 1, fontSize: 14, color: "var(--text)" }}>{v.value}</span>
-                              <Button variant="edit" size="sm" onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }} disabled={anyLoading}>Edit</Button>
-                              <Button variant="delete" size="sm" onClick={() => setConfirmDelete({ kind: 'value', id: v.id, name: v.value })} disabled={anyLoading}>Delete</Button>
+                              <Button variant="edit" size="sm" onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }} disabled={anyLoading}>
+                                <i className="fas fa-edit"></i>
+                              </Button>
+                              <Button variant="delete" size="sm" onClick={() => setConfirmDelete({ kind: 'value', id: v.id, name: v.value })} disabled={anyLoading}>
+                                <i className="fas fa-trash"></i>
+                              </Button>
                             </>
                           )}
                         </div>

@@ -311,8 +311,8 @@ export default function SkillsPage() {
                       <div className="st-col st-col-proficiency"><span className={`badge ${[s.proficiency]}`}>{s.proficiency}</span></div>
                       <div className="st-col st-col-duration"><span className="skill-years">{formatDuration(s) || "—"}</span></div>
                       <div className="st-col st-col-actions">
-                        <Button variant="edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}>Edit</Button>
-                        <Button variant="delete" onClick={() => setDeleteTargetId(s.id)}>Delete</Button>
+                        <Button variant="edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}><i className="fas fa-edit"></i></Button>
+                        <Button variant="delete" onClick={() => setDeleteTargetId(s.id)}><i className="fas fa-trash"></i></Button>
                       </div>
                     </>
                   )
