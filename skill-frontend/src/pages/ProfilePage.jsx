@@ -123,7 +123,7 @@ export default function ProfilePage() {
             resumeFileName: data.resumeFileName,
             resumeFileType: data.resumeFileType,
           }));
-          showToast("Resume uploaded");
+          showToast("Resume uploaded successfully");
           window.dispatchEvent(new Event('profile-updated'));
         } else if (data.error) {
           showToast(data.error);
@@ -150,7 +150,7 @@ export default function ProfilePage() {
         resumeFileType: "",
       }));
       setShowDeleteResume(false);
-      showToast("Resume deleted!");
+      showToast("Resume deleted successfully.");
     });
   };
 
@@ -229,7 +229,7 @@ export default function ProfilePage() {
               <label>Billable</label>
               <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
                 {["yes", "no"].map((opt) => (
-                  <button key={opt} type="button" onClick={() => setForm({ ...form, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${form.billable === opt ? "var(--primary)" : "var(--border)"}`, background: form.billable === opt ? "var(--primary)" : "var(--card-bg)", color: form.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
+                  <button key={opt} type="button" onClick={() => setForm({ ...form, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${form.billable === opt ? "#3d3f54" : "var(--border)"}`, background: form.billable === opt ? "#3d3f54" : "var(--card-bg)", color: form.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
                     {opt === "yes" ? "✓ Yes" : "✗ No"}
                   </button>
                 ))}

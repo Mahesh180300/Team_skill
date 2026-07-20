@@ -72,7 +72,7 @@ export default function MastersPage() {
       if (expanded === id) setExpanded(null);
       setConfirmDelete(null);
       await load();
-      showToast("Type deleted");
+      showToast("Type deleted successfully.");
     });
   };
 
@@ -83,7 +83,7 @@ export default function MastersPage() {
       await api.createLookupValue(token, typeId, val);
       setNewValues((prev) => ({ ...prev, [typeId]: "" }));
       await load();
-      showToast("Value added");
+      showToast("Value added successfully.");
     });
   };
 
@@ -93,7 +93,7 @@ export default function MastersPage() {
       await api.updateLookupValue(token, id, editValueText.trim());
       setEditingValueId(null);
       await load();
-      showToast("Value updated");
+      showToast("Value updated successfully.");
     });
   };
 
@@ -102,7 +102,7 @@ export default function MastersPage() {
       await api.deleteLookupValue(token, id);
       setConfirmDelete(null);
       await load();
-      showToast("Value deleted");
+      showToast("Value deleted successfully.");
     });
   };
 

@@ -71,7 +71,7 @@ export default function SkillsPage() {
       setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setEditId(null);
       setShowEditModal(false);
-      showToast("Skill updated successfully!");
+      showToast("Skill updated successfully");
     });
   };
 
@@ -81,7 +81,7 @@ export default function SkillsPage() {
       setSkills(data.skills);
       setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setDeleteTargetId(null);
-      showToast("Skill deleted!");
+      showToast("Skill deleted successfully.");
     });
   };
 
@@ -120,7 +120,7 @@ export default function SkillsPage() {
       setPendingSkills([]);
       setForm(EMPTY_FORM);
       setShowAddModal(false);
-      showToast("Skills added successfully!");
+      showToast("Skills added successfully.");
     });
   };
 
