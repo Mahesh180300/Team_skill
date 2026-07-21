@@ -38,6 +38,18 @@ export class AdminController {
     return this.adminService.sendOnboardingEmail(id, body);
   }
 
+  @Get('admins')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  getAllAdmins() {
+    return this.adminService.getAllAdmins();
+  }
+
+  @Post('admins')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  createAdmin(@Body() body: any) {
+    return this.adminService.createAdmin(body);
+  }
+
   @Post('seed-admin')
   seedAdmin() {
     return this.adminService.seedAdmin();

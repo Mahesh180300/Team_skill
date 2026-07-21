@@ -59,26 +59,51 @@ export class ChatService {
       return sorted.map(({ _unreadCount, ...rest }) => ({ ...rest, unreadCount: _unreadCount }));
     }
 
-    const admin = await this.usersRepo.findOne({ where: { role: 'admin' } });
-    if (!admin) return [];
+    const admins = await this.usersRepo.find({
+      where: { role: 'admin' },
+      order: { createdAt: 'DESC' },
+    });
+    if (!admins.length) return [];
 
+    const adminIds = admins.map((a) => a.id);
     const messages = await this.chatRepo
       .createQueryBuilder('msg')
-      .where('(msg.senderId = :me AND msg.deletedBySender = false) OR (msg.senderId = :adminId AND msg.receiverId = :me AND msg.deletedByReceiver = false)', { me: currentUser.id, adminId: admin.id })
+      .where('(msg.senderId = :me AND msg.deletedBySender = false) OR (msg.receiverId = :me AND msg.deletedByReceiver = false)', { me: currentUser.id })
       .orderBy('msg.createdAt', 'DESC')
       .getMany();
 
-    const latest = messages[0] || null;
-    const unreadCount = messages.filter((m) => m.receiverId === currentUser.id && !m.isRead).length;
+    const latestByOther = new Map();
+    const unreadByOther = new Map();
+    for (const msg of messages) {
+      const otherId = msg.senderId === currentUser.id ? msg.receiverId : msg.senderId;
+      if (!adminIds.includes(otherId)) continue;
+      if (!latestByOther.has(otherId)) {
+        latestByOther.set(otherId, msg);
+      }
+      if (msg.receiverId === currentUser.id && !msg.isRead) {
+        unreadByOther.set(otherId, (unreadByOther.get(otherId) || 0) + 1);
+      }
+    }
 
-    const { password, ...rest } = admin;
-    return [{
-      ...rest,
-      lastMessage: latest ? latest.content : null,
-      lastMessageAt: latest ? latest.createdAt : null,
-      lastMessageSenderId: latest ? latest.senderId : null,
-      unreadCount,
-    }];
+    const sorted = admins
+      .map(({ password, ...rest }) => {
+        const lastMsg = latestByOther.get(rest.id) || null;
+        return {
+          ...rest,
+          lastMessage: lastMsg ? lastMsg.content : null,
+          lastMessageAt: lastMsg ? lastMsg.createdAt : null,
+          lastMessageSenderId: lastMsg ? lastMsg.senderId : null,
+          _unreadCount: unreadByOther.get(rest.id) || 0,
+        };
+      })
+      .sort((a, b) => {
+        if (!a.lastMessageAt && !b.lastMessageAt) return 0;
+        if (!a.lastMessageAt) return 1;
+        if (!b.lastMessageAt) return -1;
+        return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+      });
+
+    return sorted.map(({ _unreadCount, ...rest }) => ({ ...rest, unreadCount: _unreadCount }));
   }
 
   async getMessages(currentUser: any, otherUserId: string) {
@@ -221,13 +246,14 @@ export class ChatService {
       return { unreadCount: count };
     }
 
-    const admin = await this.usersRepo.findOne({ where: { role: 'admin' } });
-    if (!admin) return { unreadCount: 0 };
+    const admins = await this.usersRepo.find({ where: { role: 'admin' } });
+    if (!admins.length) return { unreadCount: 0 };
 
+    const adminIds = admins.map((a) => a.id);
     const count = await this.chatRepo
       .createQueryBuilder('msg')
       .where('msg.receiverId = :me', { me: currentUser.id })
-      .andWhere('msg.senderId = :adminId', { adminId: admin.id })
+      .andWhere('msg.senderId IN (:...adminIds)', { adminIds })
       .andWhere('msg.isRead = false')
       .andWhere('msg.deletedByReceiver = false')
       .getCount();

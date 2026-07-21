@@ -103,14 +103,49 @@ export class AdminService {
 
   async seedAdmin() {
     const hashed = await bcrypt.hash('admin123', 10);
-    const exists = await this.usersRepo.findOne({ where: { role: 'admin' } });
-    if (exists) {
-      await this.usersRepo.update(exists.id, { name: 'Sajith Kumar Sivanandan', email: 'sajiths@kyyba.com', password: hashed });
-      return { message: 'Admin updated' };
+    const defaultAdmins = [
+      { firstName: 'Sajith', lastName: 'Kumar Sivanandan', name: 'Sajith Kumar Sivanandan', email: 'sajiths@kyyba.com', password: hashed },
+      { firstName: 'Sai', lastName: 'Admin', name: 'Sai Admin', email: 'sai@kyyba.com', password: hashed },
+    ];
+
+    for (const admin of defaultAdmins) {
+      const existing = await this.usersRepo.findOne({ where: { email: admin.email.toLowerCase() } });
+      if (existing) {
+        await this.usersRepo.update(existing.id, { firstName: admin.firstName, lastName: admin.lastName, name: admin.name, password: admin.password, role: 'admin' });
+      } else {
+        await this.usersRepo.save(
+          this.usersRepo.create({ firstName: admin.firstName, lastName: admin.lastName, name: admin.name, email: admin.email.toLowerCase(), password: admin.password, jobTitle: 'Administrator', role: 'admin' }),
+        );
+      }
     }
-    await this.usersRepo.save(
-      this.usersRepo.create({ name: 'Sajith Kumar Sivanandan', email: 'sajiths@kyyba.com', password: hashed, role: 'admin' }),
-    );
-    return { message: 'Admin created' };
+    return { message: 'Admins seeded' };
+  }
+
+  async createAdmin(body: { firstName: string; lastName: string; email: string; password: string; jobTitle?: string }) {
+    const { firstName, lastName, email, password, jobTitle } = body;
+    if (!firstName || !lastName || !email || !password) {
+      throw new Error('First name, last name, email and password are required');
+    }
+    const exists = await this.usersRepo.findOne({ where: { email: email.toLowerCase() } });
+    if (exists) throw new Error('Email already exists');
+    const hashed = await bcrypt.hash(password, 10);
+    const name = `${firstName} ${lastName}`;
+    const user = this.usersRepo.create({
+      firstName,
+      lastName,
+      name,
+      email: email.toLowerCase(),
+      password: hashed,
+      jobTitle: jobTitle || 'Administrator',
+      role: 'admin',
+    });
+    await this.usersRepo.save(user);
+    const { password: _pw, ...rest } = user;
+    return rest;
+  }
+
+  async getAllAdmins() {
+    const admins = await this.usersRepo.find({ where: { role: 'admin' }, order: { createdAt: 'DESC' } });
+    return admins.map(({ password, ...rest }) => rest);
   }
 }
