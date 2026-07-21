@@ -6,6 +6,7 @@ import { useApi } from "../hooks/useApi";
 import LoaderDialog from "../components/LoaderDialog";
 import api from "../api";
 import { ROUTES } from "../router/routes";
+import Dropdown from "../components/common/Dropdown";
 
 export default function AuthPage({ mode }) {
   const { login, register } = useAuth();
@@ -61,14 +62,20 @@ export default function AuthPage({ mode }) {
                 <input name="firstName" placeholder="First Name" value={form.firstName} onChange={set} required />
                 <input name="lastName" placeholder="Last Name" value={form.lastName} onChange={set} required />
               </div>
-              <select name="department" value={form.department} onChange={set}>
-                <option value="">Select Department</option>
-                {departments.map((d) => <option key={d.id} value={d.value}>{d.value}</option>)}
-              </select>
-              <select name="jobTitle" value={form.jobTitle} onChange={set}>
-                <option value="">Select Job Title</option>
-                {jobTitles.map((j) => <option key={j.id} value={j.value}>{j.value}</option>)}
-              </select>
+              <Dropdown
+                name="department"
+                value={form.department}
+                onChange={set}
+                placeholder="--Select Department--"
+                options={departments.map((d) => ({ value: d.value, label: d.value }))}
+              />
+              <Dropdown
+                name="jobTitle"
+                value={form.jobTitle}
+                onChange={set}
+                placeholder="--Select Job Title--"
+                options={jobTitles.map((j) => ({ value: j.value, label: j.value }))}
+              />
               <input name="role" value="Employee" readOnly style={{ color: "gray", background: "var(--bg)", cursor: "not-allowed" }} />
             </>
           )}
