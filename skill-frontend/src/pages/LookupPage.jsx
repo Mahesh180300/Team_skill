@@ -93,7 +93,7 @@ export default function MastersPage() {
       await api.updateLookupValue(token, id, editValueText.trim());
       setEditingValueId(null);
       await load();
-      showToast("Value updated successfully.");
+      showToast("Value updated");
     });
   };
 
@@ -181,7 +181,7 @@ export default function MastersPage() {
                 <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                   {isEditingType ? (
                     <>
-                      <Button variant="primary" size="sm" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</Button>
+                      <Button variant="primary"  onClick={() => saveType(type.id)} disabled={anyLoading}>Save</Button>
                       <button className="btn-secondary btn-sm" onClick={() => setEditingTypeId(null)}>Cancel</button>
                     </>
                   ) : (
@@ -215,7 +215,7 @@ export default function MastersPage() {
                                 onKeyDown={(e) => { if (e.key === "Enter") saveValue(v.id); if (e.key === "Escape") setEditingValueId(null); }}
                                 style={{ flex: 1, fontSize: 14 }}
                               />
-                              <Button variant="primary" size="sm" onClick={() => saveValue(v.id)} disabled={anyLoading}>Save</Button>
+                              <Button variant="primary" onClick={() => saveValue(v.id)} disabled={anyLoading}>Save</Button>
                               <button className="btn-secondary btn-sm" onClick={() => setEditingValueId(null)}>Cancel</button>
                             </>
                           ) : (

@@ -229,7 +229,7 @@ export default function ProfilePage() {
               <label>Billable</label>
               <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
                 {["yes", "no"].map((opt) => (
-                  <button key={opt} type="button" onClick={() => setForm({ ...form, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${form.billable === opt ? "#3d3f54" : "var(--border)"}`, background: form.billable === opt ? "#3d3f54" : "var(--card-bg)", color: form.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
+                  <button key={opt} type="button" onClick={() => setForm({ ...form, billable: opt })} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${form.billable === opt ? "#2e2f41" : "var(--border)"}`, background: form.billable === opt ? "#2e2f41" : "var(--card-bg)", color: form.billable === opt ? "#fff" : "var(--text-muted)", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.15s" }}>
                     {opt === "yes" ? "✓ Yes" : "✗ No"}
                   </button>
                 ))}
@@ -379,47 +379,6 @@ export default function ProfilePage() {
           )}
         </div>
        </div>
-          <div className="cert-overview-card">
-          <div className="cert-overview-header">
-            <h3 className="skill-title" style={{ margin: 0, borderBottom: "none", paddingBottom: 0 }}>Certification Overview</h3>
-            {profile.certifications?.length > 0 && (
-              <button className="cert-view-all-btn" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
-                View All ↗
-              </button>
-            )}
-          </div>
-
-          <div className="cert-overview-grid">
-            {profile.certifications?.length > 0 ? (
-              profile.certifications.slice(0, 4).map((cert) => {
-                const isExpired = cert.expiryDate && new Date(cert.expiryDate) < new Date();
-                const expiringSoon =
-                  cert.expiryDate &&
-                  !isExpired &&
-                  new Date(cert.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-                return (
-                  <div className="cert-detail-card" key={cert.id}>
-                    <div className="cert-detail-icon">&#127942;</div>
-                    <div className="cert-detail-body">
-                      <span className="cert-detail-name">{cert.name}</span>
-                      {cert.issuer && <span className="cert-detail-meta">&#127970; {cert.issuer}</span>}
-                      {/* {cert.issuedOn && <span className="cert-detail-meta">&#128197; Issued: {cert.issuedOn}</span>}
-                      {cert.expiryDate && <span className="cert-detail-meta">&#128197; Expires: {cert.expiryDate}</span>} */}
-                    </div>
-                    <div className="cert-detail-status">
-                      {isExpired && <span className="cert-status-badge cert-status-expired">Expired</span>}
-                      {expiringSoon && <span className="cert-status-badge cert-status-expiring">Expiring Soon</span>}
-                      {!isExpired && !expiringSoon && cert.expiryDate && <span className="cert-status-badge cert-status-valid">Valid</span>}
-                      {!cert.expiryDate && <span className="cert-status-badge cert-status-noexpiry">No Expiry</span>}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="no-skills">No certifications added yet.</p>
-            )}
-          </div>
-        </div>
 
       </div>
 

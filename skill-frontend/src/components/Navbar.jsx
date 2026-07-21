@@ -343,7 +343,7 @@ export default function Sidebar() {
           title="Logout"
         >
           <span className="sidebar-link-logout">⎋ </span>
-          {!collapsed && <span>Logout</span>}
+          {!collapsed && <span className="Logout">Logout</span>}
         </button>
       </aside>
 
