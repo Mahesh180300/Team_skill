@@ -105,7 +105,7 @@ export default function AuthPage({ mode }) {
           </button>
           {mode === "login" && (
             <div style={{ textAlign: "right", marginTop: "4px" }}>
-              <button type="button" style={{ background: "none", border: "none", color: "#6366f1", cursor: "pointer", fontSize: "0.85rem" }} onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}>
+              <button type="button" className="Forgotpassword" style={{ background: "none", border: "none", color: "#2e2f41", cursor: "pointer", fontSize: "0.85rem" }} onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}>
                 Forgot password?
               </button>
             </div>
