@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { ROUTES } from "../router/routes";
 import ConfirmDialog from "./common/ConfirmDialog";
-import logo from "../assets/kyylogo.png";
+import logoExpanded from "../assets/kyybaa4.png";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -122,10 +122,12 @@ export default function Sidebar() {
       <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}>
         {/* Brand bar */}
         <div className="sidebar-brand">
-          <img src={logo} alt="Kyyba Logo" className="sidebar-brand-logo"style={{ width: "60px", height: "auto" }} />
-          {!collapsed && (
-            <span className="sidebar-brand-text"style={{ color: "#d8d9e4", fontSize: "1.5rem" }}> Talent Flow</span>
-          )}
+          <img
+            src={logoExpanded}
+            alt="KTF Logo"
+            className="sidebar-brand-logo"
+            style={{ width: collapsed ? "31px" : "220px", height: "auto", mixBlendMode: "screen" }}
+          />
           <button
             className="sidebar-collapse-btn"
             onClick={() => setCollapsed(!collapsed)}
