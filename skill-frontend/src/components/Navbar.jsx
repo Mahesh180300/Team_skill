@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { ROUTES } from "../router/routes";
 import ConfirmDialog from "./common/ConfirmDialog";
-import logoExpanded from "../assets/kyybaa4.png";
+import logoCompact from "../assets/kyylogo4.png";
+import logoExpanded from "../assets/kyybaa5.png";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -123,7 +124,7 @@ export default function Sidebar() {
         {/* Brand bar */}
         <div className="sidebar-brand">
           <img
-            src={logoExpanded}
+            src={collapsed ? logoCompact : logoExpanded}
             alt="KTF Logo"
             className="sidebar-brand-logo"
             style={{ width: collapsed ? "31px" : "220px", height: "auto", mixBlendMode: "screen" }}
