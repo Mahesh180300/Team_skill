@@ -65,8 +65,8 @@ color: #2e2f41;
   border-bottom: 1px solid rgba(255,255,255,0.07);
   flex-shrink: 0;
 }
-.sidebar-brand-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
-.sidebar-brand-text { font-size:15px; font-weight: 700; color: #fff; flex: 1; letter-spacing: 0.06em;margin-left: 2px; }
+.sidebar-brand-logo { width: 150px !important; height: 2px; object-fit: contain; flex-shrink: 0; }
+.sidebar-brand-text { font-size:15px; font-weight: 700; color: #fff; flex: 1; letter-spacing: 0.06em; margin-left: 2px; }
 .sidebar-collapse-btn {
   background: none;
   border: none;
