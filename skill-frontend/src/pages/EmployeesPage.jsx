@@ -256,9 +256,6 @@ export default function EmployeesPage() {
             </Button>
           ))}
         </div>
-        {hasSearchOrBillable && (
-          <Button variant="clear" onClick={() => { setSearchQuery(""); setBillableFilter(""); setPage(1); }}>✕ Clear</Button>
-        )}
         <button className="filter" style={{ marginLeft: "auto" }} onClick={() => setShowFilters((v) => !v)}>
           Filters {showFilters ? "▲" : "▼"}
         </button>
