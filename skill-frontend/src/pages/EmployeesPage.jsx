@@ -12,7 +12,7 @@ import DialogBox from "../components/common/DialogBox";
 import Button from "../components/common/Button";
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
-const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "" };
+const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "", billable: false, name: "" };
 const EMPTY_FORM = { firstName: "", lastName: "", department: "", jobTitle: "", currentProject: "", dateOfJoining: "", dateOfProjectAssigning: "", billable: "no", manager: "" };
 
 function calcDuration(dateStr) {
@@ -52,8 +52,24 @@ export default function EmployeesPage() {
   const [emailForm, setEmailForm] = useState({ subject: "", projectName: "", message: "" });
   const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
+  const [nameFilter, setNameFilter] = useState("");
+  const [showBillableDropdown, setShowBillableDropdown] = useState(false);
+  const [billableStatus, setBillableStatus] = useState({});
+  const [selectedBillableEmployees, setSelectedBillableEmployees] = useState([]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
+  const downloadResume = (data, fileName, fileType) => {
+    const bytes = Uint8Array.from(atob(data), (ch) => ch.charCodeAt(0));
+    const blob = new Blob([bytes], { type: fileType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName || "resume.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   const PAGE_SIZE = 4;
 
   const callDelete = useApi(setDeletingEmployee);
@@ -108,7 +124,7 @@ export default function EmployeesPage() {
   };
 
   const applyFilters = (emp) => {
-    const { skill, department, minExp, certification } = filters;
+    const { skill, department, minExp, certification, billable } = filters;
     if (skill && !emp.skills?.some((s) => s.name.toLowerCase().includes(skill.toLowerCase()))) return false;
     if (department && !emp.department?.toLowerCase().includes(department.toLowerCase())) return false;
     if (minExp) {
@@ -117,12 +133,16 @@ export default function EmployeesPage() {
       if (yrs < Number(minExp)) return false;
     }
     if (certification && !emp.certifications?.some((c) => c.name.toLowerCase().includes(certification.toLowerCase()))) return false;
+    if (billable && emp.billable !== "yes") return false;
     return true;
   };
 
   const search = async (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); setPage(1); };
   const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); setPage(1); };
-  const setF = (e) => setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const setF = (e) => setFilters((f) => ({
+    ...f,
+    [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+  }));
 
   const openEdit = (emp) => {
     setEditEmp(emp);
@@ -212,6 +232,17 @@ export default function EmployeesPage() {
                 <label>Certification</label>
                 <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={setF} />
               </div>
+              <div className="form-group" style={{ display: "flex", alignItems: "center", marginTop: 22 }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    name="billable"
+                    checked={filters.billable}
+                    onChange={setF}
+                  />
+                  Billable only
+                </label>
+              </div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button type="submit" className="btn-primary btn-sm" disabled={filteringEmployees}>
@@ -299,6 +330,7 @@ export default function EmployeesPage() {
                       <h4>Resume</h4>
                       <div className="emp-resume-box">
                         <div className="emp-resume-info"><span className="emp-resume-icon">📎</span><span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span></div>
+                        <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume</button>
                         <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>
                       </div>
                     </div>

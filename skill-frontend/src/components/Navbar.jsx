@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { ROUTES } from "../router/routes";
 import ConfirmDialog from "./common/ConfirmDialog";
+import logo from "../assets/kyylogo.png";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -121,9 +122,9 @@ export default function Sidebar() {
       <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}>
         {/* Brand bar */}
         <div className="sidebar-brand">
-          <span className="sidebar-brand-icon">🎯</span>
+          <img src={logo} alt="Kyyba Logo" className="sidebar-brand-logo"style={{ width: "60px", height: "auto" }} />
           {!collapsed && (
-            <span className="sidebar-brand-text">Kyyba Team Skill Tracker</span>
+            <span className="sidebar-brand-text"style={{ color: "#d8d9e4", fontSize: "1.5rem" }}> Talent Flow</span>
           )}
           <button
             className="sidebar-collapse-btn"

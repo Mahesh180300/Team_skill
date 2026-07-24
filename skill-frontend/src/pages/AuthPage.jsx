@@ -7,6 +7,7 @@ import LoaderDialog from "../components/LoaderDialog";
 import api from "../api";
 import { ROUTES } from "../router/routes";
 import Dropdown from "../components/common/Dropdown";
+import logo from "../assets/logo.webp";
 
 export default function AuthPage({ mode }) {
   const { login, register } = useAuth();
@@ -51,8 +52,8 @@ export default function AuthPage({ mode }) {
       {loading && <LoaderDialog message={mode === "login" ? "Signing in..." : "Creating account..."} />}
       <div className="auth-card">
         <div className="auth-header">
-          <span className="auth-icon">🎯</span>
-          <h1>Kyyba Team Skill Tracker</h1>
+          <img src={logo} alt="Kyyba Logo" className="auth-logo" style={{ width: "250px", height: "auto" }} />
+          <h1 style={{ color: "#2e2f41", fontSize: "2rem" }}>Talent Flow</h1>
           <p>{mode === "login" ? "Sign in to your account" : "Create your profile"}</p>
         </div>
         <form onSubmit={submit} className="auth-form">

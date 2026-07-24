@@ -53,6 +53,19 @@ export default function DocumentsPage() {
     window.open(url, "_blank");
   };
 
+  const downloadResume = () => {
+    const bytes = Uint8Array.from(atob(profile.resumeData), (ch) => ch.charCodeAt(0));
+    const blob = new Blob([bytes], { type: profile.resumeFileType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = profile.resumeFileName || "resume.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="page">
       {resumeUploading && <LoaderDialog message="Uploading resume..." />}
@@ -90,8 +103,9 @@ export default function DocumentsPage() {
             <span className="doc-file-icon">📎</span>
             <span className="doc-file-name">{profile.resumeFileName}</span>
             <div className="doc-file-actions">
-              <button className="resume-btn resume-btn-view" onClick={openResume}>View Resume↗</button>
-              <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
+                <button className="resume-btn resume-btn-view" onClick={openResume}>View Resume↗</button>
+                <button className="resume-btn resume-btn-download" onClick={downloadResume}>Download Resume </button>
+                <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
                 <i className="fas fa-edit"></i>
               </button>
               <button className="resume-btn resume-btn-delete" onClick={() => setShowDeleteConfirm(true)} disabled={deletingResume}>
