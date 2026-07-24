@@ -12,6 +12,7 @@ import { useApi } from "../hooks/useApi";
 import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import Dropdown from "../components/common/Dropdown";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function CertificationsPage() {
   const { token, setProfile: setSharedProfile } = useAuth();
@@ -166,15 +167,12 @@ export default function CertificationsPage() {
       <div className="page-header">
         <h2>My Certifications</h2>
       </div>
+      <Breadcrumb action={
+        <Button variant="primary" onClick={() => setShowModal(true)}>
+          Add Certification
+        </Button>
+      } />
       {toast && <div className="toast success">{toast}</div>}
-
-      <Button
-        variant="primary"
-        style={{ width: "20%", marginLeft: "80%" }}
-        onClick={() => setShowModal(true)}
-      >
-        Add Certification
-      </Button>
 
       {/* ── Add Form ─────────────────────────────────────────────────────────── */}
       {showModal && (

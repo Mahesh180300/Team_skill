@@ -13,6 +13,7 @@ import { ROUTES } from "../router/routes";
 import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -173,16 +174,11 @@ export default function ProfilePage() {
   return (
     <div className="page">
       <h2>My Profile</h2>
-      <div className="page-header">
-
-        <Button
-          variant="primary"
-          onClick={() => setEditing(true)}
-          style={{ marginLeft: "auto", whiteSpace: "nowrap",width: "20%" }}
-        >
+      <Breadcrumb action={
+        <Button variant="primary" onClick={() => setEditing(true)} style={{ whiteSpace: "nowrap" }}>
           Edit Profile
         </Button>
-      </div>
+      } />
       {msg && <div className="toast success">{msg}</div>}
 
       <DialogBox

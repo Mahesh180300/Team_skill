@@ -8,6 +8,7 @@ import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 // const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
@@ -146,16 +147,16 @@ export default function SkillsPage() {
       {deletingSkill && <LoaderDialog message="Deleting skill..." />}
       <div className="page">
       <div className="page-header"><h2>My Skills</h2></div>
+      <Breadcrumb action={
+        <Button
+          variant="primary"
+          onClick={() => setShowAddModal(true)}
+          disabled={addingSkill || updatingSkill || deletingSkill}
+        >
+          Add Skill
+        </Button>
+      } />
       {toast && <div className="toast success">{toast}</div>}
-
-      <Button
-        variant="primary"
-        style={{ width: "20%", marginLeft: "80%" }}
-        onClick={() => setShowAddModal(true)}
-        disabled={addingSkill || updatingSkill || deletingSkill}
-      >
-        Add Skill
-      </Button>
 
       <DialogBox
         isOpen={showEditModal}

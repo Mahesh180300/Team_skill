@@ -5,6 +5,7 @@ import Loader from "../components/Loader";
 import { ROUTES } from "../router/routes";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { io } from "socket.io-client";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function ChatPage() {
   const { user, token, profile, chatUnreadCount, setChatUnreadCount } = useAuth();
@@ -328,7 +329,9 @@ export default function ChatPage() {
   if (loadingContacts) return <Loader fullScreen message="Loading chats..." />;
 
   return (
-    <div className="chat-page">
+    <>
+      <Breadcrumb />
+      <div className="chat-page">
       <div className="chat-sidebar">
         <div className="chat-sidebar-header">
           <h3>{user?.role === "admin" ? "Employees" : "Chats"}</h3>
@@ -527,6 +530,7 @@ export default function ChatPage() {
           </>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

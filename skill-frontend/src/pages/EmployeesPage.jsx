@@ -10,9 +10,16 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import DialogBox from "../components/common/DialogBox";
 import Button from "../components/common/Button";
+import Breadcrumb from "../components/common/Breadcrumb";
+
 
 const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
 const EMPTY_FILTERS = { skill: "", department: "", minExp: "", certification: "", billable: false, name: "" };
+const BILLABLE_OPTIONS = [
+  { value: "", label: "All" },
+  { value: "yes", label: "Billable" },
+  { value: "no", label: "Non-Billable" },
+];
 const EMPTY_FORM = { firstName: "", lastName: "", department: "", jobTitle: "", currentProject: "", dateOfJoining: "", dateOfProjectAssigning: "", billable: "no", manager: "" };
 
 function calcDuration(dateStr) {
@@ -52,6 +59,8 @@ export default function EmployeesPage() {
   const [emailForm, setEmailForm] = useState({ subject: "", projectName: "", message: "" });
   const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [billableFilter, setBillableFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [showBillableDropdown, setShowBillableDropdown] = useState(false);
   const [billableStatus, setBillableStatus] = useState({});
@@ -137,8 +146,24 @@ export default function EmployeesPage() {
     return true;
   };
 
+  const applySearchAndBillable = (emp) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const name = (emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name || "").toLowerCase();
+      if (!name.includes(q)) return false;
+    }
+    if (billableFilter !== "") {
+      if ((emp.billable || "no") !== billableFilter) return false;
+    }
+    return true;
+  };
+
+  const displayedEmployees = employees.filter(applySearchAndBillable);
+  const hasSearchOrBillable = searchQuery !== "" || billableFilter !== "";
+
   const search = async (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); setPage(1); };
   const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); setPage(1); };
+  const resetAll = () => { reset(); setSearchQuery(""); setBillableFilter(""); };
   const setF = (e) => setFilters((f) => ({
     ...f,
     [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
@@ -198,16 +223,43 @@ export default function EmployeesPage() {
       {sendingEmail && <LoaderDialog message="Sending onboarding email..." />}
       <div className="page">
       {toast && <div className="toast success">{toast}</div>}
-      <div className="page-header">
-        <h2>Employee Management</h2>
-        {filtered
+      <div className="page-header"><h2>Employee Management</h2></div>
+      <Breadcrumb action={
+        filtered
           ? <span className="count-badge" style={{ color: "var(--primary)" }}>{employees.length} of {allEmployees.length} employees</span>
           : <span className="count-badge">{allEmployees.length} employees</span>
-        }
-      </div>
+      } />
 
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button className="filter" onClick={() => setShowFilters((v) => !v)}>
+      <div className="emp-search-filter-bar">
+        <div className="emp-search-wrap">
+          <span className="emp-search-icon"> <i className="fa-solid fa-magnifying-glass"></i></span>
+          <input
+            className="emp-search-input"
+            type="text"
+            placeholder="Search employees..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+          />
+          {searchQuery && (
+            <Button variant="clear" className="emp-search-clear" onClick={() => { setSearchQuery(""); setPage(1); }} aria-label="Clear search">✕</Button>
+          )}
+        </div>
+        <div className="emp-billable-chips">
+          {BILLABLE_OPTIONS.map((opt) => (
+            <Button
+              key={opt.value}
+              variant="chip"
+              active={billableFilter === opt.value}
+              onClick={() => { setBillableFilter(opt.value); setPage(1); }}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
+        {hasSearchOrBillable && (
+          <Button variant="clear" onClick={() => { setSearchQuery(""); setBillableFilter(""); setPage(1); }}>✕ Clear</Button>
+        )}
+        <button className="filter" style={{ marginLeft: "auto" }} onClick={() => setShowFilters((v) => !v)}>
           Filters {showFilters ? "▲" : "▼"}
         </button>
       </div>
@@ -254,11 +306,11 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      {employees.length === 0 ? (
-        <div className="empty">{filtered ? "No employees match the filters." : "No employees registered yet."}</div>
+      {displayedEmployees.length === 0 ? (
+        <div className="empty">{filtered || hasSearchOrBillable ? "No employees match the search or filters." : "No employees registered yet."}</div>
       ) : (
         <div className="employee-list">
-          {employees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
+          {displayedEmployees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
             <div key={emp.id} className="employee-card">
               <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
                 <div className="emp-avatar">
@@ -280,10 +332,11 @@ export default function EmployeesPage() {
                   <span>{emp.certifications?.length || 0} certs</span>
                   {emp.dateOfJoining && <span>{calcDuration(emp.dateOfJoining)} exp</span>}
                   {emp.billable === "yes" && <span style={{ color: "#22c55e" }}>Billable</span>}
+                    {emp.billable === "no" && <span style={{ color: "#22c55e" }}>Non-Billable</span>}
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-icon" onClick={() => openEmailDialog(emp)} title="Send Onboarding Email">📧</button>
-                  <button className="btn-icon btn-danger" onClick={() => setDeleteTargetId(emp.id)}>🗑️</button>
+                  <Button variant="edit"  style={{padding:"8px 12px" }} onClick={() => openEmailDialog(emp)} title="Send Onboarding Email"><i className="fa-solid fa-envelope"></i></Button>
+                  <Button variant="delete"  style={{padding:"8px 12px" }} onClick={() => setDeleteTargetId(emp.id)}><i className="fa-solid fa-trash"></i></Button>
                 </div>
                 <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
               </div>
@@ -344,13 +397,13 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {employees.length > PAGE_SIZE && (
+      {displayedEmployees.length > PAGE_SIZE && (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 16 }}>
           <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>← Prev</button>
-          {Array.from({ length: Math.ceil(employees.length / PAGE_SIZE) }, (_, i) => (
+          {Array.from({ length: Math.ceil(displayedEmployees.length / PAGE_SIZE) }, (_, i) => (
             <button key={i} className={page === i + 1 ? "btn-primary btn-sm" : "btn-secondary btn-sm"} onClick={() => setPage(i + 1)}>{i + 1}</button>
           ))}
-          <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page === Math.ceil(employees.length / PAGE_SIZE)}>Next →</button>
+          <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page === Math.ceil(displayedEmployees.length / PAGE_SIZE)}>Next →</button>
         </div>
       )}
       

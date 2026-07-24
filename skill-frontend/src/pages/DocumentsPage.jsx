@@ -4,6 +4,7 @@ import { useState } from "react";
 import LoaderDialog from "../components/LoaderDialog";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useApi } from "../hooks/useApi";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function DocumentsPage() {
   const { token, profile, setProfile } = useAuth();
@@ -75,6 +76,7 @@ export default function DocumentsPage() {
       <div className="page-header">
         <h2>Documents</h2>
       </div>
+      <Breadcrumb />
 
       <div className="doc-section-card">
         <div className="doc-section-header">
