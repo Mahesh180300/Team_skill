@@ -127,12 +127,14 @@ export default function Sidebar() {
             src={collapsed ? logoCompact : logoExpanded}
             alt="KTF Logo"
             className="sidebar-brand-logo"
-            style={{ width: collapsed ? "31px" : "220px", height: "auto", mixBlendMode: "screen" }}
+            style={{ width: collapsed ? "45px" : "270px", height: "auto", mixBlendMode: "screen" ,marginLeft: collapsed ? "-9px" : "-20px" }}
+            
           />
           <button
             className="sidebar-collapse-btn"
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expand" : "Collapse"}
+            style={{ marginLeft: collapsed ? "-11px" : "-5px" }}
           >
             {collapsed ? "›" : "‹"}
           </button>
