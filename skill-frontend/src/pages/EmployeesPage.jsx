@@ -431,7 +431,7 @@ export default function EmployeesPage() {
     <DialogBox
         isOpen={!!emailDialogEmp}
         onClose={() => setEmailDialogEmp(null)}
-        title="📧 Send Onboarding Email"
+        title="Send Onboarding Email"
         width={500}
         footer={
           <>
@@ -448,10 +448,13 @@ export default function EmployeesPage() {
           </div>
           <div className="form-group">
             <label>Project Name</label>
-            <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
-              <option value="">Select Project</option>
-              {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
-            </select>
+            <Dropdown
+              value={emailForm.projectName}
+              onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })}
+              options={projects.map((p) => ({ value: p.value, label: p.value }))}
+              placeholder="--Select Project--"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Message</label>
