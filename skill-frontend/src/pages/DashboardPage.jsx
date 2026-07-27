@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Loader from "../components/Loader";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function DashboardPage() {
   const { token } = useAuth();
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   return (
     <div className="page">
       <div className="page-header"><h2>Dashboard</h2></div>
+      <Breadcrumb />
 
       <div className="stats-grid">
         <div className="stat-card stat-info">

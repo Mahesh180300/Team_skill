@@ -5,6 +5,7 @@ import Button from "../components/common/Button";
 import LoaderDialog from "../components/LoaderDialog";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useApi } from "../hooks/useApi";
+import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function MastersPage() {
   const { token } = useAuth();
@@ -122,29 +123,23 @@ export default function MastersPage() {
       {msg && <div className="toast success">{msg}</div>}
 
       <div className="page-header">
-        <div>
-          <h2>Master Data</h2>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>Manage dropdown values used across the application</p>
-        </div>
-        <span className="count-badge">{types.length} {types.length === 1 ? "type" : "types"}</span>
+        <h2>Master Data</h2>
       </div>
-
-      {/* Add new type */}
-      <div className="card" style={{ padding: "16px 20px" }}>
-        <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, color: "var(--text)" }}>Add New Type</p>
-        <div style={{ display: "flex", gap: 10 }}>
+      <Breadcrumb action={
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
             ref={addTypeRef}
-            placeholder="e.g. Department, Project, Manager, Job Title"
+            placeholder="New type name"
             value={newTypeName}
             onChange={(e) => setNewTypeName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addType())}
-            style={{ flex: 1 }}
+            style={{ width: 200, fontSize: 13 }}
             disabled={anyLoading}
           />
-          <Button variant="primary" onClick={addType} disabled={anyLoading} style={{ whiteSpace: "nowrap" }}> Add Type</Button>
+          <Button variant="primary" onClick={addType} disabled={anyLoading} style={{ whiteSpace: "nowrap" }}>Add Type</Button>
+          <span className="count-badge">{types.length} {types.length === 1 ? "type" : "types"}</span>
         </div>
-      </div>
+      } />
 
       {types.length === 0 && (
         <div className="empty">No types created yet. Add your first type above.</div>

@@ -1,6 +1,7 @@
 export default function Button({
   variant = "primary",
   size = "base",
+  active = false,
   onClick,
   children,
   icon,
@@ -10,10 +11,11 @@ export default function Button({
   className = "",
   ...props
 }) {
+  const activeClass = active ? " btn-active" : "";
   return (
     <button
       type={type}
-      className={`btn-common btn-variant-${variant} btn-size-${size}${className ? ` ${className}` : ""}`}
+      className={`btn-common btn-variant-${variant} btn-size-${size}${activeClass}${className ? ` ${className}` : ""}`}
       onClick={onClick}
       disabled={disabled || loading}
       {...props}
