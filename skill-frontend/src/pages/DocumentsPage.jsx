@@ -106,7 +106,6 @@ export default function DocumentsPage() {
             <span className="doc-file-name">{profile.resumeFileName}</span>
             <div className="doc-file-actions">
                 <button className="resume-btn resume-btn-view" onClick={openResume}>View Resume↗</button>
-                <button className="resume-btn resume-btn-download" onClick={downloadResume}>Download Resume </button>
                 <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
                 <i className="fas fa-edit"></i>
               </button>

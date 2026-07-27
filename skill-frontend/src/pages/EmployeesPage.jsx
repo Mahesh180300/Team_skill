@@ -161,13 +161,25 @@ export default function EmployeesPage() {
   const displayedEmployees = employees.filter(applySearchAndBillable);
   const hasSearchOrBillable = searchQuery !== "" || billableFilter !== "";
 
-  const search = async (e) => { e.preventDefault(); setEmployees(allEmployees.filter(applyFilters)); setFiltered(true); setPage(1); };
-  const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); setPage(1); };
+  const [filterError, setFilterError] = useState("");
+  const search = async (e) => {
+    e.preventDefault();
+    const hasAny = filters.skill.trim() || filters.department.trim() || filters.minExp.toString().trim() || filters.certification.trim() || filters.billable;
+    if (!hasAny) { setFilterError("Please fill at least one filter field before applying."); return; }
+    setFilterError("");
+    setEmployees(allEmployees.filter(applyFilters));
+    setFiltered(true);
+    setPage(1);
+  };
+  const reset = () => { setFilters(EMPTY_FILTERS); setEmployees(allEmployees); setFiltered(false); setFilterError(""); setPage(1); };
   const resetAll = () => { reset(); setSearchQuery(""); setBillableFilter(""); };
-  const setF = (e) => setFilters((f) => ({
-    ...f,
-    [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
-  }));
+  const setF = (e) => {
+    setFilterError("");
+    setFilters((f) => ({
+      ...f,
+      [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
+  };
 
   const openEdit = (emp) => {
     setEditEmp(emp);
@@ -226,7 +238,7 @@ export default function EmployeesPage() {
       <div className="page-header"><h2>Employee Management</h2></div>
       <Breadcrumb action={
         filtered
-          ? <span className="count-badge" style={{ color: "var(--primary)" }}>{employees.length} of {allEmployees.length} employees</span>
+          ? <span className="count-badge" style={{ color: "#2e2f41" }}>{employees.length} of {allEmployees.length} employees</span>
           : <span className="count-badge">{allEmployees.length} employees</span>
       } />
 
@@ -261,43 +273,52 @@ export default function EmployeesPage() {
         </button>
       </div>
 
-      <div style={{ overflow: "hidden", maxHeight: showFilters ? 300 : 0, transition: "max-height 0.3s ease" }}>
-        <div className="card" style={{ padding: "20px 24px" }}>
+      <div style={{ overflow: "hidden", maxHeight: showFilters ? 400 : 0, transition: "max-height 0.3s ease" }}>
+        <div className="filter-panel">
           <form onSubmit={search}>
-            <div className="filter-grid">
+            <div className="filter-panel-grid">
               <div className="form-group">
-                <label>Skill</label>
+                <label className="filter-label">Skill</label>
                 <input name="skill" placeholder="e.g. React, Node.js" value={filters.skill} onChange={setF} />
               </div>
               <div className="form-group">
-                <label>Department</label>
+                <label className="filter-label">Department</label>
                 <input name="department" placeholder="e.g. Engineering" value={filters.department} onChange={setF} />
               </div>
               <div className="form-group">
-                <label>Min. Experience (years)</label>
+                <label className="filter-label">Min. Experience (yrs)</label>
                 <input name="minExp" type="number" min="0" placeholder="e.g. 2" value={filters.minExp} onChange={setF} />
               </div>
               <div className="form-group">
-                <label>Certification</label>
+                <label className="filter-label">Certification</label>
                 <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={setF} />
               </div>
-              <div className="form-group" style={{ display: "flex", alignItems: "center", marginTop: 22 }}>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+              <div className="form-group">
+                <label className="filter-label">Billable</label>
+                <label className="filter-toggle">
                   <input
                     type="checkbox"
                     name="billable"
                     checked={filters.billable}
                     onChange={setF}
                   />
-                  Billable only
+                  <span className="filter-toggle-track">
+                    <span className="filter-toggle-thumb" />
+                  </span>
+                  <span className="filter-toggle-text">{filters.billable ? "Yes" : "No"}</span>
                 </label>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button type="submit" className="btn-primary btn-sm" disabled={filteringEmployees}>
+            <div className="filter-panel-actions" >
+              {filterError && <p className="error" style={{ width: "50%", marginBottom: 0 }}>⚠ {filterError}</p>}
+              <Button type="submit" style={{ marginTop: "15px" }} className="btn-primary btn-sm" disabled={filteringEmployees}>
                 {filteringEmployees ? "Filtering..." : "Apply Filters"}
-              </button>
-              {filtered && <button type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>Clear</button>}
+              </Button>
+              {filtered && (
+                <button style={{borderColor: "#2e3041",fontWeight: "bold",fontSize: "13px",marginLeft: "10px"}} type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>
+                  Clear Filters
+                </button>
+              )}
             </div>
           </form>
         </div>
