@@ -212,7 +212,7 @@ export default function EmployeesPage() {
     setEmailForm({
       subject: "Welcome to Your New Project – Onboarding Information",
       projectName: emp.currentProject || "",
-      message: `Welcome! You have been onboard to your assigned project.`,
+      message: `Welcome! You have been onboarded to your assigned project.`,
     });
   };
 
