@@ -14,10 +14,15 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Breadcrumb from "../components/common/Breadcrumb";
+import SkillDonutChart from "../components/common/SkillDonutChart";
+import SkillTypeBarChart from "../components/common/SkillTypeBarChart";
+import CertLogo from "../components/common/CertLogo";
+import { useSidebar } from "../context/SidebarContext";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, token, setProfile: setSharedProfile } = useAuth();
+  const { collapsed } = useSidebar();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
@@ -279,6 +284,22 @@ export default function ProfilePage() {
         </div>
       </div>
 
+         {/* ── Skill Analytics ──────────────────────────────────────────── */}
+ <div className="dashboard-row">
+        <div className="card">
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 ,borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px"}}>Skill Proficiency Distribution</h3>
+          <SkillDonutChart skills={profile.skills} />
+        </div>
+
+        <div className="card">
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, borderBottom: "1px solid #eee",borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px" }}>Skill Category Distribution</h3>
+          <SkillTypeBarChart
+            primarySkills={(profile.skills || []).filter(s => s.skillType === "Primary Skill").length}
+            secondarySkills={(profile.skills || []).filter(s => s.skillType === "Secondary Skill").length}
+          />
+        </div>
+      </div>
+
       <div className="details-container">
         
         <div className="details-top-row">
@@ -344,14 +365,21 @@ export default function ProfilePage() {
 
       
         <div className="skill-card">
-          <h3 className="skill-title">Skill Overview</h3>
+          <div className="cert-overview-header" style={{ marginBottom: 14, paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
+            <h3 className="skill-title" style={{ margin: 0, borderBottom: "none", paddingBottom: 0 }}>Skill Overview</h3>
+            {profile.skills?.length > 9 && (
+              <button className="cert-view-all-btn" onClick={() => navigate(ROUTES.SKILLS)}>
+                View All &#8594;
+              </button>
+            )}
+          </div>
 
           {profile.skills?.length > 0 ? (
             [...profile.skills].sort((a, b) => {
               if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
               if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
               return 0;
-            }).map((skill) => (
+            }).slice(0, 9).map((skill) => (
               <div className="skill-row" key={skill.id || skill.name}>
                 <div className="skill-info">
                   <span className="skill-name">{skill.name}</span>
@@ -378,6 +406,55 @@ export default function ProfilePage() {
 
       </div>
 
+{/* Row 2: Certification Overview full width */}
+        <div className="cert-overview-card">
+          <div className="cert-overview-header">
+            <h3 className="skill-title" style={{ margin: 0, borderBottom: "none", paddingBottom: 0 }}>Certification Overview</h3>
+            {profile.certifications?.length > 0 && (
+              <button className="cert-view-all-btn" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
+                View All &#8594;
+              </button>
+            )}
+          </div>
+          <div className="cert-overview-grid" style={{ gridTemplateColumns: `repeat(${collapsed ? 5 : 4}, 1fr)` }}>
+            {profile.certifications?.length > 0 ? (
+              profile.certifications.slice(0, collapsed ? 5 : 4).map((cert) => {
+                const isExpired = cert.expiryDate && new Date(cert.expiryDate) < new Date();
+                const expiringSoon =
+                  cert.expiryDate &&
+                  !isExpired &&
+                  new Date(cert.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                return (
+                  <div className="cert-detail-card" key={cert.id}>
+                    <div className="cert-detail-icon">
+                      <CertLogo name={cert.name} size={28} />
+                    </div>
+                    <div className="cert-detail-body">
+                     
+                      <span className="cert-detail-name">{cert.name}</span>
+                      {cert.issuer && <span className="cert-detail-meta">Issued by : {cert.issuer}</span>}
+                      {/* {cert.issuedOn && <span className="cert-detail-meta">&#128197; Issued: {cert.issuedOn}</span>}
+                      {cert.expiryDate && <span className="cert-detail-meta">&#128197; Expires: {cert.expiryDate}</span>} */}
+                    </div>
+                    <div className="cert-detail-status">
+                      {isExpired && <span className="cert-status-badge cert-status-expired">Expired</span>}
+                      {expiringSoon && <span className="cert-status-badge cert-status-expiring">Expiring Soon</span>}
+                      {!isExpired && !expiringSoon && cert.expiryDate && <span className="cert-status-badge cert-status-valid">Valid</span>}
+                      {!cert.expiryDate && <span className="cert-status-badge cert-status-noexpiry">No Expiry</span>}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="no-skills">No certifications added yet.</p>
+            )}
+          </div>
+          {/* {profile.certifications?.length > 4 && (
+            <button className="cert-show-all-btn" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
+              Show All {profile.certifications.length} Certificates
+            </button>
+          )} */}
+        </div>
 
       {savingProfile && <LoaderDialog message="Saving profile..." />}
       {/* {uploadingAvatar && <LoaderDialog message="Uploading profile picture..." />}

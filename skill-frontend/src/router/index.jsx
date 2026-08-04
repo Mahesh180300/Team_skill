@@ -4,6 +4,7 @@ import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import Sidebar from "../components/Navbar";
 import StickyChatWidget from "../components/StickyChatWidget";
+import { SidebarProvider } from "../context/SidebarContext";
 import AuthPage from "../pages/AuthPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
@@ -17,13 +18,15 @@ import LookupPage from "../pages/LookupPage";
 
 function AppLayout() {
   return (
-    <div className="app-layout">
-      <Sidebar />
-      <main className="main-content">
-        <Outlet />
-      </main>
-      <StickyChatWidget />
-    </div>
+    <SidebarProvider>
+      <div className="app-layout">
+        <Sidebar />
+        <main className="main-content">
+          <Outlet />
+        </main>
+        <StickyChatWidget />
+      </div>
+    </SidebarProvider>
   );
 }
 

@@ -9,6 +9,7 @@ import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
 import Breadcrumb from "../components/common/Breadcrumb";
+import Pagination from "../components/common/Pagination";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 // const LEVEL_COLOR = { Beginner: "badge-beginner", Intermediate: "badge-intermediate", Advanced: "badge-advanced" };
@@ -79,7 +80,12 @@ export default function SkillsPage() {
   const remove = async (skillId) => {
     await callDelete(async () => {
       const data = await api.deleteSkill(token, skillId);
-      setSkills(data.skills);
+      setSkills((prev) => {
+        const updated = data.skills;
+        const newTotalPages = Math.ceil(updated.length / PAGE_SIZE);
+        setCurrentPage((p) => Math.min(p, newTotalPages || 1));
+        return updated;
+      });
       setSharedProfile((p) => ({ ...p, skills: data.skills }));
       setDeleteTargetId(null);
       showToast("Skill deleted successfully.");
@@ -322,19 +328,11 @@ export default function SkillsPage() {
               );
             })}
           </div>
-          {totalPages > 1 && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
-              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Page {currentPage} of {totalPages}</span>
-              <button className="btn-secondary btn-sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>← Prev</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button key={p} className="btn-secondary btn-sm" onClick={() => setCurrentPage(p)}
-                  style={p === currentPage ? { background: "var(--primary)", color: "#fff", borderColor: "var(--primary)" } : {}}>
-                  {p}
-                </button>
-              ))}
-              <button className="btn-secondary btn-sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next →</button>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 

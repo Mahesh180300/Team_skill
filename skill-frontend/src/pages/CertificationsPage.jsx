@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
-import { FaReact, FaJava, FaPython, FaNodeJs, FaAws } from "react-icons/fa";
-import { SiMongodb, SiJavascript, SiHtml5, SiCss } from "react-icons/si";
+import CertLogo from "../components/common/CertLogo";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
@@ -13,6 +12,38 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import Dropdown from "../components/common/Dropdown";
 import Breadcrumb from "../components/common/Breadcrumb";
+import Pagination from "../components/common/Pagination";
+
+const STAT_CARDS = [
+  {
+    key: "totalCertifications",
+    label: "Total Certifications",
+    icon: "fas fa-award",
+    iconBg: "#eef2ff",
+    accent: "#4a4b6b",
+  },
+  {
+    key: "activeCertifications",
+    label: "Active Certifications",
+    icon: "fas fa-check-circle",
+    iconBg: "#eef2ff",
+    accent: "#4a4b6b",
+  },
+  {
+    key: "expiringSoon",
+    label: "Expiring Soon",
+    icon: "fas fa-clock",
+    iconBg: "#eef2ff",
+    accent: "#4a4b6b",
+  },
+  {
+    key: "expiredCertifications",
+    label: "Expired",
+    icon: "fas fa-times-circle",
+    iconBg: "#eef2ff",
+    accent: "#4a4b6b",
+  },
+];
 
 export default function CertificationsPage() {
   const { token, setProfile: setSharedProfile } = useAuth();
@@ -28,8 +59,10 @@ export default function CertificationsPage() {
   const [addingCert, setAddingCert] = useState(false);
   const [updatingCert, setUpdatingCert] = useState(false);
   const [deletingCert, setDeletingCert] = useState(false);
-
   const [certOptions, setCertOptions] = useState([]);
+  const [certStats, setCertStats] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const cardsPerPage = 4;
 
   const callAdd = useApi(setAddingCert);
   const callUpdate = useApi(setUpdatingCert);
@@ -40,8 +73,12 @@ export default function CertificationsPage() {
     setTimeout(() => setToast(""), 2500);
   };
 
+  const refreshStats = () => {
+    api.getCertStats(token).then(setCertStats).catch(() => {});
+  };
+
   // ── Edit state ──────────────────────────────────────────────────────────────
-  const [editingCert, setEditingCert] = useState(null); // holds the cert being edited
+  const [editingCert, setEditingCert] = useState(null);
   const [editForm, setEditForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [editFile, setEditFile] = useState(null);
   const [editError, setEditError] = useState("");
@@ -53,30 +90,31 @@ export default function CertificationsPage() {
       setLoadingCerts(false);
     });
   }, []);
- useEffect(() => {
-  setLoadingCerts(true);
 
-  api.getProfile(token).then((d) => {
-    setCerts(d.certifications || []);
-    setLoadingCerts(false);
-  });
+  useEffect(() => {
+    setLoadingCerts(true);
 
-  api.getCertificationOptions(token)
-    .then((v) => {
-      const list = Array.isArray(v)
-        ? v
-        : Array.isArray(v?.options)
-        ? v.options
-        : [];
-
-      setCertOptions(list);
-      console.log('Certification options fetched:', list);
-    })
-    .catch((err) => {
-      console.error('Failed to load certification options', err);
+    api.getProfile(token).then((d) => {
+      setCerts(d.certifications || []);
+      setLoadingCerts(false);
     });
 
-}, [token]);
+    api.getCertificationOptions(token)
+      .then((v) => {
+        const list = Array.isArray(v)
+          ? v
+          : Array.isArray(v?.options)
+          ? v.options
+          : [];
+        setCertOptions(list);
+        console.log('Certification options fetched:', list);
+      })
+      .catch((err) => {
+        console.error('Failed to load certification options', err);
+      });
+
+    refreshStats();
+  }, [token]);
 
   const add = async (e) => {
     e.preventDefault();
@@ -90,7 +128,7 @@ export default function CertificationsPage() {
     if (Object.keys(errs).length) { setFormErrors(errs); return; }
     setFormErrors({});
     await callAdd(async () => {
-      const data = await api.addCert(token, { ...form, name: certName, year: form.year ? Number(form.year) : undefined,issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
+      const data = await api.addCert(token, { ...form, name: certName, year: form.year ? Number(form.year) : undefined, issuedOn: form.issuedOn || undefined, expiryDate: form.expiryDate || undefined }, selectedFile);
       if (data.error) { setError(data.error); return; }
       setCerts(data.certifications);
       setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
@@ -98,24 +136,35 @@ export default function CertificationsPage() {
       setSelectedFile(null);
       setShowModal(false);
       showToast("Certification added successfully.");
+      refreshStats();
+      const newTotal = data.certifications.length;
+      setCurrentPage(Math.ceil(newTotal / cardsPerPage));
     });
   };
 
   const remove = async (certId) => {
     await callDelete(async () => {
       const data = await api.deleteCert(token, certId);
-      setCerts(data.certifications);
+      setCerts((prev) => {
+        const updated = data.certifications;
+        const newTotal = updated.length;
+        const newTotalPages = Math.ceil(newTotal / cardsPerPage);
+        setCurrentPage((p) => Math.min(p, newTotalPages || 1));
+        return updated;
+      });
       setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
       setDeleteTargetId(null);
       showToast("Certification deleted successfully.");
+      refreshStats();
     });
   };
+
   const openEdit = (cert) => {
     setEditingCert(cert);
     setEditForm({
       name: cert.name,
       issuer: cert.issuer || "",
-       issuedOn: cert.issuedOn || "",
+      issuedOn: cert.issuedOn || "",
       expiryDate: cert.expiryDate || "",
     });
     setEditFile(null);
@@ -132,31 +181,30 @@ export default function CertificationsPage() {
     e.preventDefault();
     setEditError("");
     await callUpdate(async () => {
-      const data = await api.editCert(token, editingCert.id, { ...editForm,  issuedOn: editForm.issuedOn || undefined, expiryDate: editForm.expiryDate || undefined }, editFile);
+      const data = await api.editCert(token, editingCert.id, { ...editForm, issuedOn: editForm.issuedOn || undefined, expiryDate: editForm.expiryDate || undefined }, editFile);
       if (data.error) { setEditError(data.error); return; }
       setCerts(data.certifications);
       setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
       closeEdit();
       showToast("Certification updated successfully");
+      refreshStats();
     });
   };
 
-  const techIcons = [
-    { keys: ["react"], icon: <FaReact /> },
-    { keys: ["java"], icon: <FaJava /> },
-    { keys: ["python"], icon: <FaPython /> },
-    { keys: ["javascript", "js"], icon: <SiJavascript /> },
-    { keys: ["html"], icon: <SiHtml5 /> },
-    { keys: ["css"], icon: <SiCss /> },
-    { keys: ["node", "node.js"], icon: <FaNodeJs /> },
-    { keys: ["mongo"], icon: <SiMongodb /> },
-    { keys: ["aws"], icon: <FaAws /> },
-  ];
-  const getIcon = (name) => {
-    const lower = name.toLowerCase();
-    return (
-      techIcons.find((t) => t.keys.some((k) => lower.includes(k)))?.icon || "🏅"
-    );
+  const getCertStatus = (expiryDate) => {
+    if (!expiryDate) return { label: "Active", cls: "cert-status-valid" };
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return { label: "Expired", cls: "cert-status-expired" };
+    if (diffDays <= 90) return { label: "Expiring Soon", cls: "cert-status-expiring" };
+    return { label: "Active", cls: "cert-status-valid" };
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
   if (loadingCerts) return <Loader message="Loading certifications..." />;
@@ -177,6 +225,23 @@ export default function CertificationsPage() {
       } />
       {toast && <div className="toast success">{toast}</div>}
 
+      {/* ── Summary Stats ────────────────────────────────────────────────────── */}
+      <div className="cert-stats-grid">
+        {STAT_CARDS.map((card) => (
+          <div key={card.key} className="cert-stat-card">
+            <div className="cert-stat-icon" style={{ background: card.iconBg }}>
+              <i className={card.icon} style={{ color: card.accent, fontSize: 20 }}></i>
+            </div>
+            <div className="cert-stat-body">
+              <div className="cert-stat-count" style={{ color: card.accent }}>
+                {certStats ? certStats[card.key] : "—"}
+              </div>
+              <div className="cert-stat-label">{card.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* ── Add Form ─────────────────────────────────────────────────────────── */}
       {showModal && (
         <div className="modal-overlay">
@@ -186,9 +251,7 @@ export default function CertificationsPage() {
             </button>
             <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
               <label style={{ fontWeight: "500", fontSize: "15px"}}>Add Certification </label>
-               
             </div>
-            
             <div className="card form-card">
               <form onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div className="form-group">
@@ -274,21 +337,11 @@ export default function CertificationsPage() {
                       background: "var(--bg)",
                       transition: "border-color 0.15s",
                     }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.borderColor = "var(--primary)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.borderColor = "var(--border)")
-                    }
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--primary)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
                   >
                     <span style={{ fontSize: 28 }}>📎</span>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        color: "var(--text-muted)",
-                        textAlign: "center",
-                      }}
-                    >
+                    <span style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center" }}>
                       Click to upload or drag and drop your certificate (PDF, JPG, PNG)
                     </span>
                     <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Max file size: 5 MB</span>
@@ -312,16 +365,7 @@ export default function CertificationsPage() {
                   </label>
                   {formErrors.file && <span style={{ color: "red", fontSize: 12 }}>{formErrors.file}</span>}
                   {selectedFile && (
-                    <p
-                      style={{
-                        marginTop: 8,
-                        fontSize: 13,
-                        color: "var(--primary)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
+                    <p style={{ marginTop: 8, fontSize: 13, color: "var(--primary)", display: "flex", alignItems: "center", gap: 4 }}>
                       📄 {selectedFile.name}
                     </p>
                   )}
@@ -340,44 +384,74 @@ export default function CertificationsPage() {
       {certs.length === 0 ? (
         <div className="empty">No certifications added yet.</div>
       ) : (
+        <>
         <div className="certs-list">
-          {certs.map((c) => (
-            <div key={c.id} className="modern-cert-card">
-              <div className="modern-cert-icon">{getIcon(c.name)}</div>
-              <div className="modern-cert-content">
-                <h3>{c.name}</h3>
-                {c.issuer && (
-                  <div className="cert-issuer">🏢 Issued by : {c.issuer}</div>
-                )}
-               {c.issuedOn && (
-  <div className="cert-year">
-    📅 Issued On: {(c.issuedOn)}
-  </div>
-)}
-
-                {c.expiryDate && <div className="cert-year">🗓️ Expires on: {c.expiryDate}</div>}
+          {(() => {
+            const totalPages = Math.ceil(certs.length / cardsPerPage);
+            const paginated = certs.slice((currentPage - 1) * cardsPerPage, currentPage * cardsPerPage);
+            return paginated.map((c) => {
+            const status = getCertStatus(c.expiryDate);
+            return (
+              <div key={c.id} className="modern-cert-card">
+                <div className="modern-cert-icon"><CertLogo name={c.name} size={42} /></div>
+                <div className="modern-cert-content">
+                  <span className={`cert-status-badge ${status.cls}`}>{status.label}</span>
+                  <div className="cert-card-top">
+                    <h3 className="cert-card-name">{c.name}</h3>
+                  </div>
+                  {c.issuer && (
+                    <div className="cert-meta-row">
+                      <span>Issued by: <strong style={{color:"#383da7"}}>{c.issuer}</strong></span>
+                    </div>
+                  )}
+                  <div className="cert-meta-dates">
+                    {c.issuedOn && (
+                      <div className="cert-meta-row">
+                        <i className="fas fa-calendar-alt cert-meta-icon"></i>
+                        <span>Issued: {formatDate(c.issuedOn)}</span>
+                      </div>
+                    )}
+                    {c.expiryDate && (
+                      <div className="cert-meta-row">
+                        <i className="fas fa-calendar-times cert-meta-icon"></i>
+                        <span>Expires: {formatDate(c.expiryDate)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* <div className="cert-card-actions"> */}
+                  {c.fileData && (
+                    <button
+                      className="certificate-box"
+                      onClick={() => {
+                        const bytes = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0));
+                        const url = URL.createObjectURL(new Blob([bytes], { type: c.fileType }));
+                        window.open(url, "_blank");
+                      }}
+                    >
+                      <div> View Certificate ↗</div>
+                    </button>
+                  )}
+                 
+                    <Button variant="edit" onClick={() => openEdit(c)} title="Edit">
+                      <i className="fas fa-edit"></i>
+                    </Button>
+                    <Button variant="delete" onClick={() => setDeleteTargetId(c.id)} title="Delete">
+                      <i className="fas fa-trash"></i>
+                    </Button>
+                 
+                {/* </div> */}
               </div>
-              {c.fileData && (
-                <button
-                  className="certificate-box"
-                  onClick={() => {
-                    const bytes = Uint8Array.from(atob(c.fileData), (ch) =>
-                      ch.charCodeAt(0),
-                    );
-                    const url = URL.createObjectURL(
-                      new Blob([bytes], { type: c.fileType }),
-                    );
-                    window.open(url, "_blank");
-                  }}
-                >
-                  {/* <div style={{ fontSize: "34px" }}>🗑️</div> */}
-                  <div>View Certificate ↗</div>
-                </button>
-              )}
-              <Button variant="edit" onClick={() => openEdit(c)}><i className="fas fa-edit"></i></Button>
-              <Button variant="delete" onClick={() => setDeleteTargetId(c.id)}><i className="fas fa-trash"></i></Button>           </div>
-          ))}
+            );
+            });
+          })()}
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(certs.length / cardsPerPage)}
+          onPageChange={setCurrentPage}
+        />
+        </>
       )}
 
       {/* ── Edit Modal ───────────────────────────────────────────────────────── */}
