@@ -14,7 +14,7 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Breadcrumb from "../components/common/Breadcrumb";
-import SkillDonutChart from "../components/common/SkillDonutChart";
+import DonutChart from "../components/common/DonutChart";
 import SkillTypeBarChart from "../components/common/SkillTypeBarChart";
 import CertLogo from "../components/common/CertLogo";
 import { useSidebar } from "../context/SidebarContext";
@@ -288,7 +288,15 @@ export default function ProfilePage() {
  <div className="dashboard-row">
         <div className="card">
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 ,borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px"}}>Skill Proficiency Distribution</h3>
-          <SkillDonutChart skills={profile.skills} />
+          <DonutChart
+            slices={[
+              { key: "Beginner",     label: "Beginner",     color: "#2e2f41", count: (profile.skills || []).filter(s => s.proficiency === "Beginner").length },
+              { key: "Intermediate", label: "Intermediate", color: "#797c89", count: (profile.skills || []).filter(s => s.proficiency === "Intermediate").length },
+              { key: "Advanced",     label: "Advanced",     color: "#bec3d0", count: (profile.skills || []).filter(s => s.proficiency === "Advanced").length },
+            ]}
+            centerLabel="Total Skills"
+            itemLabel="skill"
+          />
         </div>
 
         <div className="card">

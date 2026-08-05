@@ -2,12 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Certification } from '../certifications/certification.entity';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AdminService {
-  constructor(@InjectRepository(User) private usersRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private usersRepo: Repository<User>,
+    @InjectRepository(Certification) private certRepo: Repository<Certification>,
+  ) {}
 
   async getStats() {
     const totalEmployees = await this.usersRepo.count({ where: { role: 'employee' } });
@@ -42,7 +46,29 @@ export class AdminService {
       .getRawMany();
     const skillGapCount = skillGapRows.length;
 
-    return { totalEmployees, topSkills, departmentDistribution, skillGapCount };
+    const today = new Date();
+    const soonDate = new Date();
+    soonDate.setDate(today.getDate() + 30);
+    const todayStr = today.toISOString().split('T')[0];
+    const soonStr = soonDate.toISOString().split('T')[0];
+
+    const allCerts = await this.certRepo.find({ select: ['id', 'expiryDate'] });
+    const certStatus = { active: 0, expiringSoon: 0, expired: 0 };
+    for (const cert of allCerts) {
+      if (!cert.expiryDate) { certStatus.active++; }
+      else if (cert.expiryDate < todayStr) { certStatus.expired++; }
+      else if (cert.expiryDate <= soonStr) { certStatus.expiringSoon++; }
+      else { certStatus.active++; }
+    }
+
+    const recentJoiners = await this.usersRepo.find({
+      where: { role: 'employee' },
+      order: { createdAt: 'DESC' },
+      take: 5,
+      select: ['id', 'name', 'firstName', 'department', 'dateOfJoining', 'avatar', 'createdAt'],
+    });
+
+    return { totalEmployees, topSkills, departmentDistribution, skillGapCount, certStatus, recentJoiners };
   }
 
   async getAllEmployees() {
