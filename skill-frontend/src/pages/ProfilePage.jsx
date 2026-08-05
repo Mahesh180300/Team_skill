@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
 import Dropdown from "../components/common/Dropdown";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
@@ -14,6 +13,8 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Breadcrumb from "../components/common/Breadcrumb";
+import DeleteButton from "../components/common/DeleteButton";
+import useDeleteConfirm from "../hooks/useDeleteConfirm";
 import DonutChart from "../components/common/DonutChart";
 import SkillTypeBarChart from "../components/common/SkillTypeBarChart";
 import CertLogo from "../components/common/CertLogo";
@@ -33,8 +34,6 @@ export default function ProfilePage() {
   const [managers, setManagers] = useState([]);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [deletingResume, setDeletingResume] = useState(false);
-  const [showDeleteResume, setShowDeleteResume] = useState(false);
-
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -155,10 +154,16 @@ export default function ProfilePage() {
         resumeFileName: "",
         resumeFileType: "",
       }));
-      setShowDeleteResume(false);
       showToast("Resume deleted successfully.");
     });
   };
+
+  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
+    onConfirm: deleteResume,
+    title: "Delete Resume",
+    message: "Are you sure you want to delete your resume? This cannot be undone.",
+    confirmText: "Yes, Delete",
+  });
 
   const calcCompletion = (p) => {
     const fields = [
@@ -278,6 +283,11 @@ export default function ProfilePage() {
             <span className="stat-val-text">
               {profile.resumeData?.length > 0 ?'Uploaded' : 'Not Uploaded'}
             </span>
+            {profile.updatedAt && profile.resumeData?.length > 0 && (
+              <span style={{ display: "block", fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
+                Last updated: {new Date(profile.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
+            )}
             <span className="stat-lbl">Resume</span>
           </div>
           

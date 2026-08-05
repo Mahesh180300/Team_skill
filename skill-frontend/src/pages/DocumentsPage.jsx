@@ -2,16 +2,18 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { useState } from "react";
 import LoaderDialog from "../components/LoaderDialog";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useApi } from "../hooks/useApi";
+import DeleteButton from "../components/common/DeleteButton";
+import EditButton from "../components/common/EditButton";
+import useDeleteConfirm from "../hooks/useDeleteConfirm";
 import Breadcrumb from "../components/common/Breadcrumb";
 
 export default function DocumentsPage() {
   const { token, profile, setProfile } = useAuth();
   const [resumeUploading, setResumeUploading] = useState(false);
   const [deletingResume, setDeletingResume] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [msg, setMsg] = useState("");
+  const [dragActive, setDragActive] = useState(false);
 
   const callResume = useApi(setResumeUploading);
   const callDelete = useApi(setDeletingResume);
@@ -29,7 +31,7 @@ export default function DocumentsPage() {
         if (data.resumeData) {
           const updated = { ...profile, resumeData: data.resumeData, resumeFileName: data.resumeFileName, resumeFileType: data.resumeFileType };
           setProfile(updated);
-          showToast("Resume uploaded");
+          showToast("Resume uploaded successfully");
         } else if (data.error) {
           showToast(data.error);
         }
@@ -43,10 +45,16 @@ export default function DocumentsPage() {
     await callDelete(async () => {
       await api.deleteResume(token);
       setProfile({ ...profile, resumeData: "", resumeFileName: "", resumeFileType: "" });
-      setShowDeleteConfirm(false);
       showToast("Resume deleted successfully.");
     });
   };
+
+  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
+    onConfirm: deleteResume,
+    title: "Delete Resume",
+    message: "Are you sure you want to delete your resume? This cannot be undone.",
+    confirmText: "Yes, Delete",
+  });
 
   const openResume = () => {
     const bytes = Uint8Array.from(atob(profile.resumeData), (ch) => ch.charCodeAt(0));
@@ -67,6 +75,16 @@ export default function DocumentsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files[0];
+    if (file) uploadResume(file);
+  };
+
+  const handleDragOver = (e) => { e.preventDefault(); setDragActive(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setDragActive(false); };
+
   return (
     <div className="page">
       {resumeUploading && <LoaderDialog message="Uploading resume..." />}
@@ -78,19 +96,50 @@ export default function DocumentsPage() {
       </div>
       <Breadcrumb />
 
-      <div className="doc-section-card">
-        <div className="doc-section-header">
-          <div className="doc-section-title">
-            <div className="doc-section-icon">📄</div>
-            <div>
-              <h3>Resume</h3>
-              <p>Your professional resume for recruiters &amp; managers</p>
+      <div className="doc-upload-card">
+        <div className="doc-upload-header">
+          <h3>Resume</h3>
+          <p>Upload your professional resume for recruiters and hiring managers</p>
+        </div>
+
+        {profile?.resumeData ? (
+          <div className="doc-uploaded-card">
+            <div className="doc-uploaded-icon">📄</div>
+            <div className="doc-uploaded-info">
+              <span className="doc-uploaded-name">{profile.resumeFileName}</span>
+              <span className="doc-uploaded-size">{(profile.resumeData.length * 0.75 / 1024).toFixed(1)} KB · {profile.resumeFileType}</span>
+              {profile.updatedAt && (
+                <span className="doc-uploaded-size">Last updated: {new Date(profile.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              )}
+            </div>
+            <span className="doc-uploaded-badge">✓ Uploaded</span>
+            <div className="doc-uploaded-actions">
+              <button className="resume-btn resume-btn-icon" onClick={openResume} title="View">
+                <i className="fas fa-eye"></i>
+              </button>
+              {/* <button className="resume-btn resume-btn-icon" onClick={downloadResume} title="Download">
+                <i className="fas fa-download"></i>
+              </button> */}
+              <EditButton onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading} />
+              <DeleteButton onClick={confirmDelete} disabled={deletingResume} />
             </div>
           </div>
-          {profile?.resumeData && (
-            <span className="doc-uploaded-badge">✓ Uploaded</span>
-          )}
-        </div>
+        ) : (
+          <div
+            className={`doc-drop-zone ${dragActive ? "doc-drop-zone-active" : ""}`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            <div className="doc-drop-icon">📁</div>
+            <p className="doc-drop-title">Drag & drop your resume here</p>
+            <p className="doc-drop-sub">or</p>
+            <label htmlFor="doc-resume-input" className="resume-btn resume-btn-upload-main">
+              {resumeUploading ? "Uploading..." : "Browse Files"}
+            </label>
+            <p className="doc-drop-formats">PDF, DOC or DOCX · Max 2MB</p>
+          </div>
+        )}
 
         <input
           id="doc-resume-input"
@@ -99,46 +148,9 @@ export default function DocumentsPage() {
           style={{ display: "none" }}
           onChange={(e) => { if (e.target.files[0]) uploadResume(e.target.files[0]); e.target.value = ""; }}
         />
-
-        {profile?.resumeData ? (
-          <div className="doc-file-row">
-            <span className="doc-file-icon">📎</span>
-            <span className="doc-file-name">{profile.resumeFileName}</span>
-            <div className="doc-file-actions">
-                <button className="resume-btn resume-btn-view" onClick={openResume}>View Resume↗</button>
-                <button className="resume-btn resume-btn-edit" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
-                <i className="fas fa-edit"></i>
-              </button>
-              <button className="resume-btn resume-btn-delete" onClick={() => setShowDeleteConfirm(true)} disabled={deletingResume}>
-                <i className="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="doc-empty-state">
-            <div className="doc-empty-icon">📎</div>
-            <div>
-              <p className="doc-empty-title">No resume uploaded yet</p>
-              <p className="doc-empty-sub">PDF, DOC or DOCX · Max 2MB</p>
-            </div>
-            <button className="resume-btn resume-btn-upload-main" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
-              {resumeUploading ? "Uploading..." : "Upload Resume"}
-            </button>
-          </div>
-        )}
       </div>
 
-      {showDeleteConfirm && (
-        <ConfirmDialog
-          icon="🗑️"
-          title="Delete Resume"
-          message="Are you sure you want to delete your resume? This cannot be undone."
-          confirmText="Yes, Delete"
-          cancelText="Cancel"
-          onConfirm={deleteResume}
-          onCancel={() => setShowDeleteConfirm(false)}
-        />
-      )}
+      {DeleteDialog}
     </div>
   );
 }

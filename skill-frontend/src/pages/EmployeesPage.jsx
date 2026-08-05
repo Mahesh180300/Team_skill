@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Dropdown from "../components/common/Dropdown";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
@@ -10,6 +9,8 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import DialogBox from "../components/common/DialogBox";
 import Button from "../components/common/Button";
+import DeleteButton from "../components/common/DeleteButton";
+import useDeleteConfirm from "../hooks/useDeleteConfirm";
 import Breadcrumb from "../components/common/Breadcrumb";
 
 
@@ -44,7 +45,6 @@ export default function EmployeesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [filtered, setFiltered] = useState(false);
-  const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [editEmp, setEditEmp] = useState(null);
   const [editForm, setEditForm] = useState(EMPTY_FORM);
   const [editSaving, setEditSaving] = useState(false);
@@ -103,7 +103,7 @@ export default function EmployeesPage() {
         const list = Array.isArray(data) ? data : [];
         setAllEmployees(list);
         setEmployees(list);
-      }).catch(() => {});
+      }).catch(() => { });
     }, 30000);
 
     const handler = () => {
@@ -111,7 +111,7 @@ export default function EmployeesPage() {
         const list = Array.isArray(data) ? data : [];
         setAllEmployees(list);
         setEmployees(list);
-      }).catch(() => {});
+      }).catch(() => { });
     };
     window.addEventListener('profile-updated', handler);
 
@@ -121,16 +121,20 @@ export default function EmployeesPage() {
     };
   }, [token]);
 
-  const remove = async (id) => {
-    await callDelete(async () => {
-      await api.deleteEmployee(token, id);
-      const updated = allEmployees.filter((e) => e.id !== id);
-      setAllEmployees(updated);
-      showToast("Employee deleted successfully.");
-      setEmployees(updated.filter(applyFilters));
-      setDeleteTargetId(null);
-    });
-  };
+  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
+    onConfirm: async (id) => {
+      await callDelete(async () => {
+        await api.deleteEmployee(token, id);
+        const updated = allEmployees.filter((e) => e.id !== id);
+        setAllEmployees(updated);
+        showToast("Employee deleted successfully.");
+        setEmployees(updated.filter(applyFilters));
+      });
+    },
+    title: "Remove Employee",
+    message: "Are you sure want to remove this employee? This cannot be undone.",
+    confirmText: "Yes, Remove",
+  });
 
   const applyFilters = (emp) => {
     const { skill, department, minExp, certification, billable } = filters;
@@ -234,189 +238,256 @@ export default function EmployeesPage() {
       {editSaving && <LoaderDialog message="Saving employee..." />}
       {sendingEmail && <LoaderDialog message="Sending onboarding email..." />}
       <div className="page">
-      {toast && <div className="toast success">{toast}</div>}
-      <div className="page-header"><h2>Employee Management</h2></div>
-      <Breadcrumb action={
-        filtered
-          ? <span className="count-badge" style={{ color: "#2e2f41" }}>{employees.length} of {allEmployees.length} employees</span>
-          : <span className="count-badge">{allEmployees.length} employees</span>
-      } />
+        {toast && <div className="toast success">{toast}</div>}
+        <div className="page-header"><h2>Employee Management</h2></div>
+        <Breadcrumb action={
+          filtered
+            ? <span className="count-badge" style={{ color: "#2e2f41" }}>{employees.length} of {allEmployees.length} employees</span>
+            : <span className="count-badge">{allEmployees.length} employees</span>
+        } />
 
-      <div className="emp-search-filter-bar">
-        <div className="emp-search-wrap">
-          <span className="emp-search-icon"> <i className="fa-solid fa-magnifying-glass"></i></span>
-          <input
-            className="emp-search-input"
-            type="text"
-            placeholder="Search employees..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-          />
-          {searchQuery && (
-            <Button variant="clear" className="emp-search-clear" onClick={() => { setSearchQuery(""); setPage(1); }} aria-label="Clear search">✕</Button>
-          )}
+        <div className="emp-search-filter-bar">
+          <div className="emp-search-wrap">
+            <span className="emp-search-icon"> <i className="fa-solid fa-magnifying-glass"></i></span>
+            <input
+              className="emp-search-input"
+              type="text"
+              placeholder="Search employees..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+            />
+            {searchQuery && (
+              <Button variant="clear" className="emp-search-clear" onClick={() => { setSearchQuery(""); setPage(1); }} aria-label="Clear search">✕</Button>
+            )}
+          </div>
+          <div className="emp-billable-chips">
+            {BILLABLE_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                variant="chip"
+                active={billableFilter === opt.value}
+                onClick={() => { setBillableFilter(opt.value); setPage(1); }}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+          <button className="filter" style={{ marginLeft: "auto" }} onClick={() => setShowFilters((v) => !v)}>
+            Filters {showFilters ? "▲" : "▼"}
+          </button>
         </div>
-        <div className="emp-billable-chips">
-          {BILLABLE_OPTIONS.map((opt) => (
-            <Button
-              key={opt.value}
-              variant="chip"
-              active={billableFilter === opt.value}
-              onClick={() => { setBillableFilter(opt.value); setPage(1); }}
-            >
-              {opt.label}
-            </Button>
-          ))}
-        </div>
-        <button className="filter" style={{ marginLeft: "auto" }} onClick={() => setShowFilters((v) => !v)}>
-          Filters {showFilters ? "▲" : "▼"}
-        </button>
-      </div>
 
-      <div style={{ overflow: "hidden", maxHeight: showFilters ? 400 : 0, transition: "max-height 0.3s ease" }}>
-        <div className="filter-panel">
-          <form onSubmit={search}>
-            <div className="filter-panel-grid">
-              <div className="form-group">
-                <label className="filter-label">Skill</label>
-                <input name="skill" placeholder="e.g. React, Node.js" value={filters.skill} onChange={setF} />
+        <div style={{ overflow: "hidden", maxHeight: showFilters ? 400 : 0, transition: "max-height 0.3s ease" }}>
+          <div className="filter-panel">
+            <form onSubmit={search}>
+              <div className="filter-panel-grid">
+                <div className="form-group">
+                  <label className="filter-label">Skill</label>
+                  <input name="skill" placeholder="e.g. React, Node.js" value={filters.skill} onChange={setF} />
+                </div>
+                <div className="form-group">
+                  <label className="filter-label">Department</label>
+                  <input name="department" placeholder="e.g. Engineering" value={filters.department} onChange={setF} />
+                </div>
+                <div className="form-group">
+                  <label className="filter-label">Min. Experience (yrs)</label>
+                  <input name="minExp" type="number" min="0" placeholder="e.g. 2" value={filters.minExp} onChange={setF} />
+                </div>
+                <div className="form-group">
+                  <label className="filter-label">Certification</label>
+                  <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={setF} />
+                </div>
+                <div className="form-group">
+                  <label className="filter-label">Billable</label>
+                  <label className="filter-toggle">
+                    <input
+                      type="checkbox"
+                      name="billable"
+                      checked={filters.billable}
+                      onChange={setF}
+                    />
+                    <span className="filter-toggle-track">
+                      <span className="filter-toggle-thumb" />
+                    </span>
+                    <span className="filter-toggle-text">{filters.billable ? "Yes" : "No"}</span>
+                  </label>
+                </div>
               </div>
-              <div className="form-group">
-                <label className="filter-label">Department</label>
-                <input name="department" placeholder="e.g. Engineering" value={filters.department} onChange={setF} />
+              <div className="filter-panel-actions" >
+                {filterError && <p className="error" style={{ width: "50%", marginBottom: 0 }}>⚠ {filterError}</p>}
+                <Button type="submit" style={{ marginTop: "15px" }} className="btn-primary btn-sm" disabled={filteringEmployees}>
+                  {filteringEmployees ? "Filtering..." : "Apply Filters"}
+                </Button>
+                {filtered && (
+                  <button style={{ borderColor: "#2e3041", fontWeight: "bold", fontSize: "13px", marginLeft: "10px" }} type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>
+                    Clear Filters
+                  </button>
+                )}
               </div>
-              <div className="form-group">
-                <label className="filter-label">Min. Experience (yrs)</label>
-                <input name="minExp" type="number" min="0" placeholder="e.g. 2" value={filters.minExp} onChange={setF} />
+            </form>
+          </div>
+        </div>
+
+        {displayedEmployees.length === 0 ? (
+          <div className="empty">{filtered || hasSearchOrBillable ? "No employees match the search or filters." : "No employees registered yet."}</div>
+        ) : (
+          <>
+            <div className="emp-stats-grid">
+              <div className="emp-stat-card">
+
+                <span className="emp-stat-val">{allEmployees.length}</span>
+                <span className="emp-stat-lbl">Total Employees</span>
               </div>
-              <div className="form-group">
-                <label className="filter-label">Certification</label>
-                <input name="certification" placeholder="e.g. AWS Certified" value={filters.certification} onChange={setF} />
+              <div className="emp-stat-card">
+
+                <span className="emp-stat-val">{allEmployees.filter((e) => e.billable === "yes").length}</span>
+                <span className="emp-stat-lbl">Billable</span>
               </div>
-              <div className="form-group">
-                <label className="filter-label">Billable</label>
-                <label className="filter-toggle">
-                  <input
-                    type="checkbox"
-                    name="billable"
-                    checked={filters.billable}
-                    onChange={setF}
-                  />
-                  <span className="filter-toggle-track">
-                    <span className="filter-toggle-thumb" />
-                  </span>
-                  <span className="filter-toggle-text">{filters.billable ? "Yes" : "No"}</span>
-                </label>
+              <div className="emp-stat-card">
+
+                <span className="emp-stat-val">{allEmployees.filter((e) => e.billable === "no").length}</span>
+                <span className="emp-stat-lbl">Non-Billable</span>
               </div>
             </div>
-            <div className="filter-panel-actions" >
-              {filterError && <p className="error" style={{ width: "50%", marginBottom: 0 }}>⚠ {filterError}</p>}
-              <Button type="submit" style={{ marginTop: "15px" }} className="btn-primary btn-sm" disabled={filteringEmployees}>
-                {filteringEmployees ? "Filtering..." : "Apply Filters"}
-              </Button>
-              {filtered && (
-                <button style={{borderColor: "#2e3041",fontWeight: "bold",fontSize: "13px",marginLeft: "10px"}} type="button" className="btn-secondary btn-sm" onClick={reset} disabled={filteringEmployees}>
-                  Clear Filters
-                </button>
-              )}
+
+            <div className="employee-list">
+              {displayedEmployees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
+                <div key={emp.id} className="employee-card">
+                  <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
+                    <div className="emp-avatar">
+                      {emp.avatar
+                        ? <img src={emp.avatar} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                        : (emp.firstName || emp.name)?.charAt(0).toUpperCase()
+                      }
+                    </div>
+                    <div className="emp-info">
+                      <div className="emp-name">{emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name}</div>
+                      <div className="emp-meta">
+                        <span>{emp.email}</span>
+                        {emp.jobTitle && <><span className="sep">•</span><span>{emp.jobTitle}</span></>}
+                        {emp.department && <><span className="sep">•</span><span>{emp.department}</span></>}
+                      </div>
+                    </div>
+                    <div className="emp-counts">
+                      <span>{emp.skills?.length || 0} skills</span>
+                      <span>{emp.certifications?.length || 0} certs</span>
+                      {emp.dateOfJoining && <span>{calcDuration(emp.dateOfJoining)} exp</span>}
+                      {emp.billable === "yes" && <span style={{ color: "#22c55e" }}>Billable</span>}
+                      {emp.billable === "no" && <span style={{ color: "#22c55e" }}>Non-Billable</span>}
+                    </div>
+                     <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
+                       <button className="resume-btn resume-btn-icon" onClick={() => openEmailDialog(emp)} title="Send Email">
+                         <i className="fas fa-envelope"></i>
+                       </button>
+                       <DeleteButton onClick={() => confirmDelete(emp.id)} />
+                     </div>
+                    <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
+                  </div>
+                  {expanded === emp.id && (
+                    <div className="emp-details">
+                      {emp.skills?.length > 0 && (
+                        <div className="detail-section">
+                          <h4>Skills</h4>
+                          <div className="skills-inline">
+                            {emp.skills.map((s) => (
+                              <span key={s.id} className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.name} · {s.proficiency}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {emp.certifications?.length > 0 ? (
+                        <div className="detail-section">
+                          <h4>Certifications</h4>
+                          <div className="emp-cert-list">
+                            {emp.certifications.map((c) => (
+                              <div key={c.id} className="emp-cert-item">
+                                <div className="emp-cert-info">
+                                  <span className="emp-cert-name">🏆 {c.name}</span>
+                                  <span className="emp-cert-meta">
+                                    {c.issuer && <span>{c.issuer}</span>}
+                                    {c.issuedOn && <span>📅 Issued On: {c.issuedOn}</span>}
+                                    {c.expiryDate && <span>🗓️ Expires On: {c.expiryDate}</span>}
+                                  </span>
+                                </div>
+                                {c.fileData && (
+                                  <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }}>
+                                    View Certificate ↗
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="detail-section"><h4>Certifications</h4><p className="empty-sm">⚠️ No certifications uploaded yet.</p></div>
+                      )}
+                      {emp.resumeData ? (
+                        <div className="detail-section">
+                          <h4>Resume</h4>
+                          <div className="emp-resume-box">
+                            <div className="emp-resume-info"><span className="emp-resume-icon">📎</span><span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span></div>
+                            {emp.updatedAt && (
+                              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Last updated: {new Date(emp.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            )}
+                            <div className="emp-resume-actions">
+                        <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume <span className="download-arrow">↗</span></button>
+                            <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>
+                            </div>
+                      </div>
+                        </div>
+                      ) : (
+                        <div className="detail-section"><h4>Resume</h4><p className="empty-sm">⚠️ No resume uploaded yet.</p></div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* {displayedEmployees.length > PAGE_SIZE && (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 16 }}>
+            <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>← Prev</button>
+            {Array.from({ length: Math.ceil(displayedEmployees.length / PAGE_SIZE) }, (_, i) => (
+              <button key={i} className={page === i + 1 ? "btn-primary btn-sm" : "btn-secondary btn-sm"} onClick={() => setPage(i + 1)}>{i + 1}</button>
+            ))}
+            <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page === Math.ceil(displayedEmployees.length / PAGE_SIZE)}>Next →</button>
+          </div>
+        )} */}
+
+        {/* Onboarding Email Dialog */}
+        <DialogBox
+          isOpen={!!emailDialogEmp}
+          onClose={() => setEmailDialogEmp(null)}
+          title="📧 Send Onboarding Email"
+          width={500}
+          footer={
+            <>
+              <button type="button" className="btn-secondary" onClick={() => setEmailDialogEmp(null)}>Cancel</button>
+              <Button variant="primary" type="submit" form="email-form" loading={sendingEmail}>{sendingEmail ? "Sending..." : "Send Email"}</Button>
+            </>
+          }
+        >
+          <form id="email-form" onSubmit={sendOnboardingEmail} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)" }}>Sending to: <strong>{emailDialogEmp?.email}</strong></p>
+            <div className="form-group">
+              <label>Subject</label>
+              <input value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })} required />
+            </div>
+            <div className="form-group">
+              <label>Project Name</label>
+              <select value={emailForm.projectName} onChange={(e) => setEmailForm({ ...emailForm, projectName: e.target.value })} required>
+                <option value="">Select Project</option>
+                {projects.map((p) => <option key={p.id} value={p.value}>{p.value}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Message</label>
+              <textarea value={emailForm.message} onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })} rows={6} required style={{ resize: "vertical" }} />
             </div>
           </form>
-        </div>
-      </div>
-
-      {displayedEmployees.length === 0 ? (
-        <div className="empty">{filtered || hasSearchOrBillable ? "No employees match the search or filters." : "No employees registered yet."}</div>
-      ) : (
-        <div className="employee-list">
-          {displayedEmployees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
-            <div key={emp.id} className="employee-card">
-              <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
-                <div className="emp-avatar">
-                  {emp.avatar
-                    ? <img src={emp.avatar} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                    : (emp.firstName || emp.name)?.charAt(0).toUpperCase()
-                  }
-                </div>
-                <div className="emp-info">
-                  <div className="emp-name">{emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name}</div>
-                  <div className="emp-meta">
-                    <span>{emp.email}</span>
-                    {emp.jobTitle && <><span className="sep">•</span><span>{emp.jobTitle}</span></>}
-                    {emp.department && <><span className="sep">•</span><span>{emp.department}</span></>}
-                  </div>
-                </div>
-                <div className="emp-counts">
-                  <span>{emp.skills?.length || 0} skills</span>
-                  <span>{emp.certifications?.length || 0} certs</span>
-                  {emp.dateOfJoining && <span>{calcDuration(emp.dateOfJoining)} exp</span>}
-                  {emp.billable === "yes" && <span style={{ color: "#22c55e" }}>Billable</span>}
-                    {emp.billable === "no" && <span style={{ color: "#22c55e" }}>Non-Billable</span>}
-                </div>
-                <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="edit"  style={{padding:"8px 12px" }} onClick={() => openEmailDialog(emp)} title="Send Onboarding Email"><i className="fa-solid fa-envelope"></i></Button>
-                  <Button variant="delete"  style={{padding:"8px 12px" }} onClick={() => setDeleteTargetId(emp.id)}><i className="fa-solid fa-trash"></i></Button>
-                </div>
-                <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
-              </div>
-              {expanded === emp.id && (
-                <div className="emp-details">
-                  {emp.skills?.length > 0 && (
-                    <div className="detail-section">
-                      <h4>Skills</h4>
-                      <div className="skills-inline">
-                        {emp.skills.map((s) => (
-                          <span key={s.id} className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.name} · {s.proficiency}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {emp.certifications?.length > 0 ? (
-                    <div className="detail-section">
-                      <h4>Certifications</h4>
-                      <div className="emp-cert-list">
-                        {emp.certifications.map((c) => (
-                          <div key={c.id} className="emp-cert-item">
-                            <div className="emp-cert-info">
-                              <span className="emp-cert-name">🏆 {c.name}</span>
-                              <span className="emp-cert-meta">
-                                {c.issuer && <span>{c.issuer}</span>}
-                                {c.issuedOn && <span>📅 Issued On: {c.issuedOn}</span>}
-                                {c.expiryDate && <span>🗓️ Expires On: {c.expiryDate}</span>}
-                              </span>
-                            </div>
-                            {c.fileData && (
-                              <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }}>
-                                View Certificate ↗
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="detail-section"><h4>Certifications</h4><p className="empty-sm">⚠️ No certifications uploaded yet.</p></div>
-                  )}
-                  {emp.resumeData ? (
-                    <div className="detail-section">
-                      <h4>Resume</h4>
-                      <div className="emp-resume-box">
-                        <div className="emp-resume-info"><span className="emp-resume-icon">📎</span><span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span></div>
-                        <div className="emp-resume-actions">
-                        <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume <span className="download-arrow">↗</span></button>
-                        <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="detail-section"><h4>Resume</h4><p className="empty-sm">⚠️ No resume uploaded yet.</p></div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
+        </DialogBox>
       {displayedEmployees.length > PAGE_SIZE && (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 16 }}>
           <button className="btn-secondary btn-sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>← Prev</button>
@@ -463,17 +534,7 @@ export default function EmployeesPage() {
         </form>
       </DialogBox>
 
-      {deleteTargetId && (
-        <ConfirmDialog
-          icon="👤"
-          title="Remove Employee"
-          message="Are you sure want to remove this employee? This cannot be undone."
-          confirmText="Yes, Remove"
-          cancelText="Cancel"
-          onConfirm={() => remove(deleteTargetId)}
-          onCancel={() => setDeleteTargetId(null)}
-        />
-      )}
+        {DeleteDialog}
       </div>
     </>
   );

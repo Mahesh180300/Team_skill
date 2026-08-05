@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import { io } from "socket.io-client";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import EditButton from "../components/common/EditButton";
 
 export default function StickyChatWidget() {
   const { user, token, profile, chatUnreadCount, setChatUnreadCount } = useAuth();
@@ -383,9 +384,7 @@ export default function StickyChatWidget() {
                             </div>
                             {isMe && (
                               <div className="chat-bubble-actions">
-                                <button type="button" className="chat-action-btn" onClick={() => startEdit(m)} title="Edit">
-                                  <i className="fas fa-pencil-alt" />
-                                </button>
+                                <EditButton onClick={() => startEdit(m)} />
                                 <button type="button" className="chat-action-btn delete" onClick={() => setConfirmDeleteId(m.id)} title="Delete" disabled={deletingMsgId === m.id}>
                                   {deletingMsgId === m.id ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-trash" />}
                                 </button>
