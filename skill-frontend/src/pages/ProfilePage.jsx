@@ -160,6 +160,15 @@ export default function ProfilePage() {
     });
   };
 
+  const projectFontSize = (name) => {
+    if (!name) return undefined;
+    const words = name.trim().split(/\s+/);
+    if (words.length <= 2) return undefined;       // keep existing size
+    if (name.length <= 20) return "18px";           // 3 short words
+    if (name.length <= 30) return "14px";           // medium length
+    return "13px";                                  // long name
+  };
+
   const calcCompletion = (p) => {
     const fields = [
       { label: "Profile Picture", done: !!p.avatar },
@@ -242,45 +251,72 @@ export default function ProfilePage() {
 
       <div className="profile-header">
         <div className="profile-stats">
-     
-          {/* <div className="stat stat-exp"> */}
-            {/* <span className="stat-icon-emoji">📅</span> */}
-            {/* <span className="stat-val">
-              {calcDuration(profile.dateOfJoining) || "—"}
-            </span>
-            <span className="stat-lbl">Years of Experience</span>
-          </div> */}
 
-          {/* <div className="stat stat-relevant"> */}
-            {/* <span className="stat-icon-emoji">💼</span> */}
-            {/* <span className="stat-val stat-val-relevant">
-              {calcDuration(profile.dateOfProjectAssigning) || "—"}
-            </span>
-            <span className="stat-lbl">Relevant Experience</span>
-          </div> */}
-
-               <div className="stat" onClick={() => navigate(ROUTES.SKILLS)}>
-            {/* <span className="stat-icon-emoji">🎯</span> */}
-            <span className="stat-val">{profile.skills?.length || 0}</span>
-            <span className="stat-lbl">Skills</span>
+          <div className="psc psc-purple" onClick={() => navigate(ROUTES.SKILLS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-code"></i></span>
+            </div>
+            <div className="psc-body">
+              <span className="psc-value">{profile.skills?.length || 0}</span>
+              <span className="psc-label">Skills</span>
+              <span className="psc-sub">Keep learning, keep growing</span>
+            </div>
           </div>
 
-          <div className="stat" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
-            {/* <span className="stat-icon-emoji">🏆</span> */}
-            <span className="stat-val">
-              {profile.certifications?.length || 0}
-            </span>
-            <span className="stat-lbl">Certificates</span>
+          <div className="psc psc-blue" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-trophy"></i></span>
+            </div>
+            <div className="psc-body">
+              <span className="psc-value">{profile.certifications?.length || 0}</span>
+              <span className="psc-label">Certifications</span>
+              <span className="psc-sub">Your achievements <br></br>matter</span>
+            </div>
           </div>
 
-          <div className="stat" onClick={() => navigate(ROUTES.DOCUMENTS)}>
-            {/* <span className="stat-icon-emoji">🏆</span> */}
-            <span className="stat-val-text">
-              {profile.resumeData?.length > 0 ?'Uploaded' : 'Not Uploaded'}
-            </span>
-            <span className="stat-lbl">Resume</span>
+          <div className="psc psc-green" onClick={() => navigate(ROUTES.DOCUMENTS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-file-alt"></i></span>
+            </div>
+            <div className="psc-body">
+              <span className="psc-value">{profile.resumeData?.length > 0 ? "Uploaded" : "Not Uploaded"}</span>
+              <span className="psc-label">Resume</span>
+           <span className="psc-sub">
+  {profile.resumeData?.length > 0 ? (
+    <>
+      Keep your profile <br />
+      updated
+    </>
+  ) : (
+    <>
+      Upload your <br />
+      resume
+    </>
+  )}
+</span>
+            </div>
           </div>
-          
+
+          <div className="psc psc-orange" onClick={() => navigate(ROUTES.DOCUMENTS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-briefcase"></i></span>
+            </div>
+            <div className="psc-body">
+              <span
+                className="psc-value psc-value-project"
+                style={{ fontSize: projectFontSize(profile.currentProject) }}
+              >
+                {profile.currentProject || "Not Assigned"}
+              </span>
+              <span className="psc-label">Current Project</span>
+              <span className="psc-sub">
+                {profile.currentProject
+                  ? `Since ${calcDuration(profile.dateOfProjectAssigning) || "recently"}`
+                  : "No project assigned"}
+              </span>
+            </div>
+          </div>
+
         </div>
       </div>
 

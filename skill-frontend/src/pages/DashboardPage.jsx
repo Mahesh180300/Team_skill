@@ -37,22 +37,49 @@ export default function DashboardPage() {
       <div className="page-header"><h2>Dashboard</h2></div>
       <Breadcrumb />
 
-      <div className="stats-grid">
-        <div className="stat-card stat-info">
-          <div className="stat-val">{stats.totalEmployees}</div>
-          <div className="stat-lbl">Total Employees</div>
+      <div className="profile-stats">
+        <div className="psc psc-purple">
+          <div className="psc-icon-wrap">
+            <span className="psc-icon"><i class="fas fa-users"></i></span>
+          </div>
+          <div className="psc-body">
+            <span className="psc-value">{stats.totalEmployees}</span>
+            <span className="psc-label">Total Employees</span>
+            <span className="psc-sub">Registered in system</span>
+          </div>
         </div>
-        <div className="stat-card stat-info">
-         <div className="stat-val">{stats.topSkills.length}</div>
-          <div className="stat-lbl">Unique Skills</div>
+
+        <div className="psc psc-blue">
+          <div className="psc-icon-wrap">
+            <span className="psc-icon"><i class="fas fa-code"></i></span>
+          </div>
+          <div className="psc-body">
+            <span className="psc-value">{stats.topSkills.length}</span>
+            <span className="psc-label">Unique Skills</span>
+            <span className="psc-sub">Across all employees</span>
+          </div>
         </div>
-        <div className="stat-card stat-info">
-          <div className="stat-val">{stats.departmentDistribution.length}</div>
-          <div className="stat-lbl">Departments</div>
+
+        <div className="psc psc-green">
+          <div className="psc-icon-wrap">
+            <span className="psc-icon"><i class="fas fa-building"></i></span>
+          </div>
+          <div className="psc-body">
+            <span className="psc-value">{stats.departmentDistribution.length}</span>
+            <span className="psc-label">Departments</span>
+            <span className="psc-sub">Active departments</span>
+          </div>
         </div>
-        <div className="stat-card stat-info">
-         <div className="stat-val">{stats.skillGapCount}</div>
-          <div className="stat-lbl">Skill Gap (no skills)</div>
+
+        <div className="psc psc-orange">
+          <div className="psc-icon-wrap">
+            <span className="psc-icon"><i class="fas fa-exclamation-triangle"></i></span>
+          </div>
+          <div className="psc-body">
+            <span className="psc-value">{stats.skillGapCount}</span>
+            <span className="psc-label">Skill Gap</span>
+            <span className="psc-sub">Employees with no skills</span>
+          </div>
         </div>
       </div>
 
