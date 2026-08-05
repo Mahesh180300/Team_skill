@@ -6,6 +6,9 @@ import { ROUTES } from "../router/routes";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { io } from "socket.io-client";
 import Breadcrumb from "../components/common/Breadcrumb";
+import DeleteButton from "../components/common/DeleteButton";
+import EditButton from "../components/common/EditButton";
+import useDeleteConfirm from "../hooks/useDeleteConfirm";
 
 export default function ChatPage() {
   const { user, token, profile, chatUnreadCount, setChatUnreadCount } = useAuth();
@@ -20,8 +23,7 @@ export default function ChatPage() {
   const [editingMsgId, setEditingMsgId] = useState(null);
   const [editText, setEditText] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
-  const [deletingMsgId, setDeletingMsgId] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [deletingMsgId, setDeletingMsgId] = useState(false);
   const messagesEndRef = useRef(null);
   const searchInputRef = useRef(null);
   const socketRef = useRef(null);
@@ -282,12 +284,10 @@ export default function ChatPage() {
 
   const deleteMessage = async (msgId) => {
     setDeletingMsgId(msgId);
-    setConfirmDeleteId(null);
     try {
       await api.deleteChatMessage(token, msgId);
       setMessages((prev) => {
         const updated = prev.filter((m) => m.id !== msgId);
-        // update sidebar last message immediately
         if (activeContact) {
           const newLast = updated.length > 0 ? updated[updated.length - 1] : null;
           setContacts((contacts) =>
@@ -301,17 +301,23 @@ export default function ChatPage() {
                     unreadCount: Math.max((c.unreadCount || 0) - 1, 0),
                   }
                 : c
-            )
-          );
-        }
+          )
+        );
         return updated;
       });
     } catch {
       // ignore
     } finally {
-      setDeletingMsgId(null);
+      setDeletingMsgId(false);
     }
   };
+
+  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
+    onConfirm: deleteMessage,
+    title: "Delete Message",
+    message: "This message will be permanently deleted.",
+    confirmText: "Delete",
+  });
 
   const filteredContacts = contacts.filter((c) => {
     if (!searchQuery.trim()) return true;
@@ -477,12 +483,8 @@ export default function ChatPage() {
                           </div>
                           {isMe && (
                             <div className="chat-bubble-actions">
-                              <button type="button" className="chat-action-btn" onClick={() => startEdit(m)} title="Edit">
-                                <i className="fas fa-pencil-alt" />
-                              </button>
-                              <button type="button" className="chat-action-btn delete" onClick={() => setConfirmDeleteId(m.id)} title="Delete" disabled={deletingMsgId === m.id}>
-                                {deletingMsgId === m.id ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-trash" />}
-                              </button>
+                              <EditButton onClick={() => startEdit(m)} />
+                              <DeleteButton onClick={() => confirmDelete(m.id)} disabled={deletingMsgId === m.id} />
                             </div>
                           )}
                         </>
@@ -501,19 +503,7 @@ export default function ChatPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {confirmDeleteId && (
-              <div className="chat-delete-overlay" onClick={() => setConfirmDeleteId(null)}>
-                <div className="chat-delete-modal" onClick={(e) => e.stopPropagation()}>
-                  <div className="chat-delete-modal-icon"><i className="fas fa-trash" /></div>
-                  <h4>Delete Message</h4>
-                  <p>This message will be permanently deleted.</p>
-                  <div className="chat-delete-modal-actions">
-                    <button className="chat-delete-cancel-btn" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
-                    <button className="chat-delete-confirm-btn" onClick={() => deleteMessage(confirmDeleteId)}>Delete</button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {DeleteDialog}
 
             <form className="chat-input-bar" onSubmit={handleSend}>
               <input

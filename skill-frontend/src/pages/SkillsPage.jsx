@@ -3,11 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
 import Dropdown from "../components/common/Dropdown";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
 import { useApi } from "../hooks/useApi";
+import DeleteButton from "../components/common/DeleteButton";
+import EditButton from "../components/common/EditButton";
+import useDeleteConfirm from "../hooks/useDeleteConfirm";
 import Breadcrumb from "../components/common/Breadcrumb";
 import Pagination from "../components/common/Pagination";
 
@@ -34,7 +36,6 @@ export default function SkillsPage() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [toast, setToast] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
   const [loadingSkills, setLoadingSkills] = useState(true);
@@ -87,10 +88,16 @@ export default function SkillsPage() {
         return updated;
       });
       setSharedProfile((p) => ({ ...p, skills: data.skills }));
-      setDeleteTargetId(null);
       showToast("Skill deleted successfully.");
     });
   };
+
+  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
+    onConfirm: remove,
+    title: "Delete Skill",
+    message: "Are you sure want to delete this skill? This cannot be undone.",
+    confirmText: "Yes, Delete",
+  });
 
   if (loadingSkills) return <Loader message="Loading skills..." />;
 
@@ -318,8 +325,8 @@ export default function SkillsPage() {
                       <div className="st-col st-col-proficiency"><span className={`badge ${[s.proficiency]}`}>{s.proficiency}</span></div>
                       <div className="st-col st-col-duration"><span className="skill-years">{formatDuration(s) || "—"}</span></div>
                       <div className="st-col st-col-actions">
-                        <Button variant="edit" onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }}><i className="fas fa-edit"></i></Button>
-                        <Button variant="delete" onClick={() => setDeleteTargetId(s.id)}><i className="fas fa-trash"></i></Button>
+                        <EditButton onClick={() => { setEditId(s.id); setEditForm({ name: s.name, skillType: s.skillType, proficiency: s.proficiency, yearsUsed: s.yearsUsed, monthsUsed: s.monthsUsed || 0 }); setShowEditModal(true); }} />
+                        <DeleteButton onClick={() => confirmDelete(s.id)} />
                       </div>
                     </>
                   )
@@ -336,18 +343,8 @@ export default function SkillsPage() {
         </div>
       )}
 
-      {deleteTargetId && (
-        <ConfirmDialog
-          icon="🗑️"
-          title="Delete Skill"
-          message="Are you sure want to delete this skill? This cannot be undone."
-          confirmText="Yes, Delete"
-          cancelText="Cancel"
-          onConfirm={() => remove(deleteTargetId)}
-          onCancel={() => setDeleteTargetId(null)}
-        />
-      )}
-      </div>
+      {DeleteDialog}
+    </div>
     </>
   );
 }
