@@ -335,17 +335,17 @@ export default function EmployeesPage() {
             <div className="emp-stats-grid">
               <div className="emp-stat-card">
 
-                <span className="emp-stat-val">{allEmployees.length}</span>
+                <span className="emp-stat-val" style={{ color: "#3e74e9" }}>{allEmployees.length}</span>
                 <span className="emp-stat-lbl">Total Employees</span>
               </div>
               <div className="emp-stat-card">
 
-                <span className="emp-stat-val">{allEmployees.filter((e) => e.billable === "yes").length}</span>
+                <span className="emp-stat-val" style={{ color: "#22c55e" }}>{allEmployees.filter((e) => e.billable === "yes").length}</span>
                 <span className="emp-stat-lbl">Billable</span>
               </div>
               <div className="emp-stat-card">
 
-                <span className="emp-stat-val">{allEmployees.filter((e) => e.billable === "no").length}</span>
+                <span className="emp-stat-val" style={{ color: "#f59e0b" }}>{allEmployees.filter((e) => e.billable === "no").length}</span>
                 <span className="emp-stat-lbl">Non-Billable</span>
               </div>
             </div>
@@ -372,16 +372,17 @@ export default function EmployeesPage() {
                       <span>{emp.skills?.length || 0} skills</span>
                       <span>{emp.certifications?.length || 0} certs</span>
                       {emp.dateOfJoining && <span>{calcDuration(emp.dateOfJoining)} exp</span>}
-                      {emp.billable === "yes" && <span style={{ color: "#22c55e" }}>Billable</span>}
-                      {emp.billable === "no" && <span style={{ color: "#22c55e" }}>Non-Billable</span>}
+                      {emp.billable === "yes" && <span style={{ color:  "#22c55e"}}>Billable</span>}
+                      {emp.billable === "no" && <span style={{ color:"#f59e0b"  }}>Non-Billable</span>}
                     </div>
                      <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                        <button className="resume-btn resume-btn-icon" onClick={() => openEmailDialog(emp)} title="Send Email">
-                         <i className="fas fa-envelope"></i>
+                         <i style={{ color:"#43a1d8"  }} className="fas fa-envelope"></i>
                        </button>
                        <DeleteButton onClick={() => confirmDelete(emp.id)} />
                      </div>
-                    <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
+                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span> */}
+                    <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span>
                   </div>
                   {expanded === emp.id && (
                     <div className="emp-details">

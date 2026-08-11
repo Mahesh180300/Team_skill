@@ -1,24 +1,26 @@
 import { useState } from "react";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 
-export default function useDeleteConfirm({ onConfirm, title, message, confirmText = "Yes, Delete", icon = "🗑️" }) {
+export default function useDeleteConfirm({ onConfirm, title, message, confirmText = "Yes, Delete", icon = "🗑️", danger = true }) {
   const [targetId, setTargetId] = useState(null);
 
   const trigger = (id) => setTargetId(id);
   const cancel = () => setTargetId(null);
 
   const handleConfirm = async () => {
-    await onConfirm(targetId);
+    const id = targetId;
     setTargetId(null);
+    await onConfirm(id);
   };
 
   const DeleteDialog = targetId ? (
     <ConfirmDialog
       icon={icon}
-      title={title}
-      message={message}
+      title={typeof title === "function" ? title(targetId) : title}
+      message={typeof message === "function" ? message(targetId) : message}
       confirmText={confirmText}
       cancelText="Cancel"
+      danger={danger}
       onConfirm={handleConfirm}
       onCancel={cancel}
     />

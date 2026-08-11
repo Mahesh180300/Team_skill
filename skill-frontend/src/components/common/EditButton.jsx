@@ -1,4 +1,4 @@
-export default function EditButton({ onClick, disabled, title = "Edit" }) {
+export default function EditButton({ onClick, disabled, title = "Edit", style }) {
   return (
     <button
       type="button"
@@ -6,6 +6,7 @@ export default function EditButton({ onClick, disabled, title = "Edit" }) {
       onClick={onClick}
       disabled={disabled}
       title={title}
+      style={style}
     >
       <i className="fas fa-pencil-alt"></i>
     </button>

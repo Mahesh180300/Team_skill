@@ -166,15 +166,15 @@ export default function MastersPage() {
 
       <div className="emp-stats-grid">
         <div className="emp-stat-card">
-          <span className="emp-stat-val">{types.length}</span>
+          <span className="emp-stat-val" style={{ color: "#3e74e9" }}>{types.length}</span>
           <span className="emp-stat-lbl">Total Types</span>
         </div>
         <div className="emp-stat-card">
-          <span className="emp-stat-val">{totalValues}</span>
+          <span className="emp-stat-val" style={{ color: "#22c55e" }}>{totalValues}</span>
           <span className="emp-stat-lbl">Total Values</span>
         </div>
         <div className="emp-stat-card">
-          <span className="emp-stat-val" style={{ fontSize: 22 }}>{lastUpdated ? lastUpdated.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</span>
+          <span className="emp-stat-val" style={{ fontSize: 20, color: "#f59e0b" }}>{lastUpdated ? lastUpdated.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</span>
           <span className="emp-stat-lbl">Last Updated</span>
         </div>
       </div>
@@ -244,7 +244,7 @@ export default function MastersPage() {
                   </div>
                 </div>
                 <div className="emp-counts">
-                  <span className="count-badge">{type.values?.length || 0}</span>
+                  <span className="count-badge"style={{color:"#5860e9"}}>{type.values?.length || 0}</span>
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                   {isEditingType ? (
@@ -254,12 +254,16 @@ export default function MastersPage() {
                     </>
                   ) : (
                      <>
-                        <EditButton onClick={(e) => { e.stopPropagation(); startEditType(type, e); }} disabled={anyLoading} />
+                        <EditButton
+                          onClick={(e) => { e.stopPropagation(); startEditType(type, e); }}
+                          disabled={anyLoading}
+                          style={{ color: "#43a1d8" }}
+                        />
                         <DeleteButton onClick={(e) => { e.stopPropagation(); confirmDelete({ kind: 'type', id: type.id, name: type.name }); }} disabled={anyLoading} />
                       </>
                   )}
                 </div>
-                <span className="expand-icon">{isOpen ? "▲" : "▼"}</span>
+                <span className="expand-icon">{isOpen ? "▲" : "View all"}</span>
               </div>
 
               {isOpen && (
@@ -285,7 +289,11 @@ export default function MastersPage() {
                           ) : (
                               <>
                                 <span style={{ flex: 1, fontSize: 14, color: "var(--text)" }}>{v.value}</span>
-                                <EditButton onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }} disabled={anyLoading} />
+                                <EditButton
+                                  onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }}
+                                  disabled={anyLoading}
+                                  style={{ color: "#5860e9" }}
+                                />
                                 <DeleteButton onClick={() => confirmDelete({ kind: 'value', id: v.id, name: v.value })} disabled={anyLoading} />
                               </>
                           )}
