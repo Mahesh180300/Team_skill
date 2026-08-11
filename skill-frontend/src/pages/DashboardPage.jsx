@@ -9,9 +9,9 @@ import DonutChart from "../components/common/DonutChart";
 import { useState } from "react";
 
 const CERT_SLICES_DEF = [
-  { key: "active",       label: "Active",       color: "#2e2f41" },
-  { key: "expiringSoon", label: "Expiring Soon", color: "#797c89" },
-  { key: "expired",      label: "Expired",       color: "#bec3d0" },
+  { key: "active",       label: "Active",       color: "#1ba54d" },
+  { key: "expiringSoon", label: "Expiring Soon", color: "#F59E0B" },
+  { key: "expired",      label: "Expired",       color: "#EF4444" },
 ];
 
 export default function DashboardPage() {
@@ -30,8 +30,12 @@ export default function DashboardPage() {
 
   if (loadingStats) return <Loader fullScreen message="Loading dashboard..." />;
 
-  const maxSkillCount = stats.topSkills[0]?.count || 1;
-  const BAR_COLORS = ["#2e2f41"]
+const PROF_COLORS = {
+  Advanced: "#34A853",      // Green
+  Intermediate: "#4285F4",  // Blue
+  Beginner: "#F4B400",      // Yellow / Amber
+};
+
   return (
     <div className="page">
       <div className="page-header"><h2>Dashboard</h2></div>
@@ -87,26 +91,49 @@ export default function DashboardPage() {
         <div className="card dash-card">
           <h3> Top Skills</h3>
           <hr />
-          {stats.topSkills.length === 0 ? (
-            <p className="empty-sm">No skills data yet.</p>
-          ) : (
-            <div className="skill-vbars">
-              {stats.topSkills.map((s, i) => (
-                <div key={s.name} className="skill-vbar-col">
-                  <div className="skill-vbar-track">
-                    <div
-                      className="skill-vbar-fill"
-                      style={{ height: `${(s.count / maxSkillCount) * 100}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
-                    >
-                      <span className="skill-vbar-tooltip">{s.count}</span>
-                    </div>
+          
+<div style={{ display: 'flex', gap: 16, marginBottom: 10 }}>
+  {['Advanced', 'Intermediate', 'Beginner'].map(l => (
+    <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>
+      <span style={{ width: 10, height: 10, borderRadius: 2, background: PROF_COLORS[l], display: 'inline-block' }} />{l}
+    </span>
+  ))}
+</div>
+<div className={`skill-vbars ${stats.topSkills.length > 6 ? 'scrollable' : ''}`}>
+  {(() => {
+    const maxCount = stats.topSkills[0]?.count || 1;
+    return stats.topSkills.map((s) => {
+      const total = s.count || 1;
+      const barHeightPct = (s.count / maxCount) * 100;
+      const segs = [
+        { key: 'Advanced',     val: s.advanced     || 0 },
+        { key: 'Intermediate', val: s.intermediate || 0 },
+        { key: 'Beginner',     val: s.beginner     || 0 },
+      ];
+      return (
+        <div key={s.name} className="skill-vbar-col">
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 3 }}>{s.count}</span>
+          <div className="skill-vbar-track" style={{ background: '#e9ecef', borderRadius: 6, width: '60%' }}>
+            <div style={{ width: '100%', height: `${barHeightPct}%`, display: 'flex', flexDirection: 'column-reverse', overflow: 'hidden', borderRadius: 6 }}>
+              {segs.map(({ key, val }) => {
+                const pct = Math.round((val / total) * 100);
+                if (!pct) return null;
+                return (
+                  <div key={key} style={{ width: '100%', height: `${pct}%`, background: PROF_COLORS[key], position: 'relative', cursor: 'default', flexShrink: 0 }}
+                    title={`${key}: ${val} employee${val !== 1 ? 's' : ''} (${pct}%)`}>
+                    <span className="skill-vbar-tooltip">{val} ({pct}%)</span>
                   </div>
-                  <span className="skill-vbar-name">{s.name}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          )}
+          </div>
+          <span className="skill-vbar-name">{s.name}</span>
         </div>
+      );
+    });
+  })()}
+</div>
+</div>
 
         <div className="card dash-card">
           <h3>Department Distribution</h3>
@@ -174,8 +201,43 @@ export default function DashboardPage() {
           />
         </div>
 
-      
       </div>
+
+      {/* Workforce Allocation */}
+      {(() => {
+        const billable    = stats.billableCount    ?? 0;
+        const nonBillable = stats.nonBillableCount ?? 0;
+        const total       = stats.totalEmployees   || 1;
+        const billablePct    = Math.round((billable    / total) * 100);
+        const nonBillablePct = Math.round((nonBillable / total) * 100);
+        const rows = [
+          { label: 'Total Employees', count: total,       pct: 100,            color: '#38346f', track: '#dddcee' },
+          { label: 'Billable',        count: billable,    pct: billablePct,    color: '#2e2f41', track: '#c8c8d4' },
+          { label: 'Non-Billable',    count: nonBillable, pct: nonBillablePct, color: '#797c89', track: '#e2e2e8' },
+        ];
+        return (
+          <div className="card" style={{ marginTop: '20px' }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>Employee Billing Status</h3>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Billable vs Non-Billable breakdown</span>
+            <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '14px 0 20px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {rows.map(({ label, count, pct, color, track }) => (
+                <div key={label} style={{ display: 'grid', gridTemplateColumns: '130px 1fr 48px 52px', alignItems: 'center', gap: '0 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>{label}</span>
+                  </div>
+                  <div style={{ height: 30, borderRadius: 9, background: track, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 9, transition: 'width 0.7s ease' }} />
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color, textAlign: 'right' }}>{pct}%</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'right' }}>{count} emp</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

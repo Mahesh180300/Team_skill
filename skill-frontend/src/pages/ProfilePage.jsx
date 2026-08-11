@@ -336,7 +336,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, borderBottom: "1px solid #eee",borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px" }}>Skill Category Distribution</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: "7px", paddingTop: "7px" }}>Skill Category Distribution</h3>
           <SkillTypeBarChart
             primarySkills={(profile.skills || []).filter(s => s.skillType === "Primary Skill").length}
             secondarySkills={(profile.skills || []).filter(s => s.skillType === "Secondary Skill").length}
