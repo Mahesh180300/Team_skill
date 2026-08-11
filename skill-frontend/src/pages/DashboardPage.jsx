@@ -9,9 +9,9 @@ import DonutChart from "../components/common/DonutChart";
 import { useState } from "react";
 
 const CERT_SLICES_DEF = [
-  { key: "active",       label: "Active",       color: "#2e2f41" },
-  { key: "expiringSoon", label: "Expiring Soon", color: "#797c89" },
-  { key: "expired",      label: "Expired",       color: "#bec3d0" },
+  { key: "active",       label: "Active",       color: "#44d459" },
+  { key: "expiringSoon", label: "Expiring Soon", color: "#ea9b48" },
+  { key: "expired",      label: "Expired",       color: "#f0473e" },
 ];
 
 export default function DashboardPage() {

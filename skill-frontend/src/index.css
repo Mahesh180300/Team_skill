@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --primary: #6366f1;
   --primary-dark: #4f46e5;
   --secondary: #64748b;
@@ -408,7 +408,7 @@ color: #2e2f41;
 }
 /* ── Layout ─────────────────────────────────────────────────────────────────── */
 .main-content { flex: 1;width: 100%; margin: 0 auto; padding: 24px 24px; overflow-y: auto; }
-.page { display: flex; flex-direction: column; gap: 11px; }
+.page { display: flex; flex-direction: column; gap: 15px; }
 .page-header { display: flex; align-items: center; justify-content: space-between; }
 .page-header h2 { font-size: 24px; font-weight: 700; color: var(--text); }
 .loading { display: flex; justify-content: center; align-items: center; padding: 60px; font-size: 16px; color: var(--text-muted); }
@@ -1229,36 +1229,37 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   border-radius: 18px;
   padding: 20px 20px 16px;
   cursor: pointer;
+  border:  2px solid #e5e7eb;
   transition: transform 0.22s ease, box-shadow 0.22s ease;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  box-shadow: 0px 0px 6px rgba(0,0,0,0.10);
   min-height: 110px;
   position: relative;
   overflow: hidden;
 }
-.psc:hover  { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.16); }
+.psc:hover  { transform: translateY(-5px); box-shadow: 0 5px 5px rgba(43, 42, 42, 0.16); }
 .psc:active { transform: scale(0.97); }
 
-.psc-purple { background: linear-gradient(135deg, #38346f 0%, #a09aa4 100%); }
-.psc-blue   { background: linear-gradient(135deg, #38346f 0%, #a09aa4 100%); }
-.psc-green  { background: linear-gradient(135deg,#38346f 0%, #a09aa4 100%); }
-.psc-orange { background: linear-gradient(135deg, #38346f 0%, #a09aa4 90%); }
+.psc-purple { background: #fff; }
+.psc-blue   { background: #fff; }
+.psc-green  { background: #fff; }
+.psc-orange { background: #fff; }
 
 .psc-icon-wrap {
-  width: 50px;
-  height: 50px;
+  width: 35px;
+  height:35px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.92);
+  background: rgba(246, 243, 243, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
 }
-.psc-icon { font-size: 22px; color: #333557; }
+.psc-icon { font-size: 20px; color: #333557; }
 
 .psc-body {
   display: flex;
@@ -1271,7 +1272,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 .psc-value {
   font-size: 22px;
   font-weight: 700;
-  color:white;
+  color:#2e2f41;
   line-height: 1.1;
 }
 
@@ -1286,17 +1287,17 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 }
 
 .psc-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  color: rgba(255,255,255,0.85);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-top: 2px;
+  color: #2e2f41;
+  /* text-transform: uppercase; */
+  letter-spacing: 0.5px;
+  margin-top: 4px;
 }
 
 .psc-sub {
-  font-size: 11px;
-  color:#dddbdb;
+  font-size: 12px;
+  color:#6a6b7d;
   font-weight: 500;
   margin-top: 4px;
   /* white-space: nowrap; */
@@ -1591,7 +1592,6 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 
 @media (max-width: 768px) {
   .employment-card {
-    margin: 12px;
     padding: 14px;
   }
 
@@ -1605,6 +1605,14 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
     text-align: left;
     max-width: 100%;
   }
+  .cert-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 10px;
+}
+
 }
 
 .skill-card {
@@ -1647,6 +1655,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
     align-items: center;
     gap: 20px;
     padding: 5px 22px;
+    justify-content: space-between;
 }
 
 .skill-name {
@@ -3471,7 +3480,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 }
 .donut-legend-row {
   display: grid;
-  grid-template-columns: 10px 85px auto;
+  grid-template-columns: 10px 100px auto;
   align-items: center;
   gap: 10px;
 }
