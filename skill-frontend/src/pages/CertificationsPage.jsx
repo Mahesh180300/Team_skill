@@ -13,6 +13,8 @@ import DatePicker from "../components/common/DatePicker";
 import Dropdown from "../components/common/Dropdown";
 import Breadcrumb from "../components/common/Breadcrumb";
 import Pagination from "../components/common/Pagination";
+import EditButton from "../components/common/EditButton";
+import DeleteButton from "../components/common/DeleteButton";
 
 const STAT_CARDS = [
   {
@@ -433,12 +435,12 @@ export default function CertificationsPage() {
                     </button>
                   )}
                  
-                    <Button variant="edit" onClick={() => openEdit(c)} title="Edit">
+                    <EditButton variant="edit" onClick={() => openEdit(c)} title="Edit">
                       <i className="fas fa-edit"></i>
-                    </Button>
-                    <Button variant="delete" onClick={() => setDeleteTargetId(c.id)} title="Delete">
+                    </EditButton>
+                    <DeleteButton variant="delete" onClick={() => setDeleteTargetId(c.id)} title="Delete">
                       <i className="fas fa-trash"></i>
-                    </Button>
+                    </DeleteButton>
                  
                 {/* </div> */}
               </div>

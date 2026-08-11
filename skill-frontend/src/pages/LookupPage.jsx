@@ -239,17 +239,17 @@ export default function MastersPage() {
                   ) : (
                     <div className="emp-name">{type.name}</div>
                   )}
-                  <div className="emp-meta">
+                  {/* <div className="emp-meta">
                     <span>{type.values?.length || 0} {type.values?.length === 1 ? "value" : "values"}</span>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="emp-counts">
-                  <span className="count-badge"style={{color:"#5860e9"}}>{type.values?.length || 0}</span>
+                  <span className="count-badge"style={{color:"#5860e9"}}>{type.values?.length || 0} {type.values?.length === 1 ? "value" : "values"}</span>
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                   {isEditingType ? (
                     <>
-                      <Button variant="primary" width="80px" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</Button>
+                      <EditButton variant="Edit" width="80px" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</EditButton>
                       <button className="btn-secondary btn-sm" onClick={() => setEditingTypeId(null)}>Cancel</button>
                     </>
                   ) : (
@@ -257,13 +257,13 @@ export default function MastersPage() {
                         <EditButton
                           onClick={(e) => { e.stopPropagation(); startEditType(type, e); }}
                           disabled={anyLoading}
-                          style={{ color: "#43a1d8" }}
+                          // style={{ color: "#43a1d8" }}
                         />
                         <DeleteButton onClick={(e) => { e.stopPropagation(); confirmDelete({ kind: 'type', id: type.id, name: type.name }); }} disabled={anyLoading} />
                       </>
                   )}
                 </div>
-                <span className="expand-icon">{isOpen ? "▲" : "View all"}</span>
+                <span className="expand-icon">{isOpen ? "▲" : "▼"}</span>
               </div>
 
               {isOpen && (

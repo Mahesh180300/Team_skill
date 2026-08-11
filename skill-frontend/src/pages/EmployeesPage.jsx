@@ -381,8 +381,8 @@ export default function EmployeesPage() {
                        </button>
                        <DeleteButton onClick={() => confirmDelete(emp.id)} />
                      </div>
-                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span> */}
-                    <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span>
+                    <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
+                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span> */}
                   </div>
                   {expanded === emp.id && (
                     <div className="emp-details">
@@ -426,10 +426,14 @@ export default function EmployeesPage() {
                         <div className="detail-section">
                           <h4>Resume</h4>
                           <div className="emp-resume-box">
+                            <div className="resume-content">
                             <div className="emp-resume-info"><span className="emp-resume-icon">📎</span><span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span></div>
+                            <div className="last-updated">
                             {emp.updatedAt && (
                               <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Last updated: {new Date(emp.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                             )}
+                            </div>
+                            </div>
                             <div className="emp-resume-actions">
                         <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume <span className="download-arrow">↗</span></button>
                             <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>

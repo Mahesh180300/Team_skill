@@ -1150,8 +1150,8 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 .emp-counts { display: flex; gap: 12px; flex-shrink: 0; }
 .emp-counts span { font-size: 12px; color: var(--text-muted); background: var(--bg); padding: 3px 8px; border-radius: 12px; }
 .emp-actions { display: flex; gap: 8px; flex-shrink: 0; }
-/* .expand-icon { color: var(--text-muted); font-size: 12px; flex-shrink: 0; } */
-.expand-icon { color:rgb(91, 91, 238); font-size: 13px; flex-shrink: 0; }
+.expand-icon { color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
+/* .expand-icon { color:rgb(91, 91, 238); font-size: 13px; flex-shrink: 0; } */
 .emp-details { border-top: 1px solid var(--border); padding: 16px 20px; background: #fafafa; display: flex; flex-direction: column; gap: 16px; }
 .detail-section h4 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
 
@@ -2371,12 +2371,12 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   border-radius: var(--radius);
   padding: 28px;
   box-shadow: var(--shadow);
-  max-width: 720px;
-  margin: 0 auto;
+  /* max-width: 720px;
+  margin: 0 auto; */
 }
 
 .doc-upload-header {
-  text-align: center;
+  /* text-align: center; */
   margin-bottom: 24px;
 }
 
@@ -2483,8 +2483,8 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 /* Empty state card */
 .doc-empty-state {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  /* align-items: center; */
+  /* justify-content: space-between; */
   gap: 18px;
   border: 1.5px dashed #c7d2fe;
   border-radius: 18px;
@@ -2536,7 +2536,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 .resume-btn-upload-main {
   background: #1f2937;
   color: #fff;
-  margin: 0;
+  margin-top: 10px;
   padding: 12px 22px;
   border-radius: 12px;
   display: inline-flex;
@@ -2558,11 +2558,11 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
     align-items: center;
   }
 
-  .doc-empty-state {
+  /* .doc-empty-state {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
-  }
+  } */
 }
 
 /* Resume button variants */
@@ -2680,8 +2680,8 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 
 .doc-empty-state {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+   align-items: center;
+  /* justify-content: space-between;  */
   gap: 18px;
   border: 1.5px dashed #c7d2fe;
   border-radius: 18px;
@@ -2691,7 +2691,19 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   transition: border-color 0.2s, background 0.2s, transform 0.15s;
   animation: docFadeIn 0.25s ease;
 }
-
+.document-upload{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.doc-empty-left{
+  display: flex;
+  flex-direction: row;
+}
+.last-updated{
+  margin-left: 40px;
+}
 .doc-empty-state:hover,
 .doc-drop-zone-active {
   border-color: #93c5fd;

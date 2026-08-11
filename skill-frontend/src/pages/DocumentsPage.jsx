@@ -153,27 +153,45 @@ export default function DocumentsPage() {
           </div>
         ) : (
           // ---- Empty state: matches Image 1 ----
-          <label
-            htmlFor="doc-resume-input"
-            className={`doc-empty-state ${dragActive ? "doc-drop-zone-active" : ""}`}
-            key="empty"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <div className="doc-empty-left">
-              <div className="doc-drop-icon">
-                <i className="fas fa-paperclip"></i>
-              </div>
-              <div>
-                <p className="doc-drop-title">No resume uploaded yet</p>
-                <p className="doc-drop-sub">PDF, DOC or DOCX &middot; Max 2MB</p>
-              </div>
+      //     <label
+      //       htmlFor="doc-resume-input"
+      //       className={`doc-empty-state ${dragActive ? "doc-drop-zone-active" : ""}`}
+      //       key="empty"
+      //       onDrop={handleDrop}
+      //       onDragOver={handleDragOver}
+      //       onDragLeave={handleDragLeave}
+      //     >
+      //       <div className="doc-empty-left">
+      //         <div className="doc-drop-icon">
+      //           <i className="fas fa-paperclip"></i>
+      //         </div>
+      //         <div>
+      //           <p className="doc-drop-title">No resume uploaded yet</p>
+      //           <p className="doc-drop-sub">PDF, DOC or DOCX &middot; Max 2MB</p>
+      //         </div>
+      //       </div>
+      //       <span className="resume-btn resume-btn-upload-main">
+      //         {resumeUploading ? "Uploading..." : "Upload Resume"}
+      //       </span>
+      //     </label>
+      //   )}
+      // </div>
+       <div className="doc-empty-state">
+        <div className="document-upload">
+        <div className="doc-empty-left">
+            <div className="doc-empty-icon">📎</div>
+            <div>
+              <p className="doc-empty-title">No resume uploaded yet</p>
+              <p className="doc-empty-sub">PDF, DOC or DOCX · Max 2MB</p>
             </div>
-            <span className="resume-btn resume-btn-upload-main">
+            </div>
+            <div>
+            <button className="resume-btn resume-btn-upload-main" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
               {resumeUploading ? "Uploading..." : "Upload Resume"}
-            </span>
-          </label>
+            </button>
+            </div>
+            </div>
+          </div>
         )}
       </div>
 
