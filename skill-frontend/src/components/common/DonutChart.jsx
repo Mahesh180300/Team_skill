@@ -57,9 +57,9 @@ export default function DonutChart({ slices = [], centerLabel = "Total", itemLab
         </svg>
 
         {tooltip && (
-          <div style={{ position: "absolute", left: tooltip.x + 12, top: tooltip.y - 10, background: "#2e2e44", color: "#fff", borderRadius: 8, padding: "8px 12px", fontSize: 12, fontWeight: 500, pointerEvents: "none", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(0,0,0,0.18)", zIndex: 10, lineHeight: 1.6, borderLeft: `3px solid ${tooltip.color}` }}>
+          <div style={{ position: "absolute", left: tooltip.x + 12, top: tooltip.y - 10, background: "#fbfbff", color: "#201e1e", borderRadius: 8, padding: "8px 12px", fontSize: 12, fontWeight: 500, pointerEvents: "none", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(0,0,0,0.18)", zIndex: 10, lineHeight: 1.6, borderLeft: `3px solid ${tooltip.color}` }}>
             <div style={{ fontWeight: 700, marginBottom: 2 }}>{tooltip.label}</div>
-            <div style={{ color: "rgba(255,255,255,0.75)" }}>
+            <div style={{ color: "rgba(37, 36, 36, 0.75)" }}>
               {tooltip.count} {tooltip.count === 1 ? itemLabel : `${itemLabel}s`} · {tooltip.percentage}%
             </div>
           </div>

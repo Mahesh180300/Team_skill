@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
 import Dropdown from "../components/common/Dropdown";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
@@ -14,6 +13,8 @@ import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Breadcrumb from "../components/common/Breadcrumb";
+import DeleteButton from "../components/common/DeleteButton";
+import useDeleteConfirm from "../hooks/useDeleteConfirm";
 import DonutChart from "../components/common/DonutChart";
 import SkillTypeBarChart from "../components/common/SkillTypeBarChart";
 import CertLogo from "../components/common/CertLogo";
@@ -33,8 +34,6 @@ export default function ProfilePage() {
   const [managers, setManagers] = useState([]);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [deletingResume, setDeletingResume] = useState(false);
-  const [showDeleteResume, setShowDeleteResume] = useState(false);
-
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -155,7 +154,6 @@ export default function ProfilePage() {
         resumeFileName: "",
         resumeFileType: "",
       }));
-      setShowDeleteResume(false);
       showToast("Resume deleted successfully.");
     });
   };
@@ -168,6 +166,13 @@ export default function ProfilePage() {
     if (name.length <= 30) return "14px";           // medium length
     return "13px";                                  // long name
   };
+
+  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
+    onConfirm: deleteResume,
+    title: "Delete Resume",
+    message: "Are you sure you want to delete your resume? This cannot be undone.",
+    confirmText: "Yes, Delete",
+  });
 
   const calcCompletion = (p) => {
     const fields = [
@@ -270,7 +275,7 @@ export default function ProfilePage() {
             <div className="psc-body">
               <span className="psc-value">{profile.certifications?.length || 0}</span>
               <span className="psc-label">Certifications</span>
-              <span className="psc-sub">Your achievements <br></br>matter</span>
+              <span className="psc-sub">Your achievements matter</span>
             </div>
           </div>
 
@@ -284,8 +289,7 @@ export default function ProfilePage() {
            <span className="psc-sub">
   {profile.resumeData?.length > 0 ? (
     <>
-      Keep your profile <br />
-      updated
+      Keep your profile updated
     </>
   ) : (
     <>
@@ -297,7 +301,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="psc psc-orange" onClick={() => navigate(ROUTES.DOCUMENTS)}>
+          <div className="psc psc-orange">
             <div className="psc-icon-wrap">
               <span className="psc-icon"><i class="fas fa-briefcase"></i></span>
             </div>
@@ -326,9 +330,9 @@ export default function ProfilePage() {
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 ,borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px"}}>Skill Proficiency Distribution</h3>
           <DonutChart
             slices={[
-              { key: "Beginner",     label: "Beginner",     color: "#2e2f41", count: (profile.skills || []).filter(s => s.proficiency === "Beginner").length },
-              { key: "Intermediate", label: "Intermediate", color: "#797c89", count: (profile.skills || []).filter(s => s.proficiency === "Intermediate").length },
-              { key: "Advanced",     label: "Advanced",     color: "#bec3d0", count: (profile.skills || []).filter(s => s.proficiency === "Advanced").length },
+              { key: "Beginner",     label: "Beginner",     color: "#4ec193", count: (profile.skills || []).filter(s => s.proficiency === "Beginner").length },
+              { key: "Intermediate", label: "Intermediate", color: "#2c6dbc", count: (profile.skills || []).filter(s => s.proficiency === "Intermediate").length },
+              { key: "Advanced",     label: "Advanced",     color: "#e86f0c", count: (profile.skills || []).filter(s => s.proficiency === "Advanced").length },
             ]}
             centerLabel="Total Skills"
             itemLabel="skill"
@@ -451,7 +455,7 @@ export default function ProfilePage() {
       </div>
 
 {/* Row 2: Certification Overview full width */}
-        <div className="cert-overview-card">
+        <div className="cert-overview-card" style={{ marginTop: 15, padding: 16, borderRadius: 12, background: "#fff", boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
           <div className="cert-overview-header">
             <h3 className="skill-title" style={{ margin: 0, borderBottom: "none", paddingBottom: 0 }}>Certification Overview</h3>
             {profile.certifications?.length > 0 && (

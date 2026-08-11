@@ -1,13 +1,13 @@
 const BARS = [
-  { key: "primarySkills",   label: "Primary Skills",   color: "#2e2f41" },
-  { key: "secondarySkills", label: "Secondary Skills", color: "#797c89" },
+  { key: "primarySkills",   label: "Primary Skills",   color: "#4eb9b0" },
+  { key: "secondarySkills", label: "Secondary Skills", color: "#4ee0cc" },
 ];
 
-const BAR_HEIGHT = 24;
-const BAR_GAP    = 30;
-const LABEL_W    = 20;
+const BAR_HEIGHT = 22;
+const BAR_GAP    = 20;
+const LABEL_W    = 10;
 const COUNT_W    = 36;
-const PADDING    = 5;
+const PADDING    = 10;
 
 export default function SkillTypeBarChart({ primarySkills = 0, secondarySkills = 0 }) {
   const data = { primarySkills, secondarySkills };
@@ -55,7 +55,7 @@ export default function SkillTypeBarChart({ primarySkills = 0, secondarySkills =
                 width={trackW}
                 height={BAR_HEIGHT}
                 rx={8}
-                fill="#f1f5f9"
+                fill="#e6f1f1"
               />
 
               {/* fill */}
