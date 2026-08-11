@@ -101,6 +101,7 @@ export default function SkillsPage() {
 
   if (loadingSkills) return <Loader message="Loading skills..." />;
 
+
   const counts = {
     total:          skills.length,
     primarySkill:   skills.filter((s) => s.skillType === "Primary Skill").length,
