@@ -263,7 +263,7 @@ export default function MastersPage() {
                       </>
                   )}
                 </div>
-                <span className="expand-icon">{isOpen ? "▲" : "View all"}</span>
+                <span className="expand-icon">{isOpen ? "▲" : "▼"}</span>
               </div>
 
               {isOpen && (

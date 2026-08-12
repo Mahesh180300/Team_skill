@@ -1925,6 +1925,18 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
   color: #dc2626;
 }
 
+.resume-btn-download-icon {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #0369a1;
+}
+
+.resume-btn-download-icon:hover {
+  background: #bae6fd;
+  border-color: #38bdf8;
+  color: #075985;
+}
+
 /* Dialog */
 .resume-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
 .resume-dialog { background: var(--card-bg); border-radius: 12px; padding: 20px; width: 100%; max-width: 380px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px; }

@@ -381,8 +381,8 @@ export default function EmployeesPage() {
                        </button>
                        <DeleteButton onClick={() => confirmDelete(emp.id)} />
                      </div>
-                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span> */}
-                    <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span>
+                    <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
+                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span> */}
                   </div>
                   {expanded === emp.id && (
                     <div className="emp-details">
@@ -431,8 +431,22 @@ export default function EmployeesPage() {
                               <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Last updated: {new Date(emp.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                             )}
                             <div className="emp-resume-actions">
-                        <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume <span className="download-arrow">↗</span></button>
-                            <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>
+                              <button
+                                className="resume-btn resume-btn-icon resume-btn-download-icon"
+                                onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}
+                                title="Download Resume"
+                                aria-label="Download Resume"
+                              >
+                                <i className="fas fa-download"></i>
+                              </button>
+                              <button
+                                className="resume-btn resume-btn-icon"
+                                onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}
+                                title="View Resume"
+                                aria-label="View Resume"
+                              >
+                                <i className="fas fa-eye"></i>
+                              </button>
                             </div>
                       </div>
                         </div>
