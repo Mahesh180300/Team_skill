@@ -1,4 +1,4 @@
-export default function ConfirmDialog({ icon, title, message, confirmText = "Confirm", cancelText = "Cancel", onConfirm, onCancel, danger = true }) {
+export default function ConfirmDialog({ icon, title, message, confirmText = "Confirm", cancelText = "Cancel", onConfirm, onCancel, danger = true, disabled = false }) {
   return (
     <div className="confirm-overlay" onClick={onCancel}>
       <div className="confirm-box" onClick={(e) => e.stopPropagation()}>
@@ -8,8 +8,8 @@ export default function ConfirmDialog({ icon, title, message, confirmText = "Con
         <h3 className="confirm-title">{title}</h3>
         <p className="confirm-message">{message}</p>
         <div className="confirm-actions">
-          <button className="confirm-btn-cancel" onClick={onCancel}>{cancelText}</button>
-          <button className={`confirm-btn-ok ${danger ? "confirm-btn-danger" : "confirm-btn-primary"}`} onClick={onConfirm}>{confirmText}</button>
+          <button className="confirm-btn-cancel" onClick={onCancel} disabled={disabled}>{cancelText}</button>
+          <button className={`confirm-btn-ok ${danger ? "confirm-btn-danger" : "confirm-btn-primary"}`} onClick={onConfirm} disabled={disabled}>{confirmText}</button>
         </div>
       </div>
     </div>

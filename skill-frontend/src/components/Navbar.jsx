@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSidebar } from "../context/SidebarContext";
 import api from "../api";
 import { ROUTES } from "../router/routes";
 import ConfirmDialog from "./common/ConfirmDialog";
@@ -11,8 +12,8 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, token, logout, profile, setProfile } = useAuth();
+  const { collapsed, setCollapsed } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
   const [viewAvatar, setViewAvatar] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -127,14 +128,12 @@ export default function Sidebar() {
             src={collapsed ? logoCompact : logoExpanded}
             alt="KTF Logo"
             className="sidebar-brand-logo"
-            style={{ width: collapsed ? "45px" : "270px", height: "auto", mixBlendMode: "screen" ,marginLeft: collapsed ? "-9px" : "-20px" }}
-            
+            style={{ width: collapsed ? "45px" : "270px", height: "auto", mixBlendMode: "screen", marginLeft: collapsed ? "0" : "-20px", marginTop: "10px" }}
           />
           <button
             className="sidebar-collapse-btn"
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expand" : "Collapse"}
-            style={{ marginLeft: collapsed ? "-11px" : "-5px" }}
           >
             {collapsed ? "›" : "‹"}
           </button>
@@ -348,7 +347,7 @@ export default function Sidebar() {
           onClick={() => setShowLogoutConfirm(true)}
           title="Logout"
         >
-          <span className="sidebar-link-logout">⎋ </span>
+          <span className="sidebar-link-logout"><i className="fa-solid fa-sign-out-alt"></i> </span>
           {!collapsed && <span className="Logout">Logout</span>}
         </button>
       </aside>

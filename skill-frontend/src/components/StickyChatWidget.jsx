@@ -4,6 +4,7 @@ import api from "../api";
 import { io } from "socket.io-client";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+
 export default function StickyChatWidget() {
   const { user, token, profile, chatUnreadCount, setChatUnreadCount } = useAuth();
   const [open, setOpen] = useState(false);

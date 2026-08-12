@@ -59,6 +59,42 @@ export class CertificationsService {
     return this.getUser(userId);
   }
 
+  async getCertStats(userId: string) {
+    const certs = await this.certsRepo.find({ where: { userId } });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in30 = new Date(today);
+    in30.setDate(today.getDate() + 30);
+
+    let activeCertifications = 0;
+    let expiringSoon = 0;
+    let expiredCertifications = 0;
+
+    for (const cert of certs) {
+      if (!cert.expiryDate) {
+        activeCertifications++;
+        continue;
+      }
+      const expiry = new Date(cert.expiryDate);
+      expiry.setHours(0, 0, 0, 0);
+      if (expiry < today) {
+        expiredCertifications++;
+      } else if (expiry <= in30) {
+        expiringSoon++;
+        activeCertifications++;
+      } else {
+        activeCertifications++;
+      }
+    }
+
+    return {
+      totalCertifications: certs.length,
+      activeCertifications,
+      expiringSoon,
+      expiredCertifications,
+    };
+  }
+
   private async getUser(userId: string) {
     const user = await this.usersRepo.findOne({ where: { id: userId } });
     const { password, ...rest } = user;

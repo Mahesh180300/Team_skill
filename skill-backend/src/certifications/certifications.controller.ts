@@ -14,6 +14,11 @@ export class CertificationsController {
     return this.certsService.getCertificationOptions();
   }
 
+  @Get('stats')
+  getCertStats(@CurrentUser() user: any) {
+    return this.certsService.getCertStats(user.id);
+  }
+
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   addCertification(@CurrentUser() user: any, @Req() req: any, @UploadedFile() file: Express.Multer.File) {

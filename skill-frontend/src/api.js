@@ -143,6 +143,8 @@ const api = {
   fetch(`${BASE}/profile/certifications/options`, {
     headers: headers(token),
   }).then(safeJson),
+  getCertStats: (token) =>
+    fetch(`${BASE}/profile/certifications/stats`, { headers: headers(token) }).then(safeJson),
   getAllLookupTypes: (token) =>
     fetch(`${BASE}/lookup/types`, { headers: headers(token) }).then((r) => r.json()),
   createLookupType: (token, name) =>

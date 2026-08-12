@@ -2,26 +2,45 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Certification } from '../certifications/certification.entity';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AdminService {
-  constructor(@InjectRepository(User) private usersRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private usersRepo: Repository<User>,
+    @InjectRepository(Certification) private certRepo: Repository<Certification>,
+  ) {}
 
   async getStats() {
     const totalEmployees = await this.usersRepo.count({ where: { role: 'employee' } });
+    const billableCount = await this.usersRepo.count({ where: { role: 'employee', billable: 'yes' } });
+    const nonBillableCount = totalEmployees - billableCount;
 
-    const topSkills = await this.usersRepo
+    const rawSkills = await this.usersRepo
       .createQueryBuilder('user')
       .innerJoin('user.skills', 'skill')
       .select('skill.name', 'name')
+      .addSelect('skill.proficiency', 'proficiency')
       .addSelect('COUNT(*)', 'count')
       .where('user.role = :role', { role: 'employee' })
       .groupBy('skill.name')
-      .orderBy('count', 'DESC')
-      .limit(10)
+      .addGroupBy('skill.proficiency')
+      .orderBy('skill.name')
       .getRawMany();
+
+    const skillMap = new Map<string, { name: string; count: number; advanced: number; intermediate: number; beginner: number }>();
+    for (const row of rawSkills) {
+      if (!skillMap.has(row.name)) skillMap.set(row.name, { name: row.name, count: 0, advanced: 0, intermediate: 0, beginner: 0 });
+      const s = skillMap.get(row.name)!;
+      const c = Number(row.count);
+      s.count += c;
+      if (row.proficiency === 'Advanced') s.advanced += c;
+      else if (row.proficiency === 'Intermediate') s.intermediate += c;
+      else if (row.proficiency === 'Beginner') s.beginner += c;
+    }
+    const topSkills = [...skillMap.values()].sort((a, b) => b.count - a.count).slice(0, 10);
 
     const departmentDistribution = await this.usersRepo
       .createQueryBuilder('user')
@@ -42,7 +61,29 @@ export class AdminService {
       .getRawMany();
     const skillGapCount = skillGapRows.length;
 
-    return { totalEmployees, topSkills, departmentDistribution, skillGapCount };
+    const today = new Date();
+    const soonDate = new Date();
+    soonDate.setDate(today.getDate() + 30);
+    const todayStr = today.toISOString().split('T')[0];
+    const soonStr = soonDate.toISOString().split('T')[0];
+
+    const allCerts = await this.certRepo.find({ select: ['id', 'expiryDate'] });
+    const certStatus = { active: 0, expiringSoon: 0, expired: 0 };
+    for (const cert of allCerts) {
+      if (!cert.expiryDate) { certStatus.active++; }
+      else if (cert.expiryDate < todayStr) { certStatus.expired++; }
+      else if (cert.expiryDate <= soonStr) { certStatus.expiringSoon++; }
+      else { certStatus.active++; }
+    }
+
+    const recentJoiners = await this.usersRepo.find({
+      where: { role: 'employee' },
+      order: { createdAt: 'DESC' },
+      take: 5,
+      select: ['id', 'name', 'firstName', 'department', 'dateOfJoining', 'avatar', 'createdAt'],
+    });
+
+    return { totalEmployees, billableCount, nonBillableCount, topSkills, departmentDistribution, skillGapCount, certStatus, recentJoiners };
   }
 
   async getAllEmployees() {
