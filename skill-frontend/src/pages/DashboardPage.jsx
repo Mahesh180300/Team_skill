@@ -211,9 +211,9 @@ const PROF_COLORS = {
         const billablePct    = Math.round((billable    / total) * 100);
         const nonBillablePct = Math.round((nonBillable / total) * 100);
         const rows = [
-          { label: 'Total Employees', count: total,       pct: 100,            color: '#38346f', track: '#dddcee' },
-          { label: 'Billable',        count: billable,    pct: billablePct,    color: '#2e2f41', track: '#c8c8d4' },
-          { label: 'Non-Billable',    count: nonBillable, pct: nonBillablePct, color: '#797c89', track: '#e2e2e8' },
+          { label: 'Total Employees', count: total,       pct: 100,            color: '#476ec1', track: '#dbe8fd' },
+          { label: 'Billable',        count: billable,    pct: billablePct,    color: '#32c066', track: '#dcfce7' },
+          { label: 'Non-Billable',    count: nonBillable, pct: nonBillablePct, color: '#f4ac30', track: '#fef3c7' },
         ];
         return (
           <div className="card" style={{ marginTop: '20px' }}>
@@ -227,8 +227,8 @@ const PROF_COLORS = {
                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>{label}</span>
                   </div>
-                  <div style={{ height: 30, borderRadius: 9, background: track, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 9, transition: 'width 0.7s ease' }} />
+                  <div style={{ height: 20, borderRadius: 4, background: track, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 4, transition: 'width 0.7s ease' }} />
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 700, color, textAlign: 'right' }}>{pct}%</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'right' }}>{count} emp</span>

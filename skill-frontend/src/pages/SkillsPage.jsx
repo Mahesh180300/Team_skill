@@ -343,9 +343,6 @@ export default function SkillsPage() {
             </div>
           </div>
           </div>
-          {sorted.length === 0 && (
-            <div className="empty">No skills match "{searchQuery}".</div>
-          )}
           <div className="skills-table">
             <div className="skills-table-header">
               <div className="st-col st-col-num">S.No</div>
@@ -354,7 +351,9 @@ export default function SkillsPage() {
               <div className="st-col st-col-duration">Experience</div>
               <div className="st-col st-col-actions">Actions</div>
             </div>
-            {paginated.map((s, idx) => {
+            {sorted.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: "var(--text-muted)", fontSize: 14 }}>No skills match "{searchQuery}".</div>
+            ) : paginated.map((s, idx) => {
               const globalIdx = (currentPage - 1) * PAGE_SIZE + idx;
               return (
                 <div key={s.id} className={`skills-table-row ${s.skillType === "Primary Skill" ? "skill-card--primary" : "skill-card--secondary"}`}>

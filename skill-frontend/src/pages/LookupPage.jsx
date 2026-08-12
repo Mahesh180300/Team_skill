@@ -244,12 +244,12 @@ export default function MastersPage() {
                   </div> */}
                 </div>
                 <div className="emp-counts">
-                  <span className="count-badge"style={{color:"#5860e9"}}>{type.values?.length || 0} {type.values?.length === 1 ? "value" : "values"}</span>
+                  <span className="count-badge"style={{color:"var(--text-muted)"}}>{type.values?.length || 0} {type.values?.length === 1 ? "value" : "values"}</span>
                 </div>
                 <div className="emp-actions" onClick={(e) => e.stopPropagation()}>
                   {isEditingType ? (
                     <>
-                      <EditButton variant="Edit" width="80px" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</EditButton>
+                      <Button variant="primary" size="sm" onClick={() => saveType(type.id)} disabled={anyLoading}>Save</Button>
                       <button className="btn-secondary btn-sm" onClick={() => setEditingTypeId(null)}>Cancel</button>
                     </>
                   ) : (
@@ -292,7 +292,7 @@ export default function MastersPage() {
                                 <EditButton
                                   onClick={() => { setEditingValueId(v.id); setEditValueText(v.value); }}
                                   disabled={anyLoading}
-                                  style={{ color: "#5860e9" }}
+                                  style={{ color: "var(--text-muted)" }}
                                 />
                                 <DeleteButton onClick={() => confirmDelete({ kind: 'value', id: v.id, name: v.value })} disabled={anyLoading} />
                               </>
@@ -308,7 +308,7 @@ export default function MastersPage() {
                       value={newValues[type.id] || ""}
                       onChange={(e) => setNewValues((prev) => ({ ...prev, [type.id]: e.target.value }))}
                       onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addValue(type.id))}
-                      style={{ flex: "0 1 280px", fontSize: 14, padding: "9px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--card-bg)", color: "var(--text)", outline: "none", minWidth: 0 }}
+                      style={{ flex: 1, fontSize: 14, padding: "9px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--card-bg)", color: "var(--text)", outline: "none", minWidth: 0 }}
                       disabled={anyLoading}
                     />
                     <Button variant="primary" size="sm" onClick={() => addValue(type.id)} disabled={anyLoading}>Add</Button>

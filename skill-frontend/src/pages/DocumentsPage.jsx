@@ -138,11 +138,11 @@ export default function DocumentsPage() {
                 <i className="fas fa-check-circle"></i> Uploaded
               </span>
               <div className="doc-uploaded-actions">
-                <button className="resume-btn resume-btn-icon" onClick={openResume} title="View">
-                  <i className="fas fa-eye"></i>
+                <button className="certificate-box" onClick={openResume}>
+                  <div>View Resume ↗</div>
                 </button>
                 <EditButton
-                style={{ color: "#43a1d8" }}
+                style={{ color: "var(--text-muted)" }}
                   onClick={() => document.getElementById("doc-resume-input").click()}
                   disabled={resumeUploading}
                   title="Replace"
