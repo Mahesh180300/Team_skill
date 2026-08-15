@@ -2064,7 +2064,7 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 .emp-file-btn:hover { background: #e0e7ff; }
 .emp-resume-box { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #eef2ff, #e0e7ff); border: 1px solid #c7d2fe; border-radius: 10px; padding: 12px 16px; gap: 12px; flex-wrap: wrap; }
 .emp-resume-info { display: flex; align-items: center; gap: 10px; }
-.emp-resume-icon { font-size: 24px; }
+.emp-resume-icon { font-size: 24px; display: flex; align-items: center; justify-content: center; }
 .emp-resume-name { font-size: 14px; font-weight: 600; color: #70718b; }
 
 /* ── Loader Dialog ──────────────────────────────────────────────────────────── */
@@ -3448,8 +3448,9 @@ input[type="date"]::-webkit-inner-spin-button { display: none; }
 
 .emp-resume-actions {
   display: flex;
+  align-items: center;
   gap: 12px;
-  margin-top: 12px;
+  flex-shrink: 0;
 }
 .download-arrow {
   display: inline-block;
