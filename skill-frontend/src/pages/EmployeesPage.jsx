@@ -441,8 +441,11 @@ export default function EmployeesPage() {
                                       )}
                                     </div>
                                   </div>
-                                  {c.fileData && (
-                                    <button className="certificate-box" onClick={() => { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }}>
+                                  {(c.fileUrl || c.fileData) && (
+                                    <button className="certificate-box" onClick={() => {
+                                      if (c.fileUrl) { window.open(c.fileUrl, "_blank"); }
+                                      else { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }
+                                    }}>
                                       <div>View Certificate ↗</div>
                                     </button>
                                   )}
@@ -454,7 +457,7 @@ export default function EmployeesPage() {
                       ) : (
                         <div className="detail-section"><h4>Certifications</h4><p className="empty-sm">⚠️ No certifications uploaded yet.</p></div>
                       )}
-                      {emp.resumeData ? (
+                      {(emp.resumeUrl || emp.resumeData) ? (
                         <div className="detail-section">
                           <h4>Resume</h4>
                           <div className="emp-resume-box">
@@ -466,8 +469,17 @@ export default function EmployeesPage() {
                               </div>
                             </div>
                             <div className="emp-resume-actions">
-                              <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume ↗</button>
-                              <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}>View Resume ↗</button>
+                              {emp.resumeUrl ? (
+                                <>
+                                 <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume ↗</button>
+                                  <a className="emp-file-btn" style={{ textDecoration: "none" }} href={emp.resumeUrl} target="_blank" rel="noreferrer">View Resume ↗</a>
+                                </>
+                              ) : (
+                                <>
+                                  <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume ↗</button>
+                                  <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}>View Resume ↗</button>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
