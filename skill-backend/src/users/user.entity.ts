@@ -56,11 +56,20 @@ export class User {
   @Column({ default: '' })
   resumeFileType: string;
 
+  @Column({ type: 'text', nullable: true, default: null })
+  resumeUrl: string;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  resumePublicId: string;
+
   @OneToMany(() => Skill, (skill) => skill.user, { cascade: true, eager: true })
   skills: Skill[];
 
   @Column({ type: 'text', nullable: true, default: null })
   avatar: string;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  avatarPublicId: string;
 
   @OneToMany(() => Certification, (cert) => cert.user, { cascade: true, eager: true })
   certifications: Certification[];

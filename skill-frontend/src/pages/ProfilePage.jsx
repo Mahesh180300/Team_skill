@@ -115,19 +115,9 @@ export default function ProfilePage() {
     try {
       await callResume(async () => {
         const data = await api.uploadResume(token, file);
-        if (data.resumeData) {
-          setProfile((p) => ({
-            ...p,
-            resumeData: data.resumeData,
-            resumeFileName: data.resumeFileName,
-            resumeFileType: data.resumeFileType,
-          }));
-          setSharedProfile((p) => ({
-            ...p,
-            resumeData: data.resumeData,
-            resumeFileName: data.resumeFileName,
-            resumeFileType: data.resumeFileType,
-          }));
+        if (data.resumeUrl || data.resumeFileName) {
+          setProfile((p) => ({ ...p, ...data }));
+          setSharedProfile((p) => ({ ...p, ...data }));
           showToast("Resume uploaded successfully");
           window.dispatchEvent(new Event('profile-updated'));
         } else if (data.error) {
@@ -142,18 +132,8 @@ export default function ProfilePage() {
   const deleteResume = async () => {
     await callDeleteResume(async () => {
       await api.deleteResume(token);
-      setProfile((p) => ({
-        ...p,
-        resumeData: "",
-        resumeFileName: "",
-        resumeFileType: "",
-      }));
-      setSharedProfile((p) => ({
-        ...p,
-        resumeData: "",
-        resumeFileName: "",
-        resumeFileType: "",
-      }));
+      setProfile((p) => ({ ...p, resumeData: "", resumeFileName: "", resumeFileType: "", resumeUrl: null }));
+      setSharedProfile((p) => ({ ...p, resumeData: "", resumeFileName: "", resumeFileType: "", resumeUrl: null }));
       showToast("Resume deleted successfully.");
     });
   };
@@ -179,7 +159,7 @@ export default function ProfilePage() {
       { label: "Profile Picture", done: !!p.avatar },
       { label: "Skills", done: p.skills?.length > 0 },
       { label: "Certifications", done: p.certifications?.length > 0 },
-      { label: "Resume", done: !!p.resumeData },
+      { label: "Resume", done: !!(p.resumeUrl || p.resumeData) },
     ];
     const percent = Math.round(
       (fields.filter((f) => f.done).length / fields.length) * 100,
@@ -284,10 +264,10 @@ export default function ProfilePage() {
               <span className="psc-icon"><i class="fas fa-file-alt"></i></span>
             </div>
             <div className="psc-body">
-              <span className="psc-value">{profile.resumeData?.length > 0 ? "Uploaded" : "Not Uploaded"}</span>
+              <span className="psc-value">{(profile.resumeUrl || profile.resumeData?.length > 0) ? "Uploaded" : "Not Uploaded"}</span>
               <span className="psc-label">Resume</span>
            <span className="psc-sub">
-  {profile.resumeData?.length > 0 ? (
+  {profile.resumeUrl || profile.resumeData?.length > 0 ? (
     <>
       Keep your profile updated
     </>

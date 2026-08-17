@@ -422,13 +422,17 @@ export default function CertificationsPage() {
                   </div>
                 </div>
                 {/* <div className="cert-card-actions"> */}
-                  {c.fileData && (
+                  {(c.fileUrl || c.fileData) && (
                     <button
                       className="certificate-box"
                       onClick={() => {
-                        const bytes = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0));
-                        const url = URL.createObjectURL(new Blob([bytes], { type: c.fileType }));
-                        window.open(url, "_blank");
+                        if (c.fileUrl) {
+                          window.open(c.fileUrl, "_blank");
+                        } else {
+                          const bytes = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0));
+                          const url = URL.createObjectURL(new Blob([bytes], { type: c.fileType }));
+                          window.open(url, "_blank");
+                        }
                       }}
                     >
                       <div> View Certificate ↗</div>
