@@ -9,6 +9,7 @@ export const ROUTES = {
   DOCUMENTS:       "/documents",
   DASHBOARD:       "/dashboard",
   EMPLOYEES:       "/employees",
+  EMPLOYEE_DETAIL: "/employees/:id",
   LOOKUP:          "/lookup",
   CHAT:            "/chat",
 };

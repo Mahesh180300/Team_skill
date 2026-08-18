@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import CertLogo from "../components/common/CertLogo";
@@ -39,9 +40,10 @@ function calcDuration(dateStr) {
 
 export default function EmployeesPage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [allEmployees, setAllEmployees] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [expanded, setExpanded] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -353,8 +355,15 @@ export default function EmployeesPage() {
 
             <div className="employee-list">
               {displayedEmployees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
-                <div key={emp.id} className="employee-card">
-                  <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
+                <div
+                  key={emp.id}
+                  className="employee-card"
+                  style={{ cursor: "pointer"}}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,47,65,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}
+                  onClick={() => navigate(`/employees/${emp.id}`, { state: { emp } })}
+                >
+                  <div className="emp-header">
                     <div className="emp-avatar">
                       {emp.avatar
                         ? <img src={emp.avatar} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
@@ -382,112 +391,8 @@ export default function EmployeesPage() {
                        </button>
                        <DeleteButton onClick={() => confirmDelete(emp.id)} />
                      </div>
-                    <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
-                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span> */}
+
                   </div>
-                  {expanded === emp.id && (
-                    <div className="emp-details">
-                      {emp.skills?.length > 0 && (
-                        <div className="detail-section">
-                          <h4>Skills</h4>
-                          <div className="skills-inline">
-                            {emp.skills.map((s) => (
-                              <span key={s.id} className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.name} · {s.proficiency}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {emp.certifications?.length > 0 ? (
-                        <div className="detail-section">
-                          <h4>Certifications</h4>
-                          <div className="certs-list">
-                            {emp.certifications.map((c) => {
-                              const getCertStatus = (expiryDate) => {
-                                if (!expiryDate) return { label: "Active", cls: "cert-status-valid" };
-                                const today = new Date();
-                                const expiry = new Date(expiryDate);
-                                const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                                if (diffDays < 0) return { label: "Expired", cls: "cert-status-expired" };
-                                if (diffDays <= 90) return { label: "Expiring Soon", cls: "cert-status-expiring" };
-                                return { label: "Active", cls: "cert-status-valid" };
-                              };
-                              const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : null;
-                              const status = getCertStatus(c.expiryDate);
-                              return (
-                                <div key={c.id} className="modern-cert-card">
-                                  <div className="modern-cert-icon"><CertLogo name={c.name} size={42} /></div>
-                                  <div className="modern-cert-content">
-                                    <span className={`cert-status-badge ${status.cls}`}>{status.label}</span>
-                                    <div className="cert-card-top">
-                                      <h3 className="cert-card-name">{c.name}</h3>
-                                    </div>
-                                    {c.issuer && (
-                                      <div className="cert-meta-row">
-                                        <span>Issued by: <strong style={{ color: "#383da7" }}>{c.issuer}</strong></span>
-                                      </div>
-                                    )}
-                                    <div className="cert-meta-dates">
-                                      {c.issuedOn && (
-                                        <div className="cert-meta-row">
-                                          <i className="fas fa-calendar-alt cert-meta-icon"></i>
-                                          <span>Issued: {formatDate(c.issuedOn)}</span>
-                                        </div>
-                                      )}
-                                      {c.expiryDate && (
-                                        <div className="cert-meta-row">
-                                          <i className="fas fa-calendar-times cert-meta-icon"></i>
-                                          <span>Expires: {formatDate(c.expiryDate)}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  {(c.fileUrl || c.fileData) && (
-                                    <button className="certificate-box" onClick={() => {
-                                      if (c.fileUrl) { window.open(c.fileUrl, "_blank"); }
-                                      else { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }
-                                    }}>
-                                      <div>View Certificate ↗</div>
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="detail-section"><h4>Certifications</h4><p className="empty-sm">⚠️ No certifications uploaded yet.</p></div>
-                      )}
-                      {(emp.resumeUrl || emp.resumeData) ? (
-                        <div className="detail-section">
-                          <h4>Resume</h4>
-                          <div className="emp-resume-box">
-                            <div className="emp-resume-info">
-                              <span className="emp-resume-icon"><i className="fas fa-file-alt" style={{ color: "#6366f1", fontSize: 24 }}></i></span>
-                              <div>
-                                <div className="emp-resume-name">{emp.resumeFileName || "Resume"}</div>
-                                {emp.updatedAt && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Last updated: {new Date(emp.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>}
-                              </div>
-                            </div>
-                            <div className="emp-resume-actions">
-                              {emp.resumeUrl ? (
-                                <>
-                                 <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume ↗</button>
-                                  <a className="emp-file-btn" style={{ textDecoration: "none" }} href={emp.resumeUrl} target="_blank" rel="noreferrer">View Resume ↗</a>
-                                </>
-                              ) : (
-                                <>
-                                  <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume ↗</button>
-                                  <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}>View Resume ↗</button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="detail-section"><h4>Resume</h4><p className="empty-sm">⚠️ No resume uploaded yet.</p></div>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
