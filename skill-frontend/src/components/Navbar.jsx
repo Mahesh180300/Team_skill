@@ -73,7 +73,7 @@ export default function Sidebar() {
       { label: "Profile Picture", done: !!p.avatar },
       { label: "Skills", done: p.skills?.length > 0 },
       { label: "Certifications", done: p.certifications?.length > 0 },
-      { label: "Resume", done: !!p.resumeData },
+      { label: "Resume", done: !!(p.resumeUrl || p.resumeData) },
     ];
     const percent = Math.round(
       (fields.filter((f) => f.done).length / fields.length) * 100,

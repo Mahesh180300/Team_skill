@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import CertLogo from "../components/common/CertLogo";
 import Dropdown from "../components/common/Dropdown";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
@@ -38,9 +40,10 @@ function calcDuration(dateStr) {
 
 export default function EmployeesPage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [allEmployees, setAllEmployees] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [expanded, setExpanded] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -352,8 +355,15 @@ export default function EmployeesPage() {
 
             <div className="employee-list">
               {displayedEmployees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
-                <div key={emp.id} className="employee-card">
-                  <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
+                <div
+                  key={emp.id}
+                  className="employee-card"
+                  style={{ cursor: "pointer"}}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,47,65,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}
+                  onClick={() => navigate(`/employees/${emp.id}`, { state: { emp } })}
+                >
+                  <div className="emp-header">
                     <div className="emp-avatar">
                       {emp.avatar
                         ? <img src={emp.avatar} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
@@ -381,70 +391,8 @@ export default function EmployeesPage() {
                        </button>
                        <DeleteButton onClick={() => confirmDelete(emp.id)} />
                      </div>
-                    <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
-                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span> */}
+
                   </div>
-                  {expanded === emp.id && (
-                    <div className="emp-details">
-                      {emp.skills?.length > 0 && (
-                        <div className="detail-section">
-                          <h4>Skills</h4>
-                          <div className="skills-inline">
-                            {emp.skills.map((s) => (
-                              <span key={s.id} className={`badge ${LEVEL_COLOR[s.proficiency]}`}>{s.name} · {s.proficiency}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {emp.certifications?.length > 0 ? (
-                        <div className="detail-section">
-                          <h4>Certifications</h4>
-                          <div className="emp-cert-list">
-                            {emp.certifications.map((c) => (
-                              <div key={c.id} className="emp-cert-item">
-                                <div className="emp-cert-info">
-                                  <span className="emp-cert-name">🏆 {c.name}</span>
-                                  <span className="emp-cert-meta">
-                                    {c.issuer && <span>{c.issuer}</span>}
-                                    {c.issuedOn && <span>📅 Issued On: {c.issuedOn}</span>}
-                                    {c.expiryDate && <span>🗓️ Expires On: {c.expiryDate}</span>}
-                                  </span>
-                                </div>
-                                {c.fileData && (
-                                  <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: c.fileType })), "_blank"); }}>
-                                    View Certificate ↗
-                                  </button>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="detail-section"><h4>Certifications</h4><p className="empty-sm">⚠️ No certifications uploaded yet.</p></div>
-                      )}
-                      {emp.resumeData ? (
-                        <div className="detail-section">
-                          <h4>Resume</h4>
-                          <div className="emp-resume-box">
-                            <div className="resume-content">
-                            <div className="emp-resume-info"><span className="emp-resume-icon">📎</span><span className="emp-resume-name">{emp.resumeFileName || "Resume"}</span></div>
-                            <div className="last-updated">
-                            {emp.updatedAt && (
-                              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Last updated: {new Date(emp.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                            )}
-                            </div>
-                            </div>
-                            <div className="emp-resume-actions">
-                        <button className="emp-file-btn" onClick={() => downloadResume(emp.resumeData, emp.resumeFileName, emp.resumeFileType)}>Download Resume <span className="download-arrow">↗</span></button>
-                            <button className="emp-file-btn" onClick={() => { const b = Uint8Array.from(atob(emp.resumeData), (ch) => ch.charCodeAt(0)); window.open(URL.createObjectURL(new Blob([b], { type: emp.resumeFileType })), "_blank"); }}> View Resume ↗</button>
-                            </div>
-                      </div>
-                        </div>
-                      ) : (
-                        <div className="detail-section"><h4>Resume</h4><p className="empty-sm">⚠️ No resume uploaded yet.</p></div>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

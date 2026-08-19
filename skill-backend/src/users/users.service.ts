@@ -2,13 +2,24 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 const isUuid = (id: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
+const AVATAR_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const RESUME_MIMES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private repo: Repository<User>,
+    private cloudinary: CloudinaryService,
+  ) {}
 
   async getProfile(userId: string) {
     if (!isUuid(userId)) throw new UnauthorizedException('Invalid session, please log in again');
@@ -30,27 +41,58 @@ export class UsersService {
   }
 
   async uploadResume(userId: string, file: Express.Multer.File) {
-    const resumeData = file.buffer.toString('base64');
-    const resumeFileName = file.originalname;
-    const resumeFileType = file.mimetype;
-    await this.repo.update(userId, { resumeData, resumeFileName, resumeFileType });
+    const user = await this.repo.findOne({ where: { id: userId } });
+    // Delete old Cloudinary file if exists
+    if (user?.resumePublicId) {
+      await this.cloudinary.delete(user.resumePublicId);
+    }
+    const result = await this.cloudinary.upload(file, 'resumes', RESUME_MIMES);
+    await this.repo.update(userId, {
+      resumeUrl: result.secure_url,
+      resumePublicId: result.public_id,
+      resumeFileName: file.originalname,
+      resumeFileType: file.mimetype,
+      resumeData: '',
+    });
     return this.getProfile(userId);
   }
 
   async deleteResume(userId: string) {
-    await this.repo.update(userId, { resumeData: '', resumeFileName: '', resumeFileType: '' });
+    const user = await this.repo.findOne({ where: { id: userId } });
+    if (user?.resumePublicId) {
+      await this.cloudinary.delete(user.resumePublicId);
+    }
+    await this.repo.update(userId, {
+      resumeData: '',
+      resumeFileName: '',
+      resumeFileType: '',
+      resumeUrl: null,
+      resumePublicId: null,
+    });
     return { success: true };
   }
 
   async updateAvatar(userId: string, file: Express.Multer.File) {
     if (!file) throw new Error('No file provided');
-    const avatar = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-    await this.repo.update(userId, { avatar });
+    const user = await this.repo.findOne({ where: { id: userId } });
+    // Delete old avatar from Cloudinary if it was uploaded there
+    if (user?.avatarPublicId) {
+      await this.cloudinary.delete(user.avatarPublicId);
+    }
+    const result = await this.cloudinary.upload(file, 'avatars', AVATAR_MIMES);
+    await this.repo.update(userId, {
+      avatar: result.secure_url,
+      avatarPublicId: result.public_id,
+    });
     return this.getProfile(userId);
   }
 
   async deleteAvatar(userId: string) {
-    await this.repo.update(userId, { avatar: null });
+    const user = await this.repo.findOne({ where: { id: userId } });
+    if (user?.avatarPublicId) {
+      await this.cloudinary.delete(user.avatarPublicId);
+    }
+    await this.repo.update(userId, { avatar: null, avatarPublicId: null });
     return this.getProfile(userId);
   }
 

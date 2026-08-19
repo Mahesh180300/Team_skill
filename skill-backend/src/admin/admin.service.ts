@@ -79,7 +79,7 @@ export class AdminService {
     const recentJoiners = await this.usersRepo.find({
       where: { role: 'employee' },
       order: { createdAt: 'DESC' },
-      take: 5,
+      take: 4,
       select: ['id', 'name', 'firstName', 'department', 'dateOfJoining', 'avatar', 'createdAt'],
     });
 
