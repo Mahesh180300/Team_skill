@@ -81,7 +81,7 @@ export default function CertificationsPage() {
 
   // ── Edit state ──────────────────────────────────────────────────────────────
   const [editingCert, setEditingCert] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", issuer: "", issuedOn: "", expiryDate: "" });
+  const [editForm, setEditForm] = useState({ name: "", customName: "", issuer: "", issuedOn: "", expiryDate: "" });
   const [editFile, setEditFile] = useState(null);
   const [editError, setEditError] = useState("");
 
@@ -163,8 +163,10 @@ export default function CertificationsPage() {
 
   const openEdit = (cert) => {
     setEditingCert(cert);
+    const isKnown = certOptions.includes(cert.name);
     setEditForm({
-      name: cert.name,
+      name: isKnown ? cert.name : "__other__",
+      customName: isKnown ? "" : cert.name,
       issuer: cert.issuer || "",
       issuedOn: cert.issuedOn || "",
       expiryDate: cert.expiryDate || "",
@@ -183,7 +185,8 @@ export default function CertificationsPage() {
     e.preventDefault();
     setEditError("");
     await callUpdate(async () => {
-      const data = await api.editCert(token, editingCert.id, { ...editForm, issuedOn: editForm.issuedOn || undefined, expiryDate: editForm.expiryDate || undefined }, editFile);
+      const resolvedName = editForm.name === "__other__" ? (editForm.customName || "").trim() : editForm.name;
+      const data = await api.editCert(token, editingCert.id, { ...editForm, name: resolvedName, issuedOn: editForm.issuedOn || undefined, expiryDate: editForm.expiryDate || undefined }, editFile);
       if (data.error) { setEditError(data.error); return; }
       setCerts(data.certifications);
       setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
@@ -476,7 +479,30 @@ export default function CertificationsPage() {
         }
       >
         <form id="edit-cert-form" onSubmit={saveEdit} className="card form-card">
-          <InputField label="Certification Name" placeholder="Certification name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+          <div className="form-group">
+            <label>Certification Name</label>
+            <Dropdown
+              options={[...(certOptions || []), "Other"]}
+              value={editForm.name === "__other__" ? "Other" : (editForm.name || "")}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "Other") {
+                  setEditForm({ ...editForm, name: "__other__", customName: "" });
+                } else {
+                  setEditForm({ ...editForm, name: val, customName: "" });
+                }
+              }}
+              placeholder="--Select certification--"
+            />
+            {editForm.name === "__other__" && (
+              <input
+                style={{ marginTop: 8 }}
+                placeholder="Enter certification name"
+                value={editForm.customName || ""}
+                onChange={(e) => setEditForm({ ...editForm, customName: e.target.value })}
+              />
+            )}
+          </div>
           <InputField label="Issued by" placeholder="Issued by (e.g. AWS, Google)" value={editForm.issuer} onChange={(e) => setEditForm({ ...editForm, issuer: e.target.value })} />
           <DatePicker label="Issued On" value={editForm.issuedOn} onChange={(e) => setEditForm({ ...editForm, issuedOn: e.target.value })} />
           <DatePicker label="Expiry Date" value={editForm.expiryDate} onChange={(e) => setEditForm({ ...editForm, expiryDate: e.target.value })} />
