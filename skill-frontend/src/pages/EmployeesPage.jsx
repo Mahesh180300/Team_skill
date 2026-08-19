@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api";
+import CertLogo from "../components/common/CertLogo";
 import Dropdown from "../components/common/Dropdown";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
@@ -38,9 +40,10 @@ function calcDuration(dateStr) {
 
 export default function EmployeesPage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [allEmployees, setAllEmployees] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [expanded, setExpanded] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -352,8 +355,15 @@ export default function EmployeesPage() {
 
             <div className="employee-list">
               {displayedEmployees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((emp) => (
-                <div key={emp.id} className="employee-card">
-                  <div className="emp-header" onClick={() => setExpanded(expanded === emp.id ? null : emp.id)}>
+                <div
+                  key={emp.id}
+                  className="employee-card"
+                  style={{ cursor: "pointer"}}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,47,65,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}
+                  onClick={() => navigate(`/employees/${emp.id}`, { state: { emp } })}
+                >
+                  <div className="emp-header">
                     <div className="emp-avatar">
                       {emp.avatar
                         ? <img src={emp.avatar} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
@@ -382,7 +392,7 @@ export default function EmployeesPage() {
                        <DeleteButton onClick={() => confirmDelete(emp.id)} />
                      </div>
                     <span className="expand-icon">{expanded === emp.id ? "▲" : "▼"}</span>
-                    {/* <span className="expand-icon">{expanded === emp.id ? "▲" : "View all"}</span> */}
+            
                   </div>
                   {expanded === emp.id && (
                     <div className="emp-details">

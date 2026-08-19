@@ -115,19 +115,9 @@ export default function ProfilePage() {
     try {
       await callResume(async () => {
         const data = await api.uploadResume(token, file);
-        if (data.resumeData) {
-          setProfile((p) => ({
-            ...p,
-            resumeData: data.resumeData,
-            resumeFileName: data.resumeFileName,
-            resumeFileType: data.resumeFileType,
-          }));
-          setSharedProfile((p) => ({
-            ...p,
-            resumeData: data.resumeData,
-            resumeFileName: data.resumeFileName,
-            resumeFileType: data.resumeFileType,
-          }));
+        if (data.resumeUrl || data.resumeFileName) {
+          setProfile((p) => ({ ...p, ...data }));
+          setSharedProfile((p) => ({ ...p, ...data }));
           showToast("Resume uploaded successfully");
           window.dispatchEvent(new Event('profile-updated'));
         } else if (data.error) {
@@ -142,20 +132,19 @@ export default function ProfilePage() {
   const deleteResume = async () => {
     await callDeleteResume(async () => {
       await api.deleteResume(token);
-      setProfile((p) => ({
-        ...p,
-        resumeData: "",
-        resumeFileName: "",
-        resumeFileType: "",
-      }));
-      setSharedProfile((p) => ({
-        ...p,
-        resumeData: "",
-        resumeFileName: "",
-        resumeFileType: "",
-      }));
+      setProfile((p) => ({ ...p, resumeData: "", resumeFileName: "", resumeFileType: "", resumeUrl: null }));
+      setSharedProfile((p) => ({ ...p, resumeData: "", resumeFileName: "", resumeFileType: "", resumeUrl: null }));
       showToast("Resume deleted successfully.");
     });
+  };
+
+  const projectFontSize = (name) => {
+    if (!name) return undefined;
+    const words = name.trim().split(/\s+/);
+    if (words.length <= 2) return undefined;       // keep existing size
+    if (name.length <= 20) return "18px";           // 3 short words
+    if (name.length <= 30) return "14px";           // medium length
+    return "13px";                                  // long name
   };
 
   const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
@@ -170,7 +159,7 @@ export default function ProfilePage() {
       { label: "Profile Picture", done: !!p.avatar },
       { label: "Skills", done: p.skills?.length > 0 },
       { label: "Certifications", done: p.certifications?.length > 0 },
-      { label: "Resume", done: !!p.resumeData },
+      { label: "Resume", done: !!(p.resumeUrl || p.resumeData) },
     ];
     const percent = Math.round(
       (fields.filter((f) => f.done).length / fields.length) * 100,
@@ -247,50 +236,71 @@ export default function ProfilePage() {
 
       <div className="profile-header">
         <div className="profile-stats">
-     
-          {/* <div className="stat stat-exp"> */}
-            {/* <span className="stat-icon-emoji">📅</span> */}
-            {/* <span className="stat-val">
-              {calcDuration(profile.dateOfJoining) || "—"}
-            </span>
-            <span className="stat-lbl">Years of Experience</span>
-          </div> */}
 
-          {/* <div className="stat stat-relevant"> */}
-            {/* <span className="stat-icon-emoji">💼</span> */}
-            {/* <span className="stat-val stat-val-relevant">
-              {calcDuration(profile.dateOfProjectAssigning) || "—"}
-            </span>
-            <span className="stat-lbl">Relevant Experience</span>
-          </div> */}
-
-               <div className="stat" onClick={() => navigate(ROUTES.SKILLS)}>
-            {/* <span className="stat-icon-emoji">🎯</span> */}
-            <span className="stat-val">{profile.skills?.length || 0}</span>
-            <span className="stat-lbl">Skills</span>
+          <div className="psc psc-purple" onClick={() => navigate(ROUTES.SKILLS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-code"></i></span>
+            </div>
+            <div className="psc-body">
+              <span className="psc-value">{profile.skills?.length || 0}</span>
+              <span className="psc-label">Skills</span>
+              <span className="psc-sub">Keep learning, keep growing</span>
+            </div>
           </div>
 
-          <div className="stat" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
-            {/* <span className="stat-icon-emoji">🏆</span> */}
-            <span className="stat-val">
-              {profile.certifications?.length || 0}
-            </span>
-            <span className="stat-lbl">Certificates</span>
+          <div className="psc psc-blue" onClick={() => navigate(ROUTES.CERTIFICATIONS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-trophy"></i></span>
+            </div>
+            <div className="psc-body">
+              <span className="psc-value">{profile.certifications?.length || 0}</span>
+              <span className="psc-label">Certifications</span>
+              <span className="psc-sub">Your achievements matter</span>
+            </div>
           </div>
 
-          <div className="stat" onClick={() => navigate(ROUTES.DOCUMENTS)}>
-            {/* <span className="stat-icon-emoji">🏆</span> */}
-            <span className="stat-val-text">
-              {profile.resumeData?.length > 0 ?'Uploaded' : 'Not Uploaded'}
-            </span>
-            {profile.updatedAt && profile.resumeData?.length > 0 && (
-              <span style={{ display: "block", fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
-                Last updated: {new Date(profile.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+          <div className="psc psc-green" onClick={() => navigate(ROUTES.DOCUMENTS)}>
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-file-alt"></i></span>
+            </div>
+            <div className="psc-body">
+              <span className="psc-value">{(profile.resumeUrl || profile.resumeData?.length > 0) ? "Uploaded" : "Not Uploaded"}</span>
+              <span className="psc-label">Resume</span>
+           <span className="psc-sub">
+  {profile.resumeUrl || profile.resumeData?.length > 0 ? (
+    <>
+      Keep your profile updated
+    </>
+  ) : (
+    <>
+      Upload your <br />
+      resume
+    </>
+  )}
+</span>
+            </div>
+          </div>
+
+          <div className="psc psc-orange">
+            <div className="psc-icon-wrap">
+              <span className="psc-icon"><i class="fas fa-briefcase"></i></span>
+            </div>
+            <div className="psc-body">
+              <span
+                className="psc-value psc-value-project"
+                style={{ fontSize: projectFontSize(profile.currentProject) }}
+              >
+                {profile.currentProject || "Not Assigned"}
               </span>
-            )}
-            <span className="stat-lbl">Resume</span>
+              <span className="psc-label">Current Project</span>
+              <span className="psc-sub">
+                {profile.currentProject
+                  ? `Since ${calcDuration(profile.dateOfProjectAssigning) || "recently"}`
+                  : "No project assigned"}
+              </span>
+            </div>
           </div>
-          
+
         </div>
       </div>
 
@@ -300,9 +310,9 @@ export default function ProfilePage() {
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 ,borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px"}}>Skill Proficiency Distribution</h3>
           <DonutChart
             slices={[
-              { key: "Beginner",     label: "Beginner",     color: "#2e2f41", count: (profile.skills || []).filter(s => s.proficiency === "Beginner").length },
-              { key: "Intermediate", label: "Intermediate", color: "#797c89", count: (profile.skills || []).filter(s => s.proficiency === "Intermediate").length },
-              { key: "Advanced",     label: "Advanced",     color: "#bec3d0", count: (profile.skills || []).filter(s => s.proficiency === "Advanced").length },
+              { key: "Beginner",     label: "Beginner",     color: "#4ec193", count: (profile.skills || []).filter(s => s.proficiency === "Beginner").length },
+              { key: "Intermediate", label: "Intermediate", color: "#2c6dbc", count: (profile.skills || []).filter(s => s.proficiency === "Intermediate").length },
+              { key: "Advanced",     label: "Advanced",     color: "#e86f0c", count: (profile.skills || []).filter(s => s.proficiency === "Advanced").length },
             ]}
             centerLabel="Total Skills"
             itemLabel="skill"
@@ -310,7 +320,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, borderBottom: "1px solid #eee",borderBottom: "1px solid #eee",paddingBottom:"7px",paddingTop:"7px" }}>Skill Category Distribution</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: "7px", paddingTop: "7px" }}>Skill Category Distribution</h3>
           <SkillTypeBarChart
             primarySkills={(profile.skills || []).filter(s => s.skillType === "Primary Skill").length}
             secondarySkills={(profile.skills || []).filter(s => s.skillType === "Secondary Skill").length}
@@ -425,7 +435,7 @@ export default function ProfilePage() {
       </div>
 
 {/* Row 2: Certification Overview full width */}
-        <div className="cert-overview-card">
+        <div className="cert-overview-card" style={{ marginTop: 15, padding: 16, borderRadius: 12, background: "#fff", boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
           <div className="cert-overview-header">
             <h3 className="skill-title" style={{ margin: 0, borderBottom: "none", paddingBottom: 0 }}>Certification Overview</h3>
             {profile.certifications?.length > 0 && (

@@ -36,4 +36,10 @@ export class Certification {
 
   @Column({ type: 'text', nullable: true })
   fileData: string;
+
+  @Column({ type: 'text', nullable: true })
+  fileUrl: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  filePublicId: string;
 }

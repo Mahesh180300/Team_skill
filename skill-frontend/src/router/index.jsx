@@ -14,6 +14,7 @@ import CertificationsPage from "../pages/CertificationsPage";
 import DocumentsPage from "../pages/DocumentsPage";
 import DashboardPage from "../pages/DashboardPage";
 import EmployeesPage from "../pages/EmployeesPage";
+import EmployeeDetailPage from "../pages/EmployeeDetailPage";
 import LookupPage from "../pages/LookupPage";
 
 function AppLayout() {
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.DOCUMENTS,      element: <DocumentsPage /> },
       { path: ROUTES.DASHBOARD,      element: <PrivateRoute adminOnly><DashboardPage /></PrivateRoute> },
       { path: ROUTES.EMPLOYEES,      element: <PrivateRoute adminOnly><EmployeesPage /></PrivateRoute> },
+      { path: ROUTES.EMPLOYEE_DETAIL, element: <PrivateRoute adminOnly><EmployeeDetailPage /></PrivateRoute> },
       { path: ROUTES.LOOKUP,         element: <PrivateRoute adminOnly><LookupPage /></PrivateRoute> },
     ],
   },

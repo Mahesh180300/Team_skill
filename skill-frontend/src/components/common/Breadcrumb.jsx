@@ -6,14 +6,21 @@ const CRUMB_MAP = {
   "/certifications": [{ label: "My Profile", path: "/profile" }, { label: "My Certifications" }],
   "/documents":      [{ label: "My Profile", path: "/profile" }, { label: "My Documents" }],
   "/employees":      [{ label: "Dashboard", path: "/dashboard" }, { label: "Employee Management" }],
+  "/employees/:id":  [{ label: "Dashboard", path: "/dashboard" }, { label: "Employee Management", path: "/employees" }, { label: "Employee Details" }],
   "/lookup":         [{ label: "Dashboard", path: "/dashboard" }, { label: "Master Data" }],
 };
+
+function resolveCrumbs(pathname) {
+  if (CRUMB_MAP[pathname]) return CRUMB_MAP[pathname];
+  if (/^\/employees\/[^/]+$/.test(pathname)) return CRUMB_MAP["/employees/:id"];
+  return null;
+}
 
 export default function Breadcrumb({ action }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const crumbs = CRUMB_MAP[pathname];
+  const crumbs = resolveCrumbs(pathname);
   if (!crumbs) return null;
 
   return (

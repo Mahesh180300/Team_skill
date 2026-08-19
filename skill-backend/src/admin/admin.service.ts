@@ -15,17 +15,32 @@ export class AdminService {
 
   async getStats() {
     const totalEmployees = await this.usersRepo.count({ where: { role: 'employee' } });
+    const billableCount = await this.usersRepo.count({ where: { role: 'employee', billable: 'yes' } });
+    const nonBillableCount = totalEmployees - billableCount;
 
-    const topSkills = await this.usersRepo
+    const rawSkills = await this.usersRepo
       .createQueryBuilder('user')
       .innerJoin('user.skills', 'skill')
       .select('skill.name', 'name')
+      .addSelect('skill.proficiency', 'proficiency')
       .addSelect('COUNT(*)', 'count')
       .where('user.role = :role', { role: 'employee' })
       .groupBy('skill.name')
-      .orderBy('count', 'DESC')
-      .limit(10)
+      .addGroupBy('skill.proficiency')
+      .orderBy('skill.name')
       .getRawMany();
+
+    const skillMap = new Map<string, { name: string; count: number; advanced: number; intermediate: number; beginner: number }>();
+    for (const row of rawSkills) {
+      if (!skillMap.has(row.name)) skillMap.set(row.name, { name: row.name, count: 0, advanced: 0, intermediate: 0, beginner: 0 });
+      const s = skillMap.get(row.name)!;
+      const c = Number(row.count);
+      s.count += c;
+      if (row.proficiency === 'Advanced') s.advanced += c;
+      else if (row.proficiency === 'Intermediate') s.intermediate += c;
+      else if (row.proficiency === 'Beginner') s.beginner += c;
+    }
+    const topSkills = [...skillMap.values()].sort((a, b) => b.count - a.count).slice(0, 10);
 
     const departmentDistribution = await this.usersRepo
       .createQueryBuilder('user')
@@ -68,7 +83,7 @@ export class AdminService {
       select: ['id', 'name', 'firstName', 'department', 'dateOfJoining', 'avatar', 'createdAt'],
     });
 
-    return { totalEmployees, topSkills, departmentDistribution, skillGapCount, certStatus, recentJoiners };
+    return { totalEmployees, billableCount, nonBillableCount, topSkills, departmentDistribution, skillGapCount, certStatus, recentJoiners };
   }
 
   async getAllEmployees() {

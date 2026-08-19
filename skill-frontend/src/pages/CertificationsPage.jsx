@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api";
 import Button from "../components/common/Button";
 import CertLogo from "../components/common/CertLogo";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import DialogBox from "../components/common/DialogBox";
 import Loader from "../components/Loader";
 import LoaderDialog from "../components/LoaderDialog";
@@ -10,11 +11,10 @@ import { useApi } from "../hooks/useApi";
 import InputField from "../components/common/InputField";
 import DatePicker from "../components/common/DatePicker";
 import Dropdown from "../components/common/Dropdown";
-import DeleteButton from "../components/common/DeleteButton";
-import EditButton from "../components/common/EditButton";
-import useDeleteConfirm from "../hooks/useDeleteConfirm";
 import Breadcrumb from "../components/common/Breadcrumb";
 import Pagination from "../components/common/Pagination";
+import EditButton from "../components/common/EditButton";
+import DeleteButton from "../components/common/DeleteButton";
 
 const STAT_CARDS = [
   {
@@ -56,6 +56,7 @@ export default function CertificationsPage() {
   const [formErrors, setFormErrors] = useState({});
   const [toast, setToast] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [loadingCerts, setLoadingCerts] = useState(true);
   const [addingCert, setAddingCert] = useState(false);
   const [updatingCert, setUpdatingCert] = useState(false);
@@ -154,18 +155,11 @@ export default function CertificationsPage() {
         return updated;
       });
       setSharedProfile((p) => ({ ...p, certifications: data.certifications }));
+      setDeleteTargetId(null);
       showToast("Certification deleted successfully.");
       refreshStats();
     });
   };
-
-
-  const { triggerDelete: confirmDelete, DeleteDialog } = useDeleteConfirm({
-    onConfirm: remove,
-    title: "Delete Certification",
-    message: "Are you sure want to delete this certification? This cannot be undone.",
-    confirmText: "Yes, Delete",
-  });
 
   const openEdit = (cert) => {
     setEditingCert(cert);
@@ -394,42 +388,69 @@ export default function CertificationsPage() {
       ) : (
         <>
         <div className="certs-list">
-          {certs.map((c) => (
-            <div key={c.id} className="modern-cert-card">
-              <div className="modern-cert-icon"><CertLogo name={c.name} size={28} /></div>
-              <div className="modern-cert-content">
-                <h3>{c.name}</h3>
-                {c.issuer && (
-                  <div className="cert-issuer">🏢 Issued by : {c.issuer}</div>
-                )}
-               {c.issuedOn && (
-  <div className="cert-year">
-    📅 Issued On: {(c.issuedOn)}
-  </div>
-)}
-
-                {c.expiryDate && <div className="cert-year">🗓️ Expires on: {c.expiryDate}</div>}
+          {(() => {
+            const totalPages = Math.ceil(certs.length / cardsPerPage);
+            const paginated = certs.slice((currentPage - 1) * cardsPerPage, currentPage * cardsPerPage);
+            return paginated.map((c) => {
+            const status = getCertStatus(c.expiryDate);
+            return (
+              <div key={c.id} className="modern-cert-card">
+                <div className="modern-cert-icon"><CertLogo name={c.name} size={42} /></div>
+                <div className="modern-cert-content">
+                  <span className={`cert-status-badge ${status.cls}`}>{status.label}</span>
+                  <div className="cert-card-top">
+                    <h3 className="cert-card-name">{c.name}</h3>
+                  </div>
+                  {c.issuer && (
+                    <div className="cert-meta-row">
+                      <span>Issued by: <strong style={{color:"#383da7"}}>{c.issuer}</strong></span>
+                    </div>
+                  )}
+                  <div className="cert-meta-dates">
+                    {c.issuedOn && (
+                      <div className="cert-meta-row">
+                        <i className="fas fa-calendar-alt cert-meta-icon"></i>
+                        <span>Issued: {formatDate(c.issuedOn)}</span>
+                      </div>
+                    )}
+                    {c.expiryDate && (
+                      <div className="cert-meta-row">
+                        <i className="fas fa-calendar-times cert-meta-icon"></i>
+                        <span>Expires: {formatDate(c.expiryDate)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* <div className="cert-card-actions"> */}
+                  {(c.fileUrl || c.fileData) && (
+                    <button
+                      className="certificate-box"
+                      onClick={() => {
+                        if (c.fileUrl) {
+                          window.open(c.fileUrl, "_blank");
+                        } else {
+                          const bytes = Uint8Array.from(atob(c.fileData), (ch) => ch.charCodeAt(0));
+                          const url = URL.createObjectURL(new Blob([bytes], { type: c.fileType }));
+                          window.open(url, "_blank");
+                        }
+                      }}
+                    >
+                      <div> View Certificate ↗</div>
+                    </button>
+                  )}
+                 
+                    <EditButton variant="edit" onClick={() => openEdit(c)} title="Edit">
+                      <i className="fas fa-edit"></i>
+                    </EditButton>
+                    <DeleteButton variant="delete" onClick={() => setDeleteTargetId(c.id)} title="Delete">
+                      <i className="fas fa-trash"></i>
+                    </DeleteButton>
+                 
+                {/* </div> */}
               </div>
-              {c.fileData && (
-                <button
-                  className="certificate-box"
-                  onClick={() => {
-                    const bytes = Uint8Array.from(atob(c.fileData), (ch) =>
-                      ch.charCodeAt(0),
-                    );
-                    const url = URL.createObjectURL(
-                      new Blob([bytes], { type: c.fileType }),
-                    );
-                    window.open(url, "_blank");
-                  }}
-                >
-                  {/* <div style={{ fontSize: "34px" }}>🗑️</div> */}
-                  <div>View Certificate ↗</div>
-                </button>
-              )}
-              <EditButton onClick={() => openEdit(c)} />
-              <DeleteButton onClick={() => confirmDelete(c.id)} disabled={deletingCert} />           </div>
-          ))}
+            );
+            });
+          })()}
         </div>
         <Pagination
           currentPage={currentPage}
@@ -506,8 +527,18 @@ export default function CertificationsPage() {
         </form>
       </DialogBox>
 
-      {DeleteDialog}
-    </div>
+      {deleteTargetId && (
+        <ConfirmDialog
+          icon="🗑️"
+          title="Delete Certification"
+          message="Are you sure want to delete this certification? This cannot be undone."
+          confirmText="Yes, Delete"
+          cancelText="Cancel"
+          onConfirm={() => remove(deleteTargetId)}
+          onCancel={() => setDeleteTargetId(null)}
+        />
+      )}
+      </div>
     </>
   );
 }

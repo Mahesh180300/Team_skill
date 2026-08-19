@@ -28,15 +28,8 @@ export default function DocumentsPage() {
     try {
       await callResume(async () => {
         const data = await api.uploadResume(token, file);
-        if (data.resumeData) {
-          const updated = {
-            ...profile,
-            resumeData: data.resumeData,
-            resumeFileName: data.resumeFileName,
-            resumeFileType: data.resumeFileType,
-            updatedAt: data.updatedAt || new Date().toISOString(),
-          };
-          setProfile(updated);
+        if (data.resumeUrl || data.resumeFileName) {
+          setProfile({ ...profile, ...data, updatedAt: data.updatedAt || new Date().toISOString() });
           showToast("Resume uploaded successfully");
         } else if (data.error) {
           showToast(data.error);
@@ -50,7 +43,7 @@ export default function DocumentsPage() {
   const deleteResume = async () => {
     await callDelete(async () => {
       await api.deleteResume(token);
-      setProfile({ ...profile, resumeData: "", resumeFileName: "", resumeFileType: "" });
+      setProfile({ ...profile, resumeData: "", resumeFileName: "", resumeFileType: "", resumeUrl: null });
       showToast("Resume deleted successfully.");
     });
   };
@@ -63,9 +56,17 @@ export default function DocumentsPage() {
   });
 
   const openResume = () => {
-    const bytes = Uint8Array.from(atob(profile.resumeData), (ch) => ch.charCodeAt(0));
-    const url = URL.createObjectURL(new Blob([bytes], { type: profile.resumeFileType }));
-    window.open(url, "_blank");
+    if (profile.resumeUrl) {
+      const isPdf = profile.resumeFileType === "application/pdf" || profile.resumeUrl.includes(".pdf");
+      const url = isPdf
+        ? `https://docs.google.com/viewer?url=${encodeURIComponent(profile.resumeUrl)}&embedded=false`
+        : profile.resumeUrl;
+      window.open(url, "_blank");
+    } else if (profile.resumeData) {
+      const bytes = Uint8Array.from(atob(profile.resumeData), (ch) => ch.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: profile.resumeFileType }));
+      window.open(url, "_blank");
+    }
   };
 
   const handleDrop = (e) => {
@@ -82,6 +83,8 @@ export default function DocumentsPage() {
   const fileSizeKB = profile?.resumeData
     ? ((profile.resumeData.length * 0.75) / 1024).toFixed(1)
     : null;
+
+  const hasResume = !!(profile?.resumeUrl || profile?.resumeData);
 
   const lastUpdatedLabel = profile?.updatedAt
     ? new Date(profile.updatedAt).toLocaleDateString(undefined, {
@@ -116,7 +119,7 @@ export default function DocumentsPage() {
           onChange={(e) => { if (e.target.files[0]) uploadResume(e.target.files[0]); e.target.value = ""; }}
         />
 
-        {profile?.resumeData ? (
+        {hasResume ? (
           // ---- Uploaded state: matches Image 2 ----
           <div className="doc-uploaded-card" key="uploaded">
             <div className="doc-uploaded-icon">
@@ -126,7 +129,7 @@ export default function DocumentsPage() {
               <span className="doc-uploaded-name">{profile.resumeFileName}</span>
               <div className="doc-uploaded-meta">
                 <span className="doc-uploaded-size">
-                  {fileSizeKB} KB &middot; {profile.resumeFileType}
+                   {profile.resumeFileType}
                 </span>
                 {lastUpdatedLabel && (
                   <span className="doc-uploaded-size">Last updated: {lastUpdatedLabel}</span>
@@ -138,11 +141,11 @@ export default function DocumentsPage() {
                 <i className="fas fa-check-circle"></i> Uploaded
               </span>
               <div className="doc-uploaded-actions">
-                <button className="resume-btn resume-btn-icon" onClick={openResume} title="View">
-                  <i className="fas fa-eye"></i>
+                <button className="certificate-box" onClick={openResume}>
+                  <div>View Resume ↗</div>
                 </button>
                 <EditButton
-                style={{ color: "#43a1d8" }}
+                style={{ color: "var(--text-muted)" }}
                   onClick={() => document.getElementById("doc-resume-input").click()}
                   disabled={resumeUploading}
                   title="Replace"
@@ -153,27 +156,45 @@ export default function DocumentsPage() {
           </div>
         ) : (
           // ---- Empty state: matches Image 1 ----
-          <label
-            htmlFor="doc-resume-input"
-            className={`doc-empty-state ${dragActive ? "doc-drop-zone-active" : ""}`}
-            key="empty"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <div className="doc-empty-left">
-              <div className="doc-drop-icon">
-                <i className="fas fa-paperclip"></i>
-              </div>
-              <div>
-                <p className="doc-drop-title">No resume uploaded yet</p>
-                <p className="doc-drop-sub">PDF, DOC or DOCX &middot; Max 2MB</p>
-              </div>
+      //     <label
+      //       htmlFor="doc-resume-input"
+      //       className={`doc-empty-state ${dragActive ? "doc-drop-zone-active" : ""}`}
+      //       key="empty"
+      //       onDrop={handleDrop}
+      //       onDragOver={handleDragOver}
+      //       onDragLeave={handleDragLeave}
+      //     >
+      //       <div className="doc-empty-left">
+      //         <div className="doc-drop-icon">
+      //           <i className="fas fa-paperclip"></i>
+      //         </div>
+      //         <div>
+      //           <p className="doc-drop-title">No resume uploaded yet</p>
+      //           <p className="doc-drop-sub">PDF, DOC or DOCX &middot; Max 2MB</p>
+      //         </div>
+      //       </div>
+      //       <span className="resume-btn resume-btn-upload-main">
+      //         {resumeUploading ? "Uploading..." : "Upload Resume"}
+      //       </span>
+      //     </label>
+      //   )}
+      // </div>
+       <div className="doc-empty-state">
+        <div className="document-upload">
+        <div className="doc-empty-left">
+            <div className="doc-empty-icon">📎</div>
+            <div>
+              <p className="doc-empty-title">No resume uploaded yet</p>
+              <p className="doc-empty-sub">PDF, DOC or DOCX · Max 2MB</p>
             </div>
-            <span className="resume-btn resume-btn-upload-main">
+            </div>
+            <div>
+            <button className="resume-btn resume-btn-upload-main" onClick={() => document.getElementById("doc-resume-input").click()} disabled={resumeUploading}>
               {resumeUploading ? "Uploading..." : "Upload Resume"}
-            </span>
-          </label>
+            </button>
+            </div>
+            </div>
+          </div>
         )}
       </div>
 

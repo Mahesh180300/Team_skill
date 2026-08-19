@@ -44,6 +44,7 @@ export default function SkillsPage() {
   const [deletingSkill, setDeletingSkill] = useState(false);
   const [pendingSkills, setPendingSkills] = useState([]);
   const [skillOptions, setSkillOptions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const callAdd = useApi(setAddingSkill);
   const callUpdate = useApi(setUpdatingSkill);
@@ -146,13 +147,30 @@ export default function SkillsPage() {
     return parts.join(" ");
   };
 
-  const sorted = [...skills].sort((a, b) => {
-    if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
-    if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
-    return 0;
-  });
+  const sorted = [...skills]
+    .filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (a.skillType === "Primary Skill" && b.skillType !== "Primary Skill") return -1;
+      if (a.skillType !== "Primary Skill" && b.skillType === "Primary Skill") return 1;
+      return 0;
+    });
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const STAT_COLORS = {
+  total: {
+    accent: "#4F46E5",
+    lightBg: "#EEF2FF",
+  },
+  primarySkill: {
+    accent: "#16A34A",
+    lightBg: "#ECFDF5",
+  },
+  secondarySkill: {
+    accent: "#F97316",
+    lightBg: "#FFF7ED",
+  },
+};
 
   return (
     <>
@@ -279,7 +297,10 @@ export default function SkillsPage() {
           const pct = counts.total > 0 ? Math.round((counts[key] / counts.total) * 100) : (key === "total" ? 100 : 0);
           const barWidth = key === "total" ? 100 : pct;
           return (
-            <div key={key} className="skill-stat-card" style={{ "--stat-accent": accent }}>
+            <div key={key} className="skill-stat-card" style={{
+    "--stat-accent": STAT_COLORS[key].accent,
+    "--stat-light-bg": STAT_COLORS[key].lightBg,
+ }}>
               <div className="skill-stat-top">
                 <div className="skill-stat-icon" style={{ background: iconBg, color: iconColor }}>{icon}</div>
                 <span className="skill-stat-label" style={{ background: lightBg, color: accent }}>{label}</span>
@@ -302,6 +323,26 @@ export default function SkillsPage() {
         <div className="empty">No skills added yet. Add your first skill above!</div>
       ) : (
         <div>
+          <div className="search-section">
+          <div>
+            <h3 className="skills-table-title">Skills Overview</h3>
+          </div>
+          <div className="emp-search-filter-bar">
+            <div className="emp-search-wrap">
+              <span className="emp-search-icon"><i className="fa-solid fa-magnifying-glass"></i></span>
+              <input
+                className="emp-search-input"
+                type="text"
+                placeholder="Search skills..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              />
+              {searchQuery && (
+                <Button variant="clear" className="emp-search-clear" onClick={() => { setSearchQuery(""); setCurrentPage(1); }} aria-label="Clear search">✕</Button>
+              )}
+            </div>
+          </div>
+          </div>
           <div className="skills-table">
             <div className="skills-table-header">
               <div className="st-col st-col-num">S.No</div>
@@ -310,7 +351,9 @@ export default function SkillsPage() {
               <div className="st-col st-col-duration">Experience</div>
               <div className="st-col st-col-actions">Actions</div>
             </div>
-            {paginated.map((s, idx) => {
+            {sorted.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: "var(--text-muted)", fontSize: 14 }}>No skills match "{searchQuery}".</div>
+            ) : paginated.map((s, idx) => {
               const globalIdx = (currentPage - 1) * PAGE_SIZE + idx;
               return (
                 <div key={s.id} className={`skills-table-row ${s.skillType === "Primary Skill" ? "skill-card--primary" : "skill-card--secondary"}`}>
