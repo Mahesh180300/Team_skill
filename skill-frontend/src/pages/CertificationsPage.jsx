@@ -234,7 +234,7 @@ export default function CertificationsPage() {
       <div className="cert-stats-grid">
         {STAT_CARDS.map((card) => (
           <div key={card.key} className="cert-stat-card">
-            <div className="cert-stat-icon" style={{ background: card.iconBg }}>
+            <div className="cert-stat-icon">
               <i className={card.icon} style={{ color: card.accent, fontSize: 20 }}></i>
             </div>
             <div className="cert-stat-body">
@@ -526,6 +526,7 @@ export default function CertificationsPage() {
               cursor: "pointer",
               background: "var(--bg)",
               transition: "border-color 0.15s",
+              marginTop: 12,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--primary)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
@@ -537,7 +538,7 @@ export default function CertificationsPage() {
                 : "Click to upload a certificate (PDF, JPG, PNG)"}
             </span>
             <input
-              id="edit-cert-file"
+              // id="edit-cert-file"
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
               style={{ display: "none" }}

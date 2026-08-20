@@ -467,7 +467,7 @@ export default function ProfilePage() {
                     <div className="cert-detail-status">
                       {isExpired && <span className="cert-status-badge cert-status-expired">Expired</span>}
                       {expiringSoon && <span className="cert-status-badge cert-status-expiring">Expiring Soon</span>}
-                      {!isExpired && !expiringSoon && cert.expiryDate && <span className="cert-status-badge cert-status-valid">Valid</span>}
+                      {!isExpired && !expiringSoon && cert.expiryDate && <span className="cert-status-badge cert-status-valid">Active</span>}
                       {!cert.expiryDate && <span className="cert-status-badge cert-status-noexpiry">No Expiry</span>}
                     </div>
                   </div>
