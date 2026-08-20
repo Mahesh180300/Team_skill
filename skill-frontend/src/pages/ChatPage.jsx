@@ -303,6 +303,7 @@ export default function ChatPage() {
                 : c
           )
         );
+        }
         return updated;
       });
     } catch {
