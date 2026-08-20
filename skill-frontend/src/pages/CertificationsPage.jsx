@@ -202,7 +202,7 @@ export default function CertificationsPage() {
     const expiry = new Date(expiryDate);
     const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
     if (diffDays < 0) return { label: "Expired", cls: "cert-status-expired" };
-    if (diffDays <= 90) return { label: "Expiring Soon", cls: "cert-status-expiring" };
+    if (diffDays <= 30) return { label: "Expiring Soon", cls: "cert-status-expiring" };
     return { label: "Active", cls: "cert-status-valid" };
   };
 
