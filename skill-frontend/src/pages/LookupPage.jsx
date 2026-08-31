@@ -43,8 +43,17 @@ export default function MastersPage() {
     if (!token) return;
     try {
       const d = await api.getAllLookupTypes(token);
-      setTypes(Array.isArray(d) ? d : []);
-      setLastUpdated(new Date());
+      const data = Array.isArray(d) ? d : [];
+      setTypes(data);
+      const allDates = data.flatMap((t) => [
+        t.createdAt,
+        new Date(t.updatedAt) - new Date(t.createdAt) > 1000 ? t.updatedAt : null,
+        ...(t.values?.flatMap((v) => [
+          v.createdAt,
+          new Date(v.updatedAt) - new Date(v.createdAt) > 1000 ? v.updatedAt : null,
+        ]) ?? []),
+      ]).filter(Boolean).map((d) => new Date(d));
+      setLastUpdated(allDates.length ? new Date(Math.max(...allDates)) : null);
     } catch (err) {
       console.error(err);
       setTypes([]);
